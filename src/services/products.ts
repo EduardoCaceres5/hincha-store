@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { Product, ProductDetail } from '@/types/Product'
+import type { Product, ProductDetail } from '@/types/product'
 
 export async function getProduct(id: string) {
   const { data } = await api.get(`/api/products/${id}`)
