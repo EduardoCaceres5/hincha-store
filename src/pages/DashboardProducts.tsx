@@ -29,7 +29,7 @@ import {
   Tr,
   useToast,
 } from '@chakra-ui/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const LIMIT = 12
@@ -69,6 +69,9 @@ export default function DashboardProducts() {
   const toast = useToast()
   const nav = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const cancelOneRef = useRef<HTMLButtonElement>(null)
+  const cancelBulkRef = useRef<HTMLButtonElement>(null)
 
   // Leer ?page al montar
   useEffect(() => {
@@ -345,7 +348,7 @@ export default function DashboardProducts() {
       {/* Confirmación eliminar UNO */}
       <AlertDialog
         isOpen={confirmOneOpen}
-        leastDestructiveRef={undefined}
+        leastDestructiveRef={cancelOneRef}
         onClose={() => setConfirmOneOpen(false)}
       >
         <AlertDialogOverlay>
@@ -369,7 +372,7 @@ export default function DashboardProducts() {
       {/* Confirmación eliminar SELECCIONADOS */}
       <AlertDialog
         isOpen={confirmBulkOpen}
-        leastDestructiveRef={undefined}
+        leastDestructiveRef={cancelBulkRef}
         onClose={() => setConfirmBulkOpen(false)}
       >
         <AlertDialogOverlay>
