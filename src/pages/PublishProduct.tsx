@@ -17,7 +17,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { AxiosProgressEvent } from 'axios'
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -30,7 +30,10 @@ const schema = z.object({
     .instanceof(FileList)
     .refine((f) => f?.length === 1, 'Subí una imagen'),
 })
-type FormData = z.infer<typeof schema>
+
+// Tipos derivados del schema
+type FormInput = z.input<typeof schema> // price: unknown (entrada cruda)
+type FormData = z.output<typeof schema> // price: number  (post-coerción)
 
 export default function PublishProduct() {
   const [loading, setLoading] = useState(false)
@@ -43,7 +46,7 @@ export default function PublishProduct() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<FormData>({
+  } = useForm<FormInput, any, FormData>({
     resolver: zodResolver(schema),
   })
 
@@ -54,7 +57,7 @@ export default function PublishProduct() {
     [preview],
   )
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
     setLoading(true)
     setProgress(0)
     try {
