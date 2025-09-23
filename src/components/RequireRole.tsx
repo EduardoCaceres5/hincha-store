@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth'
+import type { JSX } from 'react'
 import GuardNotice from './GuardNotice'
 
 export default function RequireRole({

@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth'
 import { Center, Spinner } from '@chakra-ui/react'
+import type { JSX } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 
 export default function RequireAuth({ children }: { children: JSX.Element }) {
