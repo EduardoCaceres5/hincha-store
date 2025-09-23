@@ -57,7 +57,12 @@ export default function ProductDetail() {
         const first = (p as ProductWithVariants).variants?.[0]?.id ?? ''
         setVariantId(first)
 
-        const r = await getRelatedProducts(p)
+        const r = await getRelatedProducts({
+          id: p.id,
+          // estos dos pueden venir de p si tu API los devuelve, o de tu estado si los tenés
+          size: (p as any).size,
+          condition: (p as any).condition,
+        })
         if (!cancel) setRelated(r)
       } catch {
         if (!cancel) {

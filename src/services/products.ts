@@ -1,6 +1,8 @@
 import api from '@/services/api'
 import type { Product, ProductDetail } from '@/types/product'
 
+type RelatedInput = Pick<Product, 'id' | 'size' | 'condition'>
+
 export async function getProduct(id: string) {
   const { data } = await api.get(`/api/products/${id}`)
   return data as {
@@ -18,10 +20,11 @@ export async function getProduct(id: string) {
   }
 }
 
-export async function getRelatedProducts(p: Product, limit = 8) {
-  const params: any = { limit }
+export async function getRelatedProducts(p: RelatedInput, limit = 8) {
+  const params: Record<string, unknown> = { limit }
   if (p.size) params.size = p.size
   if (!p.size && p.condition) params.condition = p.condition
+
   const { data } = await api.get<{ items: Product[] }>(`/api/products`, {
     params,
   })
