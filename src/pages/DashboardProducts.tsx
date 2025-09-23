@@ -30,7 +30,9 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+
+const LIMIT = 12
 
 export default function DashboardProducts() {
   const [data, setData] = useState<{
@@ -39,6 +41,7 @@ export default function DashboardProducts() {
     limit: number
     total: number
   } | null>(null)
+
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
 
@@ -54,7 +57,7 @@ export default function DashboardProducts() {
   )
   const indeterminate = useMemo(
     () => !!selectedIds.length && !allChecked,
-    [selectedIds.length, allChecked],
+    [selectedIds, allChecked],
   )
 
   const [confirmOneOpen, setConfirmOneOpen] = useState(false)
@@ -65,11 +68,29 @@ export default function DashboardProducts() {
 
   const toast = useToast()
   const nav = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Leer ?page al montar
+  useEffect(() => {
+    const q = Number(searchParams.get('page') || '1')
+    if (!Number.isNaN(q) && q > 0 && q !== page) setPage(q)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Escribir ?page cuando cambia
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const sp = new URLSearchParams(prev)
+      if (page > 1) sp.set('page', String(page))
+      else sp.delete('page')
+      return sp
+    })
+  }, [page, setSearchParams])
 
   async function load() {
     setLoading(true)
     try {
-      const d = await getMyProducts(page, 12)
+      const d = await getMyProducts(page, LIMIT)
       setData(d)
       // limpiar selección de ítems que ya no están
       setSelected((prev) => {
@@ -83,9 +104,22 @@ export default function DashboardProducts() {
       setLoading(false)
     }
   }
+
   useEffect(() => {
     load()
   }, [page])
+
+  const totalPages = useMemo(
+    () => (data ? Math.max(1, Math.ceil(data.total / data.limit)) : 1),
+    [data],
+  )
+
+  function goToPage(n: number) {
+    setPage((prev) => {
+      const target = Math.max(1, Math.min(n, totalPages || 1))
+      return target === prev ? prev : target
+    })
+  }
 
   function toggleAll() {
     if (!data?.items) return
@@ -97,6 +131,7 @@ export default function DashboardProducts() {
     }
     setSelected(next)
   }
+
   function toggleOne(id: string, checked: boolean) {
     setSelected((prev) => ({ ...prev, [id]: checked }))
   }
@@ -104,6 +139,9 @@ export default function DashboardProducts() {
   async function onDeleteOne() {
     if (!deletingOne) return
     try {
+      // Si es el último de la página y hay páginas previas, retrocedemos
+      const wasLastOnPage = (data?.items.length ?? 0) === 1 && page > 1
+
       await deleteProduct(deletingOne)
       toast({
         title: 'Producto eliminado',
@@ -113,7 +151,12 @@ export default function DashboardProducts() {
       })
       setConfirmOneOpen(false)
       setDeletingOne(null)
-      load()
+
+      if (wasLastOnPage) {
+        setPage((p) => p - 1) // disparará load()
+      } else {
+        load()
+      }
     } catch {
       toast({
         title: 'No se pudo eliminar',
@@ -127,6 +170,9 @@ export default function DashboardProducts() {
   async function onBulkDelete() {
     setBulkLoading(true)
     try {
+      const wasWholePage =
+        (data?.items.length ?? 0) === selectedIds.length && page > 1
+
       const { deleted } = await bulkDeleteProducts(selectedIds)
       toast({
         title: `Eliminados: ${deleted}`,
@@ -136,7 +182,12 @@ export default function DashboardProducts() {
       })
       setConfirmBulkOpen(false)
       setSelected({})
-      load()
+
+      if (wasWholePage) {
+        setPage((p) => p - 1)
+      } else {
+        load()
+      }
     } catch {
       toast({
         title: 'No se pudo eliminar la selección',
@@ -176,73 +227,119 @@ export default function DashboardProducts() {
           <Spinner />
         </HStack>
       ) : (
-        <Table variant="simple" size="sm">
-          <Thead>
-            <Tr>
-              <Th w="1%">
-                <Checkbox
-                  isChecked={allChecked}
-                  isIndeterminate={indeterminate}
-                  onChange={toggleAll}
-                />
-              </Th>
-              <Th>Imagen</Th>
-              <Th>Título</Th>
-              <Th isNumeric>Precio</Th>
-              <Th>Talle</Th>
-              <Th>Condición</Th>
-              <Th></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {data?.items.map((p) => {
-              const checked = !!selected[p.id]
-              return (
-                <Tr key={p.id} bg={checked ? 'red.50' : undefined}>
-                  <Td>
-                    <Checkbox
-                      isChecked={checked}
-                      onChange={(e) => toggleOne(p.id, e.target.checked)}
-                    />
-                  </Td>
-                  <Td>
-                    <Image
-                      src={p.imageUrl}
-                      alt={p.title}
-                      boxSize="64px"
-                      objectFit="cover"
-                      borderRadius="md"
-                    />
-                  </Td>
-                  <Td>{p.title}</Td>
-                  <Td isNumeric>{p.price.toLocaleString('es-PY')}</Td>
-                  <Td>{p.size || '-'}</Td>
-                  <Td>{p.condition || '-'}</Td>
-                  <Td>
-                    <HStack>
-                      <IconButton
-                        aria-label="Editar"
-                        icon={<EditIcon />}
-                        size="sm"
-                        onClick={() => nav(`/dashboard/editar/${p.id}`)}
+        <>
+          <Table variant="simple" size="sm">
+            <Thead>
+              <Tr>
+                <Th w="1%">
+                  <Checkbox
+                    isChecked={allChecked}
+                    isIndeterminate={indeterminate}
+                    onChange={toggleAll}
+                  />
+                </Th>
+                <Th>Imagen</Th>
+                <Th>Título</Th>
+                <Th isNumeric>Precio</Th>
+                <Th>Talle</Th>
+                <Th>Condición</Th>
+                <Th></Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {data?.items.map((p) => {
+                const checked = !!selected[p.id]
+                return (
+                  <Tr key={p.id} bg={checked ? 'red.50' : undefined}>
+                    <Td>
+                      <Checkbox
+                        isChecked={checked}
+                        onChange={(e) => toggleOne(p.id, e.target.checked)}
                       />
-                      <IconButton
-                        aria-label="Eliminar"
-                        icon={<DeleteIcon />}
-                        size="sm"
-                        colorScheme="red"
-                        onClick={() => {
-                          setDeletingOne(p.id)
-                          setConfirmOneOpen(true)
-                        }}
+                    </Td>
+                    <Td>
+                      <Image
+                        src={p.imageUrl}
+                        alt={p.title}
+                        boxSize="64px"
+                        objectFit="cover"
+                        borderRadius="md"
                       />
-                    </HStack>
-                  </Td>
-                </Tr>
-              )
-            })}
-          </Tbody>
-        </Table>
+                    </Td>
+                    <Td>{p.title}</Td>
+                    <Td isNumeric>{p.price.toLocaleString('es-PY')}</Td>
+                    <Td>{p.size || '-'}</Td>
+                    <Td>{p.condition || '-'}</Td>
+                    <Td>
+                      <HStack>
+                        <IconButton
+                          aria-label="Editar"
+                          icon={<EditIcon />}
+                          size="sm"
+                          onClick={() => nav(`/dashboard/editar/${p.id}`)}
+                        />
+                        <IconButton
+                          aria-label="Eliminar"
+                          icon={<DeleteIcon />}
+                          size="sm"
+                          colorScheme="red"
+                          onClick={() => {
+                            setDeletingOne(p.id)
+                            setConfirmOneOpen(true)
+                          }}
+                        />
+                      </HStack>
+                    </Td>
+                  </Tr>
+                )
+              })}
+            </Tbody>
+          </Table>
+
+          {/* Barra de paginación */}
+          {data?.total ? (
+            <HStack mt={4} justify="space-between">
+              <Text color="gray.600">
+                Mostrando {(page - 1) * (data?.limit ?? LIMIT) + 1}–
+                {Math.min(page * (data?.limit ?? LIMIT), data.total)} de{' '}
+                {data.total}
+              </Text>
+              <HStack>
+                <Button
+                  size="sm"
+                  onClick={() => goToPage(1)}
+                  isDisabled={page === 1}
+                >
+                  « Primero
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => goToPage(page - 1)}
+                  isDisabled={page === 1}
+                >
+                  ‹ Anterior
+                </Button>
+                <Text>
+                  Página {page} / {totalPages}
+                </Text>
+                <Button
+                  size="sm"
+                  onClick={() => goToPage(page + 1)}
+                  isDisabled={page >= totalPages}
+                >
+                  Siguiente ›
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => goToPage(totalPages)}
+                  isDisabled={page >= totalPages}
+                >
+                  Última »
+                </Button>
+              </HStack>
+            </HStack>
+          ) : null}
+        </>
       )}
 
       {/* Confirmación eliminar UNO */}
