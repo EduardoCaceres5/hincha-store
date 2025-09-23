@@ -69,8 +69,14 @@ export default function PublishProduct() {
       if (data.description) fd.append('description', data.description)
       fd.append('image', data.image[0])
 
+      // 👇 enviar al menos una variante (talle como nombre; stock inicial 1)
+      const variants = [
+        { name: data.size ?? 'Única', stock: 1, price: data.price },
+      ]
+      fd.append('variants', JSON.stringify(variants))
+
       await api.post('/api/products', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        // ¡NO pongas 'Content-Type'! El navegador agrega el boundary automáticamente.
         onUploadProgress: (evt: AxiosProgressEvent) => {
           if (evt.total) setProgress(Math.round((evt.loaded * 100) / evt.total))
         },
