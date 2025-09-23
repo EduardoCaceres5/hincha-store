@@ -122,7 +122,11 @@ export default function PublishProduct() {
 
           <FormControl isInvalid={!!errors.price} isRequired>
             <FormLabel>Precio (Gs)</FormLabel>
-            <Input type="number" min={0} {...register('price')} />
+            <Input
+              type="number"
+              min={0}
+              {...register('price', { valueAsNumber: true })}
+            />
             <FormErrorMessage>{errors.price?.message}</FormErrorMessage>
           </FormControl>
 
