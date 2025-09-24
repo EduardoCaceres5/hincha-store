@@ -20,10 +20,6 @@ export default function HeroSection() {
   const nav = useNavigate()
   const [q, setQ] = useState('')
 
-  const bgGradient = mode(
-    'linear(to-b, teal.50, white)',
-    'linear(to-b, gray.900, gray.800)',
-  )
   const borderColor = mode('gray.100', 'whiteAlpha.200')
   const subtitleColor = mode('gray.600', 'gray.300')
   const inputBg = mode('white', 'whiteAlpha.100')
