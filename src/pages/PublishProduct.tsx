@@ -2,24 +2,44 @@ import api from '@/services/api'
 import {
   Box,
   Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Divider,
   FormControl,
   FormErrorMessage,
   FormLabel,
   Heading,
+  HStack,
+  Icon,
   Image,
   Input,
+  InputGroup,
+  InputLeftElement,
+  useColorModeValue as mode,
   Progress,
   Select,
+  SimpleGrid,
   Stack,
+  Text,
   Textarea,
-  useToast, // 👈 useToast
+  useToast,
 } from '@chakra-ui/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { AxiosProgressEvent } from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
+import { FaShirt } from 'react-icons/fa6'
+import {
+  FiAward,
+  FiDollarSign,
+  FiFileText,
+  FiTag,
+  FiUploadCloud,
+} from 'react-icons/fi'
 import { z } from 'zod'
 
+/** ====== Schema ====== */
 const schema = z.object({
   title: z.string().min(3, 'Mínimo 3 caracteres'),
   price: z.coerce.number().min(1000, 'Mínimo Gs. 1.000'),
@@ -30,25 +50,24 @@ const schema = z.object({
     .instanceof(FileList)
     .refine((f) => f?.length === 1, 'Subí una imagen'),
 })
+type FormInput = z.input<typeof schema>
+type FormData = z.output<typeof schema>
 
-// Tipos derivados del schema
-type FormInput = z.input<typeof schema> // price: unknown (entrada cruda)
-type FormData = z.output<typeof schema> // price: number  (post-coerción)
-
+/** ====== Componente ====== */
 export default function PublishProduct() {
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [preview, setPreview] = useState<string | null>(null)
-  const toast = useToast() // 👈
+  const toast = useToast()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
     reset,
-  } = useForm<FormInput, any, FormData>({
-    resolver: zodResolver(schema),
-  })
+  } = useForm<FormInput, any, FormData>({ resolver: zodResolver(schema) })
 
   useEffect(
     () => () => {
@@ -69,14 +88,13 @@ export default function PublishProduct() {
       if (data.description) fd.append('description', data.description)
       fd.append('image', data.image[0])
 
-      // 👇 enviar al menos una variante (talle como nombre; stock inicial 1)
+      // Al menos una variante por defecto (talle o “Única”)
       const variants = [
         { name: data.size ?? 'Única', stock: 1, price: data.price },
       ]
       fd.append('variants', JSON.stringify(variants))
 
       await api.post('/api/products', fd, {
-        // ¡NO pongas 'Content-Type'! El navegador agrega el boundary automáticamente.
         onUploadProgress: (evt: AxiosProgressEvent) => {
           if (evt.total) setProgress(Math.round((evt.loaded * 100) / evt.total))
         },
@@ -110,82 +128,236 @@ export default function PublishProduct() {
     }
   }
 
+  /** ====== Estilos dependientes de tema ====== */
+  const cardBg = mode('white', 'gray.800')
+  const cardBorder = mode('gray.200', 'whiteAlpha.300')
+  const dropBg = mode('gray.50', 'whiteAlpha.50')
+  const dropBorder = mode('gray.300', 'whiteAlpha.300')
+  const dropHover = mode('teal.100', 'teal.900')
+
+  /** ====== Dropzone handlers ====== */
+  const onPickFile = () => fileInputRef.current?.click()
+  const onFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const f = e.target.files?.[0]
+    if (preview) URL.revokeObjectURL(preview)
+    setPreview(f ? URL.createObjectURL(f) : null)
+  }
+  const onDrop: React.DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault()
+    if (!e.dataTransfer.files?.length) return
+    const file = e.dataTransfer.files[0]
+    // construir FileList vía DataTransfer para setValue
+    const dt = new DataTransfer()
+    dt.items.add(file)
+    const list = dt.files
+    setValue('image', list as unknown as FileList, { shouldValidate: true })
+    if (preview) URL.revokeObjectURL(preview)
+    setPreview(URL.createObjectURL(file))
+  }
+
   return (
     <Box>
       <Heading size="lg" mb={4}>
         Publicar producto
       </Heading>
-      <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-        <Stack spacing={4}>
-          <FormControl isInvalid={!!errors.title} isRequired>
-            <FormLabel>Título</FormLabel>
-            <Input
-              {...register('title')}
-              placeholder="Camiseta versión jugador"
-            />
-            <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
-          </FormControl>
 
-          <FormControl isInvalid={!!errors.price} isRequired>
-            <FormLabel>Precio (Gs)</FormLabel>
-            <Input
-              type="number"
-              min={0}
-              {...register('price', { valueAsNumber: true })}
-            />
-            <FormErrorMessage>{errors.price?.message}</FormErrorMessage>
-          </FormControl>
+      <Card
+        bg={cardBg}
+        borderWidth="1px"
+        borderColor={cardBorder}
+        borderRadius="2xl"
+        shadow="md"
+      >
+        <CardHeader pb={0}>
+          <Stack spacing={1}>
+            <Heading size="md">Detalles del producto</Heading>
+            <Text color="gray.500">
+              Completá la información y subí una imagen
+            </Text>
+          </Stack>
+        </CardHeader>
 
-          <FormControl>
-            <FormLabel>Talle</FormLabel>
-            <Input {...register('size')} placeholder="M / L / XL" />
-          </FormControl>
+        <CardBody>
+          <Box as="form" onSubmit={handleSubmit(onSubmit)}>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
+              {/* Columna izquierda: campos */}
+              <Stack spacing={4}>
+                <FormControl isInvalid={!!errors.title} isRequired>
+                  <FormLabel>Título</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <Icon as={FiTag} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      placeholder="Camiseta versión jugador"
+                      {...register('title')}
+                    />
+                  </InputGroup>
+                  <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
+                </FormControl>
 
-          <FormControl>
-            <FormLabel>Condición</FormLabel>
-            <Select placeholder="Seleccionar" {...register('condition')}>
-              <option value="Nuevo">Nuevo</option>
-              <option value="Usado">Usado</option>
-            </Select>
-          </FormControl>
+                <FormControl isInvalid={!!errors.price} isRequired>
+                  <FormLabel>Precio (Gs)</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <Icon as={FiDollarSign} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="1000"
+                      placeholder="250000"
+                      {...register('price', { valueAsNumber: true })}
+                    />
+                  </InputGroup>
+                  <FormErrorMessage>{errors.price?.message}</FormErrorMessage>
+                </FormControl>
 
-          <FormControl isInvalid={!!errors.description}>
-            <FormLabel>Descripción</FormLabel>
-            <Textarea {...register('description')} />
-            <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-          </FormControl>
+                <HStack spacing={4}>
+                  <FormControl>
+                    <FormLabel>Talle</FormLabel>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <Icon as={FaShirt} color="gray.400" />
+                      </InputLeftElement>
+                      <Input placeholder="M / L / XL" {...register('size')} />
+                    </InputGroup>
+                  </FormControl>
 
-          <FormControl isInvalid={!!errors.image} isRequired>
-            <FormLabel>Imagen</FormLabel>
-            <Input
-              type="file"
-              accept="image/*"
-              {...register('image')}
-              onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (preview) URL.revokeObjectURL(preview)
-                setPreview(f ? URL.createObjectURL(f) : null)
-              }}
-            />
-            {preview && (
-              <Image
-                src={preview}
-                alt="preview"
-                mt={2}
-                maxH="200px"
-                objectFit="contain"
-              />
+                  <FormControl>
+                    <FormLabel>Condición</FormLabel>
+                    <Box position="relative">
+                      <Icon
+                        as={FiAward}
+                        color="gray.400"
+                        position="absolute"
+                        left="12px"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        pointerEvents="none"
+                      />
+                      <Select
+                        placeholder="Seleccionar"
+                        pl="40px" // espacio para el icono
+                        size="md"
+                        {...register('condition')}
+                      >
+                        <option value="Nuevo">Nuevo</option>
+                        <option value="Usado">Usado</option>
+                      </Select>
+                    </Box>
+                  </FormControl>
+                </HStack>
+
+                <FormControl isInvalid={!!errors.description}>
+                  <FormLabel>Descripción</FormLabel>
+                  <InputGroup alignItems="flex-start">
+                    <InputLeftElement pointerEvents="none" pt={3}>
+                      <Icon as={FiFileText} color="gray.400" />
+                    </InputLeftElement>
+                    <Textarea pl="40px" rows={5} {...register('description')} />
+                  </InputGroup>
+                  <FormErrorMessage>
+                    {errors.description?.message}
+                  </FormErrorMessage>
+                </FormControl>
+              </Stack>
+
+              {/* Columna derecha: uploader */}
+              <Stack spacing={4}>
+                <FormControl isInvalid={!!errors.image} isRequired>
+                  <FormLabel>Imagen</FormLabel>
+
+                  <Box
+                    onClick={onPickFile}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={onDrop}
+                    cursor="pointer"
+                    borderWidth="2px"
+                    borderStyle="dashed"
+                    borderColor={dropBorder}
+                    bg={dropBg}
+                    _hover={{ bg: dropHover, borderColor: 'teal.400' }}
+                    transition="all .15s ease"
+                    p={4}
+                    borderRadius="xl"
+                    textAlign="center"
+                  >
+                    <Stack align="center" spacing={2}>
+                      <Icon as={FiUploadCloud} boxSize={8} color="teal.400" />
+                      <Text fontWeight="medium">Arrastrá tu imagen aquí</Text>
+                      <Text fontSize="sm" color="gray.500">
+                        o{' '}
+                        <Box as="span" textDecoration="underline">
+                          hacé clic para seleccionar
+                        </Box>
+                      </Text>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        {...register('image')}
+                        ref={(el) => {
+                          // mantener ref de RHF + ref local para click programático
+                          if (el) fileInputRef.current = el
+                        }}
+                        onChange={onFileChange}
+                        display="none"
+                      />
+                    </Stack>
+                  </Box>
+
+                  {preview && (
+                    <Image
+                      src={preview}
+                      alt="Vista previa"
+                      mt={3}
+                      borderRadius="xl"
+                      objectFit="cover"
+                      w="100%"
+                      maxH="280px"
+                    />
+                  )}
+                  <FormErrorMessage>{errors.image?.message}</FormErrorMessage>
+                </FormControl>
+
+                <Divider />
+
+                <Stack spacing={1} fontSize="sm" color="gray.500">
+                  <Text>Recomendaciones:</Text>
+                  <Text>• Formato JPG/PNG, 1500×1500, fondo claro.</Text>
+                  <Text>• Mostrá el escudo o detalle principal.</Text>
+                </Stack>
+              </Stack>
+            </SimpleGrid>
+
+            {loading && (
+              <Box mt={6}>
+                <Progress value={progress} size="sm" borderRadius="md" />
+                <Text mt={2} fontSize="sm" color="gray.500">
+                  Subiendo… {progress}%
+                </Text>
+              </Box>
             )}
-            <FormErrorMessage>{errors.image?.message}</FormErrorMessage>
-          </FormControl>
 
-          {loading && <Progress value={progress} size="sm" borderRadius="md" />}
-
-          <Button type="submit" colorScheme="teal" isLoading={loading}>
-            Publicar
-          </Button>
-        </Stack>
-      </Box>
+            <HStack justify="flex-end" spacing={3} mt={8}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  reset()
+                  if (preview) URL.revokeObjectURL(preview)
+                  setPreview(null)
+                }}
+                isDisabled={loading}
+              >
+                Limpiar
+              </Button>
+              <Button type="submit" colorScheme="teal" isLoading={loading}>
+                Publicar
+              </Button>
+            </HStack>
+          </Box>
+        </CardBody>
+      </Card>
     </Box>
   )
 }
