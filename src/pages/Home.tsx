@@ -144,7 +144,7 @@ export default function Home() {
       </Container>
 
       {/* CTA vendedor */}
-      <Box bg="gray.50" py={10} mt={6}>
+      <Box py={10} mt={6}>
         <Container maxW="container.lg">
           <HomePromoBanner />
         </Container>

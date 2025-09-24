@@ -16,7 +16,7 @@ import { useState } from 'react'
 import { FiPlusCircle, FiSearch } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
-function HeroSection() {
+export default function HeroSection() {
   const nav = useNavigate()
   const [q, setQ] = useState('')
 
@@ -103,5 +103,3 @@ function HeroSection() {
     </Box>
   )
 }
-
-export default HeroSection
