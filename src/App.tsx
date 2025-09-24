@@ -1,3 +1,4 @@
+import AppFooter from '@/components/AppFooter'
 import RequireRole from '@/components/RequireRole'
 import RequireAuth from '@/components/RequreAuth'
 import Checkout from '@/pages/Checkout'
@@ -98,6 +99,7 @@ export default function App() {
           />
         </Routes>
       </Container>
+      <AppFooter />
     </>
   )
 }
