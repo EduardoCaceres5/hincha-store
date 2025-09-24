@@ -19,6 +19,7 @@ import {
   MenuList,
   Show,
   Spacer,
+  useBreakpointValue,
   useColorMode,
   useColorModeValue,
   useDisclosure,
@@ -59,6 +60,8 @@ export default function Navbar() {
   const bg = useColorModeValue('white', 'gray.900')
   const border = useColorModeValue('gray.200', 'gray.700')
   const links = getNavLinks(me?.role as any)
+
+  const controlH = useBreakpointValue({ base: 9, md: 10 })
 
   return (
     <Box
@@ -110,12 +113,16 @@ export default function Navbar() {
         <Spacer />
 
         {/* Acciones derechas */}
-        <HStack spacing={2}>
+        <HStack spacing={2} align="center">
           <IconButton
             aria-label="Tema"
             variant="ghost"
             icon={colorMode === 'light' ? <FiMoon /> : <FiSun />}
             onClick={toggleColorMode}
+            h={controlH}
+            minH={controlH}
+            w={controlH}
+            borderRadius="lg"
           />
 
           {/* Checkout */}
@@ -125,6 +132,10 @@ export default function Navbar() {
               variant="ghost"
               icon={<FiShoppingCart />}
               onClick={onOpen} // 👈 ABRE el drawer
+              h={controlH}
+              minH={controlH}
+              w={controlH}
+              borderRadius="lg"
             />
             {count > 0 && (
               <Badge
@@ -145,7 +156,15 @@ export default function Navbar() {
           {/* Cuenta */}
           {loading ? null : token ? (
             <Menu>
-              <MenuButton as={Button} variant="ghost">
+              <MenuButton
+                as={Button}
+                variant="ghost"
+                h={controlH}
+                minH={controlH}
+                borderRadius="lg"
+                px={{ base: 3, md: 4 }}
+                whiteSpace="nowrap"
+              >
                 {me?.name || me?.email}
                 <RoleBadge role={me?.role as any} />
               </MenuButton>
@@ -176,9 +195,28 @@ export default function Navbar() {
             </Menu>
           ) : (
             <>
-              <Button as={RouterLink} to="/login" colorScheme="teal">
+              <Button
+                as={RouterLink}
+                to="/login"
+                colorScheme="teal"
+                size="sm"
+                h={controlH}
+                minH={controlH}
+                px={{ base: 3, md: 4 }}
+                display={{ base: 'none', md: 'inline-flex' }}
+              >
                 Ingresar
               </Button>
+              <IconButton
+                aria-label="Ingresar"
+                icon={<span style={{ fontWeight: 700 }}>⇥</span>} // reemplazá por un ícono de login
+                as={RouterLink}
+                to="/login"
+                size="sm"
+                variant="solid"
+                colorScheme="teal"
+                display={{ base: 'inline-flex', md: 'none' }} // ícono solo en mobile
+              />
             </>
           )}
         </HStack>
