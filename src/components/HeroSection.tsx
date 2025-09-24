@@ -35,7 +35,6 @@ export default function HeroSection() {
 
   return (
     <Box
-      bgGradient={bgGradient}
       py={{ base: 8, md: 14 }}
       borderBottomWidth="1px"
       borderColor={borderColor}
