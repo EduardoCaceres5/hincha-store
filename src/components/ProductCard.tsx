@@ -1,4 +1,5 @@
 import { useCart } from '@/hooks/useCart'
+import { cldUrl } from '@/utils/cdn'
 import { formatGs } from '@/utils/format'
 import {
   AspectRatio,
@@ -24,7 +25,7 @@ export type Product = {
   price: number
   size?: string | null
   condition?: string | null
-  imageUrl: string
+  imageUrl: string // puede ser secure_url o public_id
   createdAt: string
 }
 
@@ -32,6 +33,14 @@ export default function ProductCard({ product }: { product: Product }) {
   const toast = useToast()
   const { add } = useCart()
   const { id, title, price, size, condition, imageUrl } = product
+
+  // Miniatura cuadrada optimizada
+  const thumb = cldUrl(imageUrl, {
+    w: 600,
+    h: 600,
+    crop: 'fill',
+    gravity: 'auto',
+  })
 
   return (
     <LinkBox
@@ -44,10 +53,11 @@ export default function ProductCard({ product }: { product: Product }) {
     >
       <AspectRatio ratio={1}>
         <Image
-          src={imageUrl}
+          src={thumb}
           alt={title}
           objectFit="cover"
-          fallbackSrc="https://via.placeholder.com/600x600?text=Producto"
+          loading="lazy"
+          fallbackSrc="/placeholder-product.svg"
         />
       </AspectRatio>
 
@@ -88,8 +98,11 @@ export default function ProductCard({ product }: { product: Product }) {
             size="sm"
             w="full"
             onClick={(e) => {
-              e.preventDefault() // no navegar al detalle
-              add({ id, title, price, imageUrl, size: size ?? undefined }, 1)
+              e.preventDefault()
+              add(
+                { id, title, price, imageUrl: thumb, size: size ?? undefined },
+                1,
+              )
               toast({
                 title: 'Agregado al carrito',
                 description: `${title} fue añadido.`,
