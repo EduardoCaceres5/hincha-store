@@ -137,7 +137,7 @@ export default function AppFooter() {
               Hincha Store • v{__APP_VERSION__}
             </Text>
             <Text fontSize="sm" color={muted}>
-              Desarrrollador por Zanka®
+              Powered by Zanka®
             </Text>
           </Stack>
         </Box>
