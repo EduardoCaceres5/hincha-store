@@ -42,17 +42,11 @@ function SectionHeader({ title, to }: { title: string; to?: string }) {
 
 export default function Home() {
   const nav = useNavigate()
-  const [q, setQ] = useState('')
   const [loadingNew, setLoadingNew] = useState(true)
   const [loadingTrend, setLoadingTrend] = useState(true)
   const [news, setNews] = useState<Product[]>([])
   const [trends, setTrends] = useState<Product[]>([])
 
-  // Sugerencias rápidas (chips)
-  const quickTags = useMemo(
-    () => ['Albirroja', 'Boca', 'Real Madrid', 'Libertad', 'Inter', 'Retro'],
-    [],
-  )
   const categories = useMemo(
     () => ['Camisetas', 'Shorts', 'Entrenamiento', 'Accesorios'],
     [],

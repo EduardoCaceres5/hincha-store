@@ -10,15 +10,23 @@ import {
   InputLeftElement,
   useColorModeValue as mode,
   Stack,
+  Tag,
   Text,
+  Wrap,
+  WrapItem,
 } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FiPlusCircle, FiSearch } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 export default function HeroSection() {
   const nav = useNavigate()
   const [q, setQ] = useState('')
+
+  const quickTags = useMemo(
+    () => ['Albirroja', 'Boca', 'Real Madrid', 'Libertad', 'Inter', 'Retro'],
+    [],
+  )
 
   const borderColor = mode('gray.100', 'whiteAlpha.200')
   const subtitleColor = mode('gray.600', 'gray.300')
@@ -73,6 +81,24 @@ export default function HeroSection() {
               }}
             />
           </InputGroup>
+
+          <Wrap spacing={2} justify="center">
+            {quickTags.map((t) => (
+              <WrapItem key={t}>
+                <Tag
+                  size="md"
+                  variant="subtle"
+                  colorScheme="teal"
+                  cursor="pointer"
+                  onClick={() =>
+                    nav(`/catalogo?search=${encodeURIComponent(t)}`)
+                  }
+                >
+                  {t}
+                </Tag>
+              </WrapItem>
+            ))}
+          </Wrap>
 
           <HStack spacing={3} pt={2}>
             <Button
