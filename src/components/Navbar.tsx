@@ -169,26 +169,12 @@ export default function Navbar() {
                 <RoleBadge role={me?.role as any} />
               </MenuButton>
               <MenuList>
-                <MenuItem as={RouterLink} to="/mis-ordenes">
-                  Mis órdenes
-                </MenuItem>
-                {(me?.role === 'seller' || me?.role === 'admin') && (
+                {me?.role === 'user' && (
                   <>
-                    <MenuItem as={RouterLink} to="/dashboard">
-                      Dashboard
-                    </MenuItem>
-                    <MenuItem as={RouterLink} to="/vendedor/productos">
-                      Mis productos
-                    </MenuItem>
-                    <MenuItem as={RouterLink} to="/vendedor/ordenes">
-                      Órdenes (Vendedor)
+                    <MenuItem as={RouterLink} to="/mis-ordenes">
+                      Mis pedidos
                     </MenuItem>
                   </>
-                )}
-                {me?.role === 'admin' && (
-                  <MenuItem as={RouterLink} to="/admin/ordenes">
-                    Órdenes (Admin)
-                  </MenuItem>
                 )}
                 <MenuItem onClick={logout}>Salir</MenuItem>
               </MenuList>
