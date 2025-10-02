@@ -1,69 +1,48 @@
-# React + TypeScript + Vite
+# Hincha Store — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Marketplace para hinchas: descubrí, publicá y comprá camisetas y accesorios.  
+Frontend en **React + Vite + Chakra UI**, conectado al backend `hincha-api`.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+- **Catálogo** con filtros/orden: nuevos ingresos, tendencias.
+- **Detalle de producto** con variantes (talles) y precio.
+- **Carrito** con persistencia local.
+- **Publicar producto** con carga de imagen (drag & drop), validaciones (Zod) y barra de progreso.
+- **Soporte de personalización** (opcional): nombre/número y parches por producto.
+- **Imágenes optimizadas** con Cloudinary (`f_auto`, `q_auto`, `w/h`).
+- **Dark mode** (automático y con toggle).
+- **Footer** con versión de la app (inyectada desde `package.json`).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🧱 Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **React 18/19**, **Vite**.
+- **Chakra UI** (UI + dark mode).
+- **React Router**.
+- **Axios** (cliente HTTP).
+- **Zod + React Hook Form** (formularios y validación).
+- **Cloudinary** (imágenes).
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## ✅ Requisitos
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Node.js ≥ 18 (recomendado 20+).
+- pnpm (o npm/yarn). El repo usa pnpm.
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🔧 Configuración de entorno
+
+Crea un archivo `.env` en la raíz:
+
+```bash
+# URL del backend (Next.js API)
+VITE_API_BASE_URL=https://hincha-api.vercel.app
+
+# Cloudinary (solo el "cloud name", NO keys)
+VITE_CLOUDINARY_CLOUD_NAME=tu_cloud_name
