@@ -245,7 +245,7 @@ export default function DashboardProducts() {
                 <Th>Título</Th>
                 <Th isNumeric>Precio</Th>
                 <Th>Talle</Th>
-                <Th>Condición</Th>
+                <Th>Tipo</Th>
                 <Th></Th>
               </Tr>
             </Thead>

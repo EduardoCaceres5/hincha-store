@@ -1,116 +1,134 @@
-import api from '@/services/api'
+import { getMyOrders, type OrderListItem } from '@/services/orders'
+import { formatGs } from '@/utils/format'
 import {
-  Badge,
   Box,
   Button,
+  Heading,
   HStack,
-  Input,
-  Select,
-  Stack,
+  Spinner,
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
+  useToast,
 } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
+import { Link as RouterLink } from 'react-router-dom'
 
-type OrderRow = {
-  id: string
-  name: string
-  phone: string
-  status: 'pending' | 'paid' | 'canceled'
-  subtotal: number
-  createdAt: string
-}
-
-export default function AdminOrders() {
-  const [items, setItems] = useState<OrderRow[]>([])
+export default function Orders() {
+  const [data, setData] = useState<{
+    items: OrderListItem[]
+    page: number
+    limit: number
+    total: number
+  } | null>(null)
   const [page, setPage] = useState(1)
-  const [status, setStatus] = useState<string>('')
-  const [search, setSearch] = useState('')
-
-  async function load() {
-    const { data } = await api.get('/api/admin/orders', {
-      params: { page, status, search },
-    })
-    setItems(data.items || [])
-  }
+  const [loading, setLoading] = useState(true)
+  const toast = useToast()
 
   useEffect(() => {
-    load()
-  }, [page, status])
+    let cancel = false
+    setLoading(true)
+    ;(async () => {
+      try {
+        const d = await getMyOrders(page, 10)
+        if (!cancel) setData(d)
+      } catch {
+        toast({
+          title: 'No se pudieron cargar tus órdenes',
+          status: 'error',
+          isClosable: true,
+        })
+      } finally {
+        if (!cancel) setLoading(false)
+      }
+    })()
+    return () => {
+      cancel = true
+    }
+  }, [page, toast])
+
+  if (loading)
+    return (
+      <HStack justify="center" py={10}>
+        <Spinner />
+      </HStack>
+    )
+
+  if (!data || data.total === 0) {
+    return (
+      <Box>
+        <Heading size="lg" mb={4}>
+          Pedidos
+        </Heading>
+        <Text color="gray.600">Aún no tenés pedidos.</Text>
+      </Box>
+    )
+  }
+
+  const totalPages = Math.max(1, Math.ceil(data.total / data.limit))
 
   return (
     <Box>
-      <HStack spacing={3} mb={4} align="center" wrap="wrap">
-        <Input
-          placeholder="Buscar por cliente"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Select
-          placeholder="Estado"
-          w="200px"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-        >
-          <option value="pending">Pendiente</option>
-          <option value="paid">Pagado</option>
-          <option value="canceled">Cancelado</option>
-        </Select>
-        <Button
-          onClick={() => {
-            setPage(1)
-            load()
-          }}
-        >
-          Buscar
-        </Button>
-      </HStack>
-
-      <Table size="sm">
+      <Heading size="lg" mb={4}>
+        Pedidos
+      </Heading>
+      <Table size="sm" variant="simple">
         <Thead>
           <Tr>
-            <Th>Pedido</Th>
-            <Th>Cliente</Th>
+            <Th>Orden</Th>
             <Th>Fecha</Th>
             <Th>Estado</Th>
+            <Th isNumeric>Items</Th>
             <Th isNumeric>Total</Th>
+            <Th></Th>
           </Tr>
         </Thead>
         <Tbody>
-          {items.map((o) => (
+          {data.items.map((o) => (
             <Tr key={o.id}>
-              <Td>{o.id}</Td>
-              <Td>{o.name}</Td>
+              <Td>{o.id.slice(0, 8)}…</Td>
               <Td>{new Date(o.createdAt).toLocaleString('es-PY')}</Td>
+              <Td>{o.status}</Td>
+              <Td isNumeric>{o._count.items}</Td>
+              <Td isNumeric>{formatGs(o.subtotal)}</Td>
               <Td>
-                <Badge
-                  colorScheme={
-                    o.status === 'paid'
-                      ? 'green'
-                      : o.status === 'pending'
-                        ? 'yellow'
-                        : 'red'
-                  }
+                <Button
+                  as={RouterLink}
+                  to={`/admin/pedido/${o.id}`}
+                  size="sm"
+                  variant="outline"
+                  colorScheme="teal"
                 >
-                  {o.status}
-                </Badge>
+                  Ver
+                </Button>
               </Td>
-              <Td isNumeric>{o.subtotal.toLocaleString('es-PY')}</Td>
             </Tr>
           ))}
         </Tbody>
       </Table>
 
-      <Stack direction="row" justify="flex-end" mt={4}>
-        <Button onClick={() => setPage((p) => Math.max(1, p - 1))}>
+      <HStack justify="center" mt={6}>
+        <Button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          isDisabled={page === 1}
+        >
           Anterior
         </Button>
-        <Button onClick={() => setPage((p) => p + 1)}>Siguiente</Button>
-      </Stack>
+        <Text>
+          {' '}
+          Página {data.page} de {totalPages}{' '}
+        </Text>
+        <Button
+          onClick={() => setPage((p) => (p < totalPages ? p + 1 : p))}
+          isDisabled={page >= totalPages}
+        >
+          Siguiente
+        </Button>
+      </HStack>
     </Box>
   )
 }

@@ -17,9 +17,9 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useEffect, useState } from 'react' // 👈 AÑADIDO useEffect
 import { useForm } from 'react-hook-form'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -35,7 +35,7 @@ export default function Login() {
   const toast = useToast()
   const nav = useNavigate()
   const location = useLocation() as any
-  const { setToken } = useAuth()
+  const { setToken, token, me } = useAuth() // 👈 LEEMOS token y me
 
   const {
     register,
@@ -47,6 +47,13 @@ export default function Login() {
     defaultValues: { remember: true },
   })
 
+  // 👇 Si ya está logueado y es admin, salir del login hacia /admin
+  useEffect(() => {
+    if (token && me?.role === 'admin') {
+      nav('/admin', { replace: true })
+    }
+  }, [token, me, nav])
+
   const onSubmit = async (data: FormData) => {
     setLoading(true)
     try {
@@ -55,15 +62,34 @@ export default function Login() {
         email,
         password,
       })
-      setToken(resp.accessToken, remember)
+
+      // Guarda el token (localStorage o sessionStorage según "remember")
+      setToken(resp.accessToken, !!remember)
+
+      // Intenta obtener el perfil/rol inmediatamente
+      let role: string | undefined = resp?.user?.role
+      if (!role) {
+        try {
+          const meResp = await api.get('/api/me')
+          role = meResp?.data?.role
+        } catch {
+          // si falla /api/me, seguimos con la ruta por defecto
+        }
+      }
+
       toast({
         title: 'Bienvenido',
         status: 'success',
         duration: 2500,
         isClosable: true,
       })
-      const to = location.state?.from ?? '/dashboard'
-      nav(to, { replace: true })
+
+      if (role === 'admin') {
+        nav('/admin', { replace: true })
+      } else {
+        const to = location.state?.from ?? '/dashboard'
+        nav(to, { replace: true })
+      }
     } catch (e: any) {
       const msg =
         e?.response?.data?.error === 'INVALID_CREDENTIALS'
@@ -130,10 +156,6 @@ export default function Login() {
           isDisabled={!isValid}
         >
           Entrar
-        </Button>
-
-        <Button as={Link} to="/register" variant="link">
-          Crear cuenta
         </Button>
       </Stack>
     </Box>

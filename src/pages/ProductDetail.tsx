@@ -1,48 +1,103 @@
 import ProductGrid from '@/components/ProductGrid'
 import { useCart } from '@/hooks/useCart'
-import { type Product } from '@/hooks/useProducts'
 import { getProduct, getRelatedProducts } from '@/services/products'
+import type { Product, ProductVariant } from '@/types/product'
 import { formatGs } from '@/utils/format'
 import {
   AspectRatio,
   Badge,
   Box,
   Button,
+  ButtonGroup,
+  Card,
+  CardBody,
+  Collapse,
   Divider,
   FormControl,
+  FormHelperText,
   FormLabel,
-  Heading,
   HStack,
+  Heading,
+  Icon,
   Image,
-  Select,
+  Input,
+  InputGroup,
+  InputRightElement,
+  NumberInput,
+  NumberInputField,
+  SimpleGrid,
   Skeleton,
   Stack,
+  Switch,
   Tag,
+  TagLabel,
   Text,
+  Tooltip,
+  Wrap,
+  WrapItem,
+  useColorModeValue,
   useToast,
 } from '@chakra-ui/react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link as RouterLink, useParams } from 'react-router-dom'
-
-type Variant = {
-  id: string
-  name: string
-  stock: number
-  price?: number | null
-}
+import { FiCheck, FiShield, FiTruck } from 'react-icons/fi'
+import { ImBlocked } from 'react-icons/im'
+import { useParams } from 'react-router-dom'
 
 type ProductWithVariants = Product & {
-  variants?: Variant[]
+  variants?: ProductVariant[]
+  images?: string[]
 }
+
+const PATCHES = [
+  { id: 'liga', label: 'Parche de Liga', price: 15000 },
+  { id: 'campeon', label: 'Parche Campeón', price: 20000 },
+  { id: 'respect', label: 'Parche RESPECT', price: 10000 },
+]
+
+const CUSTOMIZATION_FEE = 0
+const SIZES = ['P', 'M', 'G', 'XG'] as const
+
+const CUSTOMIZATION_ENABLED = import.meta.env.VITE_ENABLE_PRODUCT_CUSTOMIZATION === 'true'
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const { add } = useCart()
   const toast = useToast()
+
   const [product, setProduct] = useState<ProductWithVariants | null>(null)
   const [related, setRelated] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [variantId, setVariantId] = useState<string>('')
+  const [selectedSize, setSelectedSize] = useState<string>('')
+
+  const [customized, setCustomized] = useState(false)
+  const [customName, setCustomName] = useState('')
+  const [customNumber, setCustomNumber] = useState<string>('') // string para input
+  const [selectedPatches, setSelectedPatches] = useState<string[]>([])
+
+  const PATCH_PREVIEW_SIZE = { base: '72px', md: '96px' }
+  const PATCH_PREVIEW_PAD = { base: '6px', md: '8px' }
+
+  const hasLeaguePatch = useMemo(
+    () => selectedPatches.includes('liga'),
+    [selectedPatches],
+  )
+  const setHasLeaguePatch = (on: boolean) => {
+    setSelectedPatches((prev) => {
+      const without = prev.filter((p) => p !== 'liga')
+      return on ? [...without, 'liga'] : without
+    })
+  }
+
+  const leaguePatchUrl = useMemo(() => '/parches/argentina.png', [])
+
+  const activeBg = useColorModeValue('teal.50', 'teal.900')
+  const activeBorder = useColorModeValue('teal.400', 'teal.300')
+  const inactiveBorder = useColorModeValue('gray.200', 'gray.600')
+  const activeText = useColorModeValue('teal.700', 'teal.200')
+  const inactiveText = useColorModeValue('gray.700', 'gray.300')
 
   useEffect(() => {
     let cancel = false
@@ -52,16 +107,21 @@ export default function ProductDetail() {
       try {
         const p = await getProduct(id)
         if (cancel) return
-        setProduct(p as ProductWithVariants)
-        // preseleccionar la primera variante disponible si hay
-        const first = (p as ProductWithVariants).variants?.[0]?.id ?? ''
-        setVariantId(first)
+
+        const prod = p as unknown as ProductWithVariants
+        setProduct(prod)
+
+        const firstVar = prod.ProductVariant?.[0]?.id ?? ''
+        setVariantId(firstVar)
+
+        setSelectedSize(((prod as any).size as string) ?? '')
+
+        setSelectedImage(prod.imageUrl)
 
         const r = await getRelatedProducts({
           id: p.id,
-          // estos dos pueden venir de p si tu API los devuelve, o de tu estado si los tenés
-          size: (p as any).size,
-          condition: (p as any).condition,
+          kit: (p as any).kit,
+          quality: (p as any).quality,
         })
         if (!cancel) setRelated(r)
       } catch {
@@ -82,155 +142,508 @@ export default function ProductDetail() {
   }, [id, toast])
 
   const selectedVariant = useMemo(
-    () => product?.variants?.find((v) => v.id === variantId),
+    () =>
+      product?.ProductVariant?.find((v: { id: string }) => v.id === variantId),
     [product, variantId],
   )
 
   const unitPrice = useMemo(
-    () => selectedVariant?.price ?? product?.price ?? 0,
+    () => selectedVariant?.price ?? product?.basePrice ?? 0,
     [selectedVariant, product],
   )
 
+  const patchesExtra = useMemo(() => {
+    return selectedPatches.reduce((sum, pid) => {
+      const p = PATCHES.find((x) => x.id === pid)
+      return sum + (p?.price ?? 0)
+    }, 0)
+  }, [selectedPatches])
+
+  const customizationExtra = useMemo(() => {
+    if (!customized) return 0
+    return CUSTOMIZATION_FEE
+  }, [customized])
+
+  const finalPrice = useMemo(
+    () => unitPrice + patchesExtra + customizationExtra,
+    [unitPrice, patchesExtra, customizationExtra],
+  )
+
+  const canAdd =
+    !!product &&
+    (!product.ProductVariant?.length ||
+      (selectedVariant && selectedVariant.stock > 0)) &&
+    (!customized ||
+      customNumber === '' ||
+      (!isNaN(Number(customNumber)) &&
+        Number(customNumber) >= 0 &&
+        Number(customNumber) <= 99))
+
   if (loading) {
     return (
-      <Stack direction={{ base: 'column', md: 'row' }} spacing={6}>
-        <Skeleton w={{ base: '100%', md: '50%' }} h="420px" />
-        <Stack flex="1" spacing={4}>
-          <Skeleton h="28px" w="70%" />
-          <Skeleton h="20px" w="40%" />
-          <Skeleton h="20px" w="50%" />
-          <Skeleton h="48px" w="180px" />
-        </Stack>
-      </Stack>
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
+        <Skeleton w="100%" h="520px" rounded="2xl" />
+        <Skeleton w="100%" h="520px" rounded="2xl" />
+      </SimpleGrid>
     )
   }
 
   if (!product) return <Text color="red.500">Producto no encontrado.</Text>
 
+  const images = (product.images && product.images.length > 0
+    ? product.images
+    : [product.imageUrl]) ?? [product.imageUrl]
+
   return (
     <Box>
-      <Stack direction={{ base: 'column', md: 'row' }} spacing={8}>
-        <Box flex="1">
+      {/* Encabezado simple tipo breadcrumb */}
+      <HStack spacing={2} mb={3} color="whiteAlpha.600" fontSize="sm">
+        <Text>Catálogo</Text>
+        <Text>›</Text>
+        <Text noOfLines={1}>{product.title}</Text>
+      </HStack>
+
+      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8}>
+        {/* Galería */}
+        <Stack>
           <AspectRatio ratio={1}>
             <Image
-              src={product.imageUrl}
+              src={selectedImage ?? product.imageUrl}
               alt={product.title}
               objectFit="cover"
-              borderRadius="2xl"
+              rounded="2xl"
+              border="1px solid"
+              borderColor="whiteAlpha.200"
             />
           </AspectRatio>
-        </Box>
 
-        <Stack flex="1" spacing={4}>
-          <Heading size="lg" noOfLines={2}>
-            {product.title}
-          </Heading>
-
-          <Text fontSize="2xl" fontWeight="bold">
-            {formatGs(unitPrice)}
-          </Text>
-
-          {/* Etiquetas legacy (si aún existen en tu modelo base) */}
-          <HStack>
-            {product.size && <Tag>{product.size}</Tag>}
-            {product.condition && (
-              <Tag
-                colorScheme={product.condition === 'Nuevo' ? 'green' : 'orange'}
-              >
-                {product.condition}
-              </Tag>
-            )}
-          </HStack>
-
-          {/* Variantes (talles) */}
-          {product.variants && product.variants.length > 0 && (
-            <FormControl maxW="sm">
-              <FormLabel>Talle / Variante</FormLabel>
-              <HStack spacing={4} align="center">
-                <Select
-                  value={variantId}
-                  onChange={(e) => setVariantId(e.target.value)}
-                >
-                  {product.variants.map((v) => (
-                    <option key={v.id} value={v.id} disabled={v.stock <= 0}>
-                      {v.name} {v.stock <= 0 ? '(Sin stock)' : ''}
-                    </option>
-                  ))}
-                </Select>
-
-                {selectedVariant && (
-                  <Badge
-                    colorScheme={selectedVariant.stock > 0 ? 'green' : 'red'}
-                  >
-                    {selectedVariant.stock > 0
-                      ? `Stock: ${selectedVariant.stock}`
-                      : 'Sin stock'}
-                  </Badge>
-                )}
-              </HStack>
-            </FormControl>
+          {images.length > 1 && (
+            <HStack spacing={3}>
+              {images.map((src, i) => (
+                <AspectRatio key={i} ratio={1} w="88px">
+                  <Image
+                    src={src}
+                    alt={`vista ${i + 1}`}
+                    objectFit="cover"
+                    rounded="xl"
+                    border="2px solid"
+                    borderColor={
+                      (selectedImage ?? product.imageUrl) === src
+                        ? 'teal.400'
+                        : 'whiteAlpha.300'
+                    }
+                    cursor="pointer"
+                    onClick={() => setSelectedImage(src)}
+                    _hover={{ borderColor: 'teal.300' }}
+                  />
+                </AspectRatio>
+              ))}
+            </HStack>
           )}
-
-          {product.description && (
-            <Text whiteSpace="pre-wrap">{product.description}</Text>
-          )}
-
-          <HStack pt={2} spacing={3}>
-            <Button
-              colorScheme="teal"
-              isDisabled={
-                (product.variants &&
-                  product.variants.length > 0 &&
-                  !selectedVariant) ||
-                (selectedVariant && selectedVariant.stock <= 0)
-              }
-              onClick={() => {
-                // Si tu CartItem ya soporta variantId, descomenta y ajusta:
-                // add(
-                //   {
-                //     id: product.id,            // productId
-                //     variantId: selectedVariant?.id!, // 👈 requiere tipo en tu CartItem
-                //     title: `${product.title}${selectedVariant ? ` (${selectedVariant.name})` : ''}`,
-                //     price: unitPrice,
-                //     imageUrl: product.imageUrl,
-                //     size: selectedVariant?.name,
-                //   },
-                //   1
-                // )
-
-                // Versión compatible con tu hook actual (sin variantId):
-                add(
-                  {
-                    id: product.id,
-                    title: `${product.title}${selectedVariant ? ` (${selectedVariant.name})` : ''}`,
-                    price: unitPrice,
-                    imageUrl: product.imageUrl,
-                    size: selectedVariant?.name ?? product.size ?? undefined,
-                  },
-                  1,
-                )
-
-                toast({
-                  title: 'Agregado al carrito',
-                  status: 'success',
-                  duration: 2000,
-                  isClosable: true,
-                })
-              }}
-            >
-              Agregar al carrito
-            </Button>
-
-            <Button variant="outline" as={RouterLink} to="/publicar">
-              Vender algo similar
-            </Button>
-          </HStack>
-
-          <Text fontSize="sm" color="gray.500">
-            Publicado: {new Date(product.createdAt).toLocaleDateString('es-PY')}
-          </Text>
         </Stack>
-      </Stack>
+
+        {/* Panel derecho */}
+        <Card
+          variant="outline"
+          bg="whiteAlpha.50"
+          borderColor="whiteAlpha.200"
+          rounded="2xl"
+          shadow="lg"
+          position="relative"
+        >
+          <CardBody>
+            {/* Contenido con padding extra abajo para no quedar tapado por el footer sticky */}
+            <Box pb="132px">
+              {/* Título y badge */}
+              <HStack align="baseline" justify="space-between" mb={1}>
+                <HStack spacing={3}>
+                  <Heading size="lg" noOfLines={1}>
+                    {product.title}
+                  </Heading>
+                  {product.kit && (
+                    <Badge colorScheme="purple" rounded="md" px={2}>
+                      {product.kit}
+                    </Badge>
+                  )}
+                </HStack>
+              </HStack>
+
+              {/* Precio */}
+              <Text fontSize="3xl" fontWeight="bold" mt={2} mb={4}>
+                {formatGs(finalPrice)}
+              </Text>
+
+              {/* Tamaño - chips (solo si NO hay variantes) */}
+              {!(
+                product.ProductVariant && product.ProductVariant.length > 0
+              ) && (
+                <Box mb={4}>
+                  <Text fontWeight="semibold" mb={2}>
+                    Tamaño
+                  </Text>
+                  <Wrap>
+                    {SIZES.map((t) => (
+                      <WrapItem key={t}>
+                        <Tag
+                          size="lg"
+                          variant={selectedSize === t ? 'solid' : 'subtle'}
+                          colorScheme={selectedSize === t ? 'teal' : 'gray'}
+                          rounded="full"
+                          px={4}
+                          py={2}
+                          cursor="pointer"
+                          onClick={() => setSelectedSize(t)}
+                          transition="all .2s ease"
+                        >
+                          <TagLabel>{t}</TagLabel>
+                        </Tag>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                </Box>
+              )}
+
+              {/* Variantes */}
+              {product.ProductVariant && product.ProductVariant.length > 0 && (
+                <Box mb={4}>
+                  <Text fontWeight="semibold" mb={2}>
+                    Talle
+                  </Text>
+                  <Wrap>
+                    {product.ProductVariant.map((v) => {
+                      const isActive = v.id === variantId
+                      const isOut = v.stock <= 0
+                      return (
+                        <WrapItem key={v.id}>
+                          <Tag
+                            size="lg"
+                            variant={isActive ? 'solid' : 'subtle'}
+                            colorScheme={
+                              isOut ? 'gray' : isActive ? 'teal' : 'gray'
+                            }
+                            rounded="full"
+                            px={4}
+                            py={2}
+                            opacity={isOut ? 0.5 : 1}
+                            cursor={isOut ? 'not-allowed' : 'pointer'}
+                            onClick={() => !isOut && setVariantId(v.id)}
+                            transition="all .2s ease"
+                          >
+                            <TagLabel>
+                              {v.name} {isOut ? '(Sin stock)' : ''}
+                            </TagLabel>
+                          </Tag>
+                        </WrapItem>
+                      )
+                    })}
+                  </Wrap>
+                </Box>
+              )}
+
+              <Divider my={4} />
+
+              {/* Personalización */}
+              {CUSTOMIZATION_ENABLED && (
+              <Box>
+                <HStack justify="space-between" mb={2}>
+                  <Text fontWeight="semibold">Personalización</Text>
+                  <HStack>
+                    <Text fontSize="sm" color="whiteAlpha.700">
+                      No
+                    </Text>
+                    <Switch
+                      isChecked={customized}
+                      onChange={(e) => setCustomized(e.target.checked)}
+                      colorScheme="teal"
+                    />
+                    <Text fontSize="sm" color="whiteAlpha.700">
+                      Sí
+                    </Text>
+                  </HStack>
+                </HStack>
+
+                <Collapse in={customized} animateOpacity>
+                  <Stack gap={3} maxW="sm">
+                    <FormControl>
+                      <FormLabel>Nombre</FormLabel>
+                      <InputGroup>
+                        <Input
+                          placeholder="NOMBRE"
+                          value={customName}
+                          onChange={(e) =>
+                            setCustomName(e.target.value.toUpperCase())
+                          }
+                          maxLength={12}
+                        />
+                        <InputRightElement
+                          fontSize="xs"
+                          color="whiteAlpha.600"
+                          pointerEvents="none"
+                        >
+                          {customName.length}/12
+                        </InputRightElement>
+                      </InputGroup>
+                      <FormHelperText>
+                        Máx. 12 caracteres. Solo letras.
+                      </FormHelperText>
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel>Número</FormLabel>
+                      <NumberInput
+                        min={0}
+                        max={99}
+                        value={customNumber}
+                        onChange={(value) => setCustomNumber(value)}
+                      >
+                        <NumberInputField placeholder="0–99" />
+                      </NumberInput>
+                      <FormHelperText>
+                        Números permitidos: 0 a 99.
+                      </FormHelperText>
+                    </FormControl>
+
+                    {/* Parche de liga como cards */}
+                    <FormControl>
+                      <FormLabel>Parche de liga</FormLabel>
+                      <ButtonGroup isAttached w="full">
+                        {/* SIN PARCHE */}
+                        <Button
+                          flex={1}
+                          size="lg"
+                          height="auto"
+                          py={3}
+                          px={4}
+                          variant={hasLeaguePatch ? 'outline' : 'solid'}
+                          borderWidth={hasLeaguePatch ? '1px' : '2px'}
+                          borderColor={
+                            hasLeaguePatch ? inactiveBorder : activeBorder
+                          }
+                          boxShadow={
+                            hasLeaguePatch
+                              ? 'none'
+                              : '0 0 0 3px rgba(56,178,172,0.2)'
+                          }
+                          bg={!hasLeaguePatch ? activeBg : undefined}
+                          onClick={() => setHasLeaguePatch(false)}
+                        >
+                          <Stack spacing={2} align="center">
+                            <Text
+                              fontWeight="semibold"
+                              color={
+                                !hasLeaguePatch ? activeText : inactiveText
+                              }
+                            >
+                              Sin parche
+                            </Text>
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              w={PATCH_PREVIEW_SIZE}
+                              h={PATCH_PREVIEW_SIZE}
+                              bg="white"
+                              rounded="md"
+                              border="1px solid"
+                              borderColor="blackAlpha.200"
+                              transition="transform .15s ease"
+                              _hover={{ transform: 'scale(1.03)' }}
+                            >
+                              <Icon
+                                as={ImBlocked}
+                                boxSize={{ base: 8, md: 10 }}
+                                color="blackAlpha.500"
+                              />
+                            </Box>
+                          </Stack>
+                        </Button>
+
+                        {/* CON PARCHE */}
+                        <Button
+                          flex={1}
+                          size="lg"
+                          height="auto"
+                          py={3}
+                          px={4}
+                          colorScheme="teal"
+                          variant={hasLeaguePatch ? 'solid' : 'outline'}
+                          borderWidth={hasLeaguePatch ? '2px' : '1px'}
+                          borderColor={
+                            hasLeaguePatch ? activeBorder : inactiveBorder
+                          }
+                          boxShadow={
+                            hasLeaguePatch
+                              ? '0 0 0 3px rgba(56,178,172,0.2)'
+                              : 'none'
+                          }
+                          bg={hasLeaguePatch ? activeBg : undefined}
+                          onClick={() => setHasLeaguePatch(true)}
+                          position="relative"
+                        >
+                          {hasLeaguePatch && (
+                            <Box
+                              position="absolute"
+                              top={2}
+                              right={2}
+                              bg="teal.400"
+                              color="white"
+                              borderRadius="full"
+                              w="18px"
+                              h="18px"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              boxShadow="sm"
+                            >
+                              <FiCheck size={12} />
+                            </Box>
+                          )}
+
+                          <Stack spacing={2} align="center">
+                            <Text
+                              fontWeight="semibold"
+                              color={hasLeaguePatch ? activeText : inactiveText}
+                            >
+                              Con parche
+                            </Text>
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              w={PATCH_PREVIEW_SIZE}
+                              h={PATCH_PREVIEW_SIZE}
+                              bg="white"
+                              rounded="md"
+                              p={PATCH_PREVIEW_PAD}
+                              border="1px solid"
+                              borderColor="blackAlpha.200"
+                              transition="transform .15s ease"
+                              _hover={{ transform: 'scale(1.03)' }}
+                            >
+                              <Image
+                                src={leaguePatchUrl}
+                                alt="Liga"
+                                objectFit="contain"
+                                maxW="100%"
+                                maxH="100%"
+                                draggable={false}
+                              />
+                            </Box>
+                          </Stack>
+                        </Button>
+                      </ButtonGroup>
+                    </FormControl>
+                  </Stack>
+                </Collapse>
+              </Box>
+              )}
+            </Box>
+
+            {/* FOOTER STICKY DENTRO DE LA CARD */}
+            <Box
+              position="sticky"
+              bottom="0"
+              zIndex={1}
+              mx={-6} // igual al padding horizontal del CardBody
+              px={6}
+              pt={3}
+              pb="calc(env(safe-area-inset-bottom, 0px) + 12px)"
+            >
+              <Tooltip
+                label="Selecciona una talla"
+                isDisabled={!!selectedSize || !SIZES.length}
+              >
+                <Button
+                  colorScheme="teal"
+                  size="lg"
+                  w="full"
+                  isDisabled={
+                    !canAdd ||
+                    (product.ProductVariant &&
+                      product.ProductVariant.length > 0 &&
+                      !selectedVariant)
+                  }
+                  onClick={() => {
+                    const extrasLabel = [
+                      selectedSize || undefined,
+                      selectedVariant ? selectedVariant.name : undefined,
+                      customized && customName ? `N:${customName}` : undefined,
+                      customized && customNumber !== ''
+                        ? `#${customNumber}`
+                        : undefined,
+                      selectedPatches.length
+                        ? `Parches:${selectedPatches.length}`
+                        : undefined,
+                    ]
+                      .filter(Boolean)
+                      .join(' • ')
+
+                    const titleWithExtras = extrasLabel
+                      ? `${product.title} (${extrasLabel})`
+                      : product.title
+
+                    add(
+                      {
+                        id: product.id,
+                        variantId: selectedVariant?.id,
+                        title: titleWithExtras,
+                        price: finalPrice,
+                        imageUrl: product.imageUrl,
+                        size:
+                          (selectedSize ||
+                            selectedVariant?.name ||
+                            product.size) ??
+                          undefined,
+                        customName: customized
+                          ? customName || undefined
+                          : undefined,
+                        customNumber:
+                          customized && customNumber !== ''
+                            ? Number(customNumber)
+                            : undefined,
+                        patches: selectedPatches,
+                      } as any,
+                      1,
+                    )
+
+                    toast({
+                      title: 'Agregado al carrito',
+                      status: 'success',
+                      duration: 2000,
+                      isClosable: true,
+                    })
+                  }}
+                >
+                  Agregar al carrito
+                </Button>
+              </Tooltip>
+
+              <Divider my={6} />
+
+              {/* Trust signals + fecha (se quedan arriba del footer) */}
+              <Stack gap={3}>
+                <HStack
+                  spacing={6}
+                  color="whiteAlpha.700"
+                  fontSize="sm"
+                  justify="center"
+                >
+                  <HStack>
+                    <Icon as={FiShield} />
+                    <Text>Pago seguro</Text>
+                  </HStack>
+                  <HStack>
+                    <Icon as={FiTruck} />
+                    <Text>Entrega 24 – 48h</Text>
+                  </HStack>
+                </HStack>
+
+                <Divider />
+              </Stack>
+            </Box>
+          </CardBody>
+        </Card>
+      </SimpleGrid>
 
       <Divider my={10} />
 

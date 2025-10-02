@@ -11,6 +11,9 @@ export type CartItem = {
   qty: number
   variantId?: string | null
   option?: string | null
+  customName?: string
+  customNumber?: number
+  patches?: string[]
 }
 
 type CartCtx = {

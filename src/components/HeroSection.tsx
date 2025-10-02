@@ -16,7 +16,7 @@ import {
   WrapItem,
 } from '@chakra-ui/react'
 import { useMemo, useState } from 'react'
-import { FiPlusCircle, FiSearch } from 'react-icons/fi'
+import { FiSearch } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 export default function HeroSection() {
@@ -51,7 +51,7 @@ export default function HeroSection() {
 
           <Text color={subtitleColor} maxW="680px">
             Descubrí camisetas, shorts y equipos de tus clubes favoritos. Comprá
-            o vendé en minutos.
+            en minutos.
           </Text>
 
           <InputGroup maxW="640px">
@@ -102,18 +102,8 @@ export default function HeroSection() {
 
           <HStack spacing={3} pt={2}>
             <Button
-              leftIcon={<FiPlusCircle />}
+              leftIcon={<FiSearch />}
               colorScheme="teal"
-              onClick={() => nav('/publicar')}
-            >
-              Vender camiseta
-            </Button>
-
-            <Button
-              variant="outline"
-              colorScheme="teal"
-              borderColor={mode('teal.200', 'teal.500')}
-              _hover={{ bg: mode('teal.50', 'whiteAlpha.200') }}
               onClick={() => nav('/catalogo')}
             >
               Ver catálogo

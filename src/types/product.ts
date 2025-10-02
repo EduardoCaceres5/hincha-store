@@ -1,25 +1,40 @@
-export type Product = {
+// --- Enums ---
+export type KitType = 'HOME' | 'AWAY' | 'THIRD' | 'RETRO'
+export type ProductQuality = 'FAN' | 'PLAYER'
+
+// --- Variantes ---
+export interface ProductVariant {
   id: string
-  title: string
-  price: number
-  imageUrl: string
-  size?: string
-  condition?: 'Nuevo' | 'Usado' | string
-  description?: string
-  createdAt: string
+  productId: string
+  name: string // ej: "S", "M", "L", "Única"
+  sku?: string | null
+  stock: number
+  price?: number | null // override opcional de basePrice
+  imageUrl?: string | null
 }
 
-export type ProductVariant = {
-  id: string
-  option: string
-  price?: number | null
-  stock: number
-}
-export type ProductDetail = {
+// --- Producto ---
+export interface Product {
   id: string
   title: string
-  price: number
   description?: string | null
+
+  // Precios
+  basePrice: number
+  ProductVariant: ProductVariant[]
+
+  // Metadatos nuevos
+  seasonLabel?: string | null // ej: "2024/2025"
+  seasonStart?: number | null // ej: 2024
+  kit?: KitType | null // ej: HOME / AWAY / THIRD / RETRO
+  quality?: ProductQuality | null // FAN o PLAYER
+
+  // Imagen
   imageUrl: string
-  variants: ProductVariant[]
+  imagePublicId?: string | null
+
+  // Auditoría
+  ownerId: string
+  createdAt: string // ISO string (conviene tipar como string si llega vía API)
+  updatedAt: string
 }

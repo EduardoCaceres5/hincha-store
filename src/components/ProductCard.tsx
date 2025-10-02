@@ -1,4 +1,4 @@
-import { useCart } from '@/hooks/useCart'
+import type { Product } from '@/types/product'
 import { cldUrl } from '@/utils/cdn'
 import { formatGs } from '@/utils/format'
 import {
@@ -14,25 +14,13 @@ import {
   Stack,
   Tag,
   Text,
-  useToast,
 } from '@chakra-ui/react'
 import { FiShoppingCart } from 'react-icons/fi'
-import { Link as RouterLink } from 'react-router-dom'
-
-export type Product = {
-  id: string
-  title: string
-  price: number
-  size?: string | null
-  condition?: string | null
-  imageUrl: string // puede ser secure_url o public_id
-  createdAt: string
-}
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
 export default function ProductCard({ product }: { product: Product }) {
-  const toast = useToast()
-  const { add } = useCart()
-  const { id, title, price, size, condition, imageUrl } = product
+  const nav = useNavigate()
+  const { id, title, basePrice, size, type, imageUrl } = product
 
   // Miniatura cuadrada optimizada
   const thumb = cldUrl(imageUrl, {
@@ -71,7 +59,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
           <HStack justify="space-between" align="center">
             <Text fontSize="lg" fontWeight="bold">
-              {formatGs(price)}
+              {formatGs(basePrice)}
             </Text>
             <HStack spacing={2}>
               {size && (
@@ -79,12 +67,12 @@ export default function ProductCard({ product }: { product: Product }) {
                   {size}
                 </Tag>
               )}
-              {condition && (
+              {type && (
                 <Tag
                   size="sm"
-                  colorScheme={condition === 'Nuevo' ? 'green' : 'orange'}
+                  colorScheme={type === 'FAN' ? 'green' : 'orange'}
                 >
-                  {condition}
+                  {type}
                 </Tag>
               )}
             </HStack>
@@ -97,20 +85,7 @@ export default function ProductCard({ product }: { product: Product }) {
             colorScheme="teal"
             size="sm"
             w="full"
-            onClick={(e) => {
-              e.preventDefault()
-              add(
-                { id, title, price, imageUrl: thumb, size: size ?? undefined },
-                1,
-              )
-              toast({
-                title: 'Agregado al carrito',
-                description: `${title} fue añadido.`,
-                status: 'success',
-                duration: 2000,
-                isClosable: true,
-              })
-            }}
+            onClick={() => nav(`/producto/${id}`)}
           >
             Añadir
           </Button>

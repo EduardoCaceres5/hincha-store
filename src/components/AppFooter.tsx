@@ -52,7 +52,7 @@ export default function AppFooter() {
                 Hincha Store
               </Text>
               <Text fontSize="sm" color={muted}>
-                Mercado para hinchas. Comprá y vendé camisetas, shorts y más.
+                Mercado para hinchas. Comprá camisetas, shorts y más.
               </Text>
 
               {/* Social (se ve lindo en mobile también) */}
@@ -96,13 +96,7 @@ export default function AppFooter() {
               <Link as={RouterLink} to="/catalogo" color={muted}>
                 Catálogo
               </Link>
-              <Link as={RouterLink} to="/publicar" color={muted}>
-                Vender camiseta
-              </Link>
-              <Link as={RouterLink} to="/login" color={muted}>
-                Ingresar
-              </Link>
-              <Link as={RouterLink} to="/carrito" color={muted}>
+              <Link as={RouterLink} to="/checkout" color={muted}>
                 Carrito
               </Link>
             </Stack>

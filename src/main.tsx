@@ -22,15 +22,13 @@ const routerExtraProps = {
 } as any
 
 ReactDOM.createRoot(rootEl).render(
-  <React.StrictMode>
-    <ChakraProvider theme={theme}>
-      <BrowserRouter {...routerExtraProps}>
-        <AuthProvider>
-          <CartProvider>
-            <App />
-          </CartProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </ChakraProvider>
-  </React.StrictMode>,
+  <ChakraProvider theme={theme}>
+    <BrowserRouter {...routerExtraProps}>
+      <AuthProvider>
+        <CartProvider>
+          <App />
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </ChakraProvider>,
 )

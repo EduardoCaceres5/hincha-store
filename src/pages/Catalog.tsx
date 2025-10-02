@@ -1,13 +1,13 @@
 import EmptyState from '@/components/EmptyState'
 import ProductGrid from '@/components/ProductGrid'
-import { type CatalogFilters, useProducts } from '@/hooks/useProducts'
+import { useProducts, type CatalogFilters } from '@/hooks/useProducts'
 import { SearchIcon } from '@chakra-ui/icons'
 import {
   Box,
   Button,
   Center,
-  Heading,
   HStack,
+  Heading,
   Input,
   Select,
   Spinner,
@@ -129,13 +129,13 @@ export default function Catalog() {
           <option value="XL">XL</option>
         </Select>
         <Select
-          placeholder="Condición"
+          placeholder="Calidad"
           defaultValue={filters.condition}
           onChange={(e) => onCondChange(e.target.value)}
           maxW="40"
         >
-          <option value="Nuevo">Nuevo</option>
-          <option value="Usado">Usado</option>
+          <option value="Fan">Fan</option>
+          <option value="Jugador">Versión Jugador</option>
         </Select>
         <Select
           defaultValue={filters.sort}

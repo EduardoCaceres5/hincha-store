@@ -5,7 +5,7 @@ export async function createOrder(payload: {
   phone: string
   address: string
   notes?: string
-  items: { id: string; qty: number }[]
+  items: { productId: string; variantId: string | undefined; qty: number }[]
 }) {
   const { data } = await api.post<{ id: string }>('/api/orders', payload)
   return data

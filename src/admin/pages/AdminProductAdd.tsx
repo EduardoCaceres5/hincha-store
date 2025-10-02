@@ -39,17 +39,41 @@ import {
 } from 'react-icons/fi'
 import { z } from 'zod'
 
-/** ====== Schema ====== */
+/** ====== Schema (actualizado con nuevos campos) ====== */
 const schema = z.object({
   title: z.string().min(3, 'Mínimo 3 caracteres'),
-  price: z.coerce.number().min(1000, 'Mínimo Gs. 1.000'),
-  size: z.string().optional(),
-  condition: z.enum(['Nuevo', 'Usado']).optional(),
+
+  basePrice: z.coerce.number().int().min(1000, 'Mínimo Gs. 1.000'),
+
+  size: z.string().optional(), // seguimos creando 1 variante con este nombre
+  kit: z.enum(['HOME', 'AWAY', 'THIRD', 'RETRO']).optional(),
+  quality: z.enum(['FAN', 'PLAYER'], {
+    required_error: 'Seleccioná la calidad',
+  }),
+
+  seasonLabel: z.string().max(20, 'Máx. 20 caracteres').optional(),
+  seasonStart: z.coerce
+    .number()
+    .int()
+    .min(1900, 'Año inválido')
+    .max(2100, 'Año inválido')
+    .optional(),
+
   description: z.string().max(500, 'Máx. 500 caracteres').optional(),
+
+  // Usamos z.any + refine para evitar fallas de instanceof cuando el ref de RHF se encadena
   image: z
-    .instanceof(FileList)
-    .refine((f) => f?.length === 1, 'Subí una imagen'),
+    .any()
+    .refine(
+      (v) =>
+        v &&
+        typeof v === 'object' &&
+        'length' in v &&
+        (v as FileList).length === 1,
+      'Subí una imagen',
+    ),
 })
+
 type FormInput = z.input<typeof schema>
 type FormData = z.output<typeof schema>
 
@@ -69,6 +93,9 @@ export default function PublishProduct() {
     reset,
   } = useForm<FormInput, any, FormData>({ resolver: zodResolver(schema) })
 
+  // Registro encadenado para el input file
+  const imageReg = register('image')
+
   useEffect(
     () => () => {
       if (preview) URL.revokeObjectURL(preview)
@@ -82,15 +109,27 @@ export default function PublishProduct() {
     try {
       const fd = new FormData()
       fd.append('title', data.title)
-      fd.append('price', String(data.price))
-      if (data.size) fd.append('size', data.size)
-      if (data.condition) fd.append('condition', data.condition)
+      fd.append('basePrice', String(data.basePrice))
       if (data.description) fd.append('description', data.description)
-      fd.append('image', data.image[0])
 
-      // Al menos una variante por defecto (talle o “Única”)
+      // Nuevos metadatos
+      if (data.kit) fd.append('kit', data.kit)
+      fd.append('quality', data.quality) // requerido
+      if (data.seasonLabel) fd.append('seasonLabel', data.seasonLabel)
+      if (typeof data.seasonStart === 'number') {
+        fd.append('seasonStart', String(data.seasonStart))
+      }
+
+      // Imagen
+      fd.append('image', (data.image as FileList)[0])
+
+      // Variante por defecto (usa basePrice en backend si price=null/undefined)
       const variants = [
-        { name: data.size ?? 'Única', stock: 1, price: data.price },
+        {
+          name: data.size ?? 'Única',
+          stock: 1,
+          price: null as unknown as number | null,
+        },
       ]
       fd.append('variants', JSON.stringify(variants))
 
@@ -101,7 +140,9 @@ export default function PublishProduct() {
       })
 
       reset()
+      if (preview) URL.revokeObjectURL(preview)
       setPreview(null)
+
       toast({
         title: 'Producto publicado',
         description: 'Tu producto ya está visible en el catálogo.',
@@ -135,18 +176,19 @@ export default function PublishProduct() {
   const dropBorder = mode('gray.300', 'whiteAlpha.300')
   const dropHover = mode('teal.100', 'teal.900')
 
-  /** ====== Dropzone handlers ====== */
+  /** ====== Handlers ====== */
   const onPickFile = () => fileInputRef.current?.click()
+
   const onFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const f = e.target.files?.[0]
     if (preview) URL.revokeObjectURL(preview)
     setPreview(f ? URL.createObjectURL(f) : null)
   }
+
   const onDrop: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault()
-    if (!e.dataTransfer.files?.length) return
-    const file = e.dataTransfer.files[0]
-    // construir FileList vía DataTransfer para setValue
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
     const dt = new DataTransfer()
     dt.items.add(file)
     const list = dt.files
@@ -189,15 +231,15 @@ export default function PublishProduct() {
                       <Icon as={FiTag} color="gray.400" />
                     </InputLeftElement>
                     <Input
-                      placeholder="Camiseta versión jugador"
+                      placeholder="Camiseta Real Madrid"
                       {...register('title')}
                     />
                   </InputGroup>
                   <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
                 </FormControl>
 
-                <FormControl isInvalid={!!errors.price} isRequired>
-                  <FormLabel>Precio (Gs)</FormLabel>
+                <FormControl isInvalid={!!errors.basePrice} isRequired>
+                  <FormLabel>Precio base (Gs)</FormLabel>
                   <InputGroup>
                     <InputLeftElement pointerEvents="none">
                       <Icon as={FiDollarSign} color="gray.400" />
@@ -207,10 +249,12 @@ export default function PublishProduct() {
                       min={0}
                       step="1000"
                       placeholder="250000"
-                      {...register('price', { valueAsNumber: true })}
+                      {...register('basePrice', { valueAsNumber: true })}
                     />
                   </InputGroup>
-                  <FormErrorMessage>{errors.price?.message}</FormErrorMessage>
+                  <FormErrorMessage>
+                    {errors.basePrice?.message}
+                  </FormErrorMessage>
                 </FormControl>
 
                 <HStack spacing={4}>
@@ -220,12 +264,15 @@ export default function PublishProduct() {
                       <InputLeftElement pointerEvents="none">
                         <Icon as={FaShirt} color="gray.400" />
                       </InputLeftElement>
-                      <Input placeholder="M / L / XL" {...register('size')} />
+                      <Input
+                        placeholder="P / M / G / XG"
+                        {...register('size')}
+                      />
                     </InputGroup>
                   </FormControl>
 
-                  <FormControl>
-                    <FormLabel>Condición</FormLabel>
+                  <FormControl isInvalid={!!errors.quality} isRequired>
+                    <FormLabel>Calidad</FormLabel>
                     <Box position="relative">
                       <Icon
                         as={FiAward}
@@ -238,14 +285,44 @@ export default function PublishProduct() {
                       />
                       <Select
                         placeholder="Seleccionar"
-                        pl="40px" // espacio para el icono
+                        pl="40px"
                         size="md"
-                        {...register('condition')}
+                        {...register('quality')}
                       >
-                        <option value="Nuevo">Nuevo</option>
-                        <option value="Usado">Usado</option>
+                        <option value="FAN">Fan</option>
+                        <option value="PLAYER">Versión jugador</option>
                       </Select>
                     </Box>
+                    <FormErrorMessage>
+                      {errors.quality?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </HStack>
+
+                <HStack spacing={4}>
+                  <FormControl>
+                    <FormLabel>Equipación</FormLabel>
+                    <Select placeholder="Seleccionar" {...register('kit')}>
+                      <option value="HOME">Titular</option>
+                      <option value="AWAY">Alternativa</option>
+                      <option value="THIRD">Tercera</option>
+                      <option value="RETRO">Retro</option>
+                    </Select>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Temporada</FormLabel>
+                    <HStack>
+                      <Input
+                        placeholder="2024/25"
+                        {...register('seasonLabel')}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="2024"
+                        {...register('seasonStart', { valueAsNumber: true })}
+                      />
+                    </HStack>
                   </FormControl>
                 </HStack>
 
@@ -292,15 +369,20 @@ export default function PublishProduct() {
                           hacé clic para seleccionar
                         </Box>
                       </Text>
+
                       <Input
                         type="file"
                         accept="image/*"
-                        {...register('image')}
+                        // Registro encadenado: mantenemos el ref de RHF y el nuestro
+                        {...imageReg}
                         ref={(el) => {
-                          // mantener ref de RHF + ref local para click programático
+                          imageReg.ref(el)
                           if (el) fileInputRef.current = el
                         }}
-                        onChange={onFileChange}
+                        onChange={(e) => {
+                          imageReg.onChange(e) // RHF necesita esto para tener FileList
+                          onFileChange(e) // nuestro preview
+                        }}
                         display="none"
                       />
                     </Stack>

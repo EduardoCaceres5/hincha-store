@@ -1,16 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import api from '@/services/api'
-
-export type Product = {
-  id: string
-  title: string
-  price: number
-  size?: string | null
-  condition?: string | null
-  description?: string | null
-  imageUrl: string
-  createdAt: string
-}
+import type { Product } from '@/types/product'
 
 export type PageResp<T> = {
   items: T[]

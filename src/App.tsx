@@ -1,7 +1,10 @@
 import AdminLayout from '@/admin/AdminLayout'
 import AdminDashboard from '@/admin/pages/AdminDashboard'
 import AdminOrders from '@/admin/pages/AdminOrders'
+import AdminOrdersDetaill from '@/admin/pages/AdminOrdersDetaill'
+import PublishProduct from '@/admin/pages/AdminProductAdd'
 import AdminProducts from '@/admin/pages/AdminProducts'
+import EditProduct from '@/admin/pages/AdminProductsEdit'
 import AdminUsers from '@/admin/pages/AdminUsers'
 import AppFooter from '@/components/AppFooter'
 import RequireRole from '@/components/RequireRole'
@@ -42,8 +45,11 @@ export default function App() {
           >
             <Route index element={<AdminDashboard />} />
             <Route path="pedidos" element={<AdminOrders />} />
+            <Route path="pedido/:id" element={<AdminOrdersDetaill />} />
             <Route path="productos" element={<AdminProducts />} />
+            <Route path="productos/agregar" element={<PublishProduct />} />
             <Route path="usuarios" element={<AdminUsers />} />
+            <Route path="editar/:id" element={<EditProduct />} />
           </Route>
 
           {/* fallback */}

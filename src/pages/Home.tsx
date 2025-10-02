@@ -2,6 +2,7 @@ import HeroSection from '@/components/HeroSection'
 import HomePromoBanner from '@/components/HomePromoBanner'
 import ProductGrid from '@/components/ProductGrid'
 import api from '@/services/api'
+import type { Product } from '@/types/product'
 import {
   Box,
   Button,
@@ -16,16 +17,6 @@ import {
 } from '@chakra-ui/react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
-
-type Product = {
-  id: string
-  title: string
-  price: number
-  imageUrl: string
-  size?: string | null
-  condition?: string | null
-  createdAt: string
-}
 
 function SectionHeader({ title, to }: { title: string; to?: string }) {
   return (

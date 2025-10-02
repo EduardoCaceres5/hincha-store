@@ -176,6 +176,19 @@ export default function Navbar() {
                     </MenuItem>
                   </>
                 )}
+                {me?.role === 'admin' && (
+                  <>
+                    <MenuItem as={RouterLink} to="/admin">
+                      Dashboard
+                    </MenuItem>
+                    <MenuItem as={RouterLink} to="/admin/productos">
+                      Productos
+                    </MenuItem>
+                    <MenuItem as={RouterLink} to="/admin/Pedidos">
+                      Pedidos
+                    </MenuItem>
+                  </>
+                )}
                 <MenuItem onClick={logout}>Salir</MenuItem>
               </MenuList>
             </Menu>

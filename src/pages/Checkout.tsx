@@ -58,8 +58,8 @@ export default function Checkout() {
       const payload = {
         ...data,
         items: items.map((i) => ({
-          id: i.id,
-          variantId: i.variantId || undefined,
+          productId: i.id,
+          variantId: i.size || undefined,
           qty: i.qty,
         })),
       }
@@ -150,7 +150,7 @@ export default function Checkout() {
 
           {/* Resumen */}
           <Box
-            w={{ base: '100%', md: '380px' }}
+            w={{ base: '100%', md: '480px' }}
             border="1px"
             borderColor="gray.200"
             p={5}
