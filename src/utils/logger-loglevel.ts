@@ -1,6 +1,7 @@
 // Ejemplo de implementación con loglevel
 // Para usar: pnpm add loglevel
 
+/*
 import log from 'loglevel'
 
 // Configurar nivel según entorno
@@ -36,6 +37,7 @@ export const logger = {
   debug: log.debug,
   trace: log.trace,
 }
+*/
 
 /* Uso:
 import { logger } from '@/utils/logger-loglevel'

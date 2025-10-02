@@ -399,7 +399,9 @@ export default function PublishProduct() {
                       maxH="280px"
                     />
                   )}
-                  <FormErrorMessage>{errors.image?.message}</FormErrorMessage>
+                  <FormErrorMessage>
+                    {errors.image?.message as string}
+                  </FormErrorMessage>
                 </FormControl>
 
                 <Divider />

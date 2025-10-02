@@ -270,9 +270,9 @@ export default function DashboardProducts() {
                       />
                     </Td>
                     <Td>{p.title}</Td>
-                    <Td isNumeric>{p.price.toLocaleString('es-PY')}</Td>
-                    <Td>{p.size || '-'}</Td>
-                    <Td>{p.condition || '-'}</Td>
+                    <Td isNumeric>{p.basePrice.toLocaleString('es-PY')}</Td>
+                    <Td>{p.ProductVariant?.[0]?.name || '-'}</Td>
+                    <Td>{p.quality || '-'}</Td>
                     <Td>
                       <HStack>
                         <IconButton
