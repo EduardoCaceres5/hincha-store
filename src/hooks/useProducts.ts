@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import api from '@/services/api'
 import type { Product } from '@/types/product'
 
+export type { Product }
+
 export type PageResp<T> = {
   items: T[]
   page: number

@@ -20,7 +20,11 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
 export default function ProductCard({ product }: { product: Product }) {
   const nav = useNavigate()
-  const { id, title, basePrice, size, type, imageUrl } = product
+  const { id, title, basePrice, imageUrl, quality, ProductVariant } = product
+
+  // Obtener el primer talle disponible si existe
+  const firstVariant = ProductVariant?.[0]
+  const size = firstVariant?.name !== 'Única' ? firstVariant?.name : undefined
 
   // Miniatura cuadrada optimizada
   const thumb = cldUrl(imageUrl, {
@@ -67,12 +71,12 @@ export default function ProductCard({ product }: { product: Product }) {
                   {size}
                 </Tag>
               )}
-              {type && (
+              {quality && (
                 <Tag
                   size="sm"
-                  colorScheme={type === 'FAN' ? 'green' : 'orange'}
+                  colorScheme={quality === 'FAN' ? 'green' : 'orange'}
                 >
-                  {type}
+                  {quality}
                 </Tag>
               )}
             </HStack>

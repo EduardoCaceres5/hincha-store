@@ -590,10 +590,7 @@ export default function ProductDetail() {
                         price: finalPrice,
                         imageUrl: product.imageUrl,
                         size:
-                          (selectedSize ||
-                            selectedVariant?.name ||
-                            product.size) ??
-                          undefined,
+                          (selectedSize || selectedVariant?.name) ?? undefined,
                         customName: customized
                           ? customName || undefined
                           : undefined,

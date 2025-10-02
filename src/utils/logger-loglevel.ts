@@ -12,10 +12,14 @@ if (import.meta.env.MODE === 'production') {
 
 // Personalizar formato
 const originalFactory = log.methodFactory
-log.methodFactory = function (methodName, logLevel, loggerName) {
+log.methodFactory = function (
+  methodName: string,
+  logLevel: log.LogLevelNumbers,
+  loggerName: string | symbol,
+) {
   const rawMethod = originalFactory(methodName, logLevel, loggerName)
 
-  return function (...args) {
+  return function (...args: any[]) {
     const timestamp = new Date().toLocaleTimeString('es-PY')
     const prefix = `[${timestamp}] ${methodName.toUpperCase()}`
     rawMethod(prefix, ...args)
