@@ -70,13 +70,13 @@ function Sidebar({ onSelect }: { onSelect?: () => void }) {
         Hincha Admin
       </Text>
 
-      <SidebarLink to="/admin" icon={FiHome} exact>
+      <SidebarLink to="/admin" icon={FiHome} exact onClick={onSelect}>
         Dashboard
       </SidebarLink>
-      <SidebarLink to="/admin/productos" icon={FiPackage}>
+      <SidebarLink to="/admin/productos" icon={FiPackage} onClick={onSelect}>
         Productos
       </SidebarLink>
-      <SidebarLink to="/admin/pedidos" icon={FiShoppingBag}>
+      <SidebarLink to="/admin/pedidos" icon={FiShoppingBag} onClick={onSelect}>
         Pedidos
       </SidebarLink>
     </Box>
