@@ -47,7 +47,9 @@ const schema = z.object({
 
   size: z.string().optional(), // seguimos creando 1 variante con este nombre
   kit: z.enum(['HOME', 'AWAY', 'THIRD', 'RETRO']).optional(),
-  quality: z.enum(['FAN', 'PLAYER'], 'Seleccioná la calidad'),
+  quality: z.enum(['FAN', 'PLAYER_VERSION'], {
+    message: 'Seleccioná la calidad',
+  }),
 
   seasonLabel: z.string().max(20, 'Máx. 20 caracteres').optional(),
   seasonStart: z.coerce
