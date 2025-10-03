@@ -42,8 +42,57 @@ export default function HeroSection() {
       py={{ base: 8, md: 14 }}
       borderBottomWidth="1px"
       borderColor={borderColor}
+      position="relative"
+      overflow="hidden"
     >
-      <Container maxW="container.xl">
+      {/* Pattern de fondo con iconos de camisetas */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        opacity={mode(0.08, 0.05)}
+        pointerEvents="none"
+      >
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="shirt-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+              {/* Camiseta de fútbol con cuello en V */}
+              <g transform="translate(25, 15)">
+                {/* Mangas */}
+                <path
+                  d="M5 8 L0 12 L0 22 L5 20 L10 18 L10 10 Z"
+                  fill="currentColor"
+                  opacity="0.5"
+                />
+                <path
+                  d="M45 8 L50 12 L50 22 L45 20 L40 18 L40 10 Z"
+                  fill="currentColor"
+                  opacity="0.5"
+                />
+                {/* Cuerpo principal */}
+                <path
+                  d="M10 10 L15 5 L20 3 L25 3 L30 3 L35 5 L40 10 L40 55 L10 55 Z"
+                  fill="currentColor"
+                  opacity="0.6"
+                />
+                {/* Cuello en V */}
+                <path
+                  d="M20 3 L25 15 L30 3"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  fill="none"
+                  opacity="0.7"
+                />
+              </g>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#shirt-pattern)" />
+        </svg>
+      </Box>
+
+      <Container maxW="container.xl" position="relative" zIndex={1}>
         <Stack spacing={5} align="center" textAlign="center">
           <Heading size={{ base: 'lg', md: 'xl' }}>
             Camisetas de hinchas, para hinchas

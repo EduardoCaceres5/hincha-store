@@ -1,6 +1,7 @@
 export function getNavLinks(role?: 'user' | 'seller' | 'admin') {
   const base = [
     { to: '/catalogo', label: 'Catálogo' },
+    { to: '/nosotros', label: 'Nosotros' },
     { to: '/publicar', label: 'Publicar', roles: [] as const },
     {
       to: '/dashboard',

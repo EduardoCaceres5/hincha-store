@@ -13,6 +13,7 @@ import CheckoutSuccess from '@/pages/CheckoutSucess'
 import Login from '@/pages/Login'
 import ProductDetail from '@/pages/ProductDetail'
 import Register from '@/pages/Register'
+import About from '@/pages/About'
 import { Container } from '@chakra-ui/react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/producto/:id" element={<ProductDetail />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/nosotros" element={<About />} />
 
           {/* admin */}
           <Route

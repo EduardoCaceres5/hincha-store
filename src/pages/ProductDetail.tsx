@@ -98,6 +98,13 @@ export default function ProductDetail() {
   const inactiveBorder = useColorModeValue('gray.200', 'gray.600')
   const activeText = useColorModeValue('teal.700', 'teal.200')
   const inactiveText = useColorModeValue('gray.700', 'gray.300')
+  const breadcrumbColor = useColorModeValue('gray.600', 'whiteAlpha.600')
+  const cardBg = useColorModeValue('white', 'whiteAlpha.50')
+  const cardBorder = useColorModeValue('gray.200', 'whiteAlpha.200')
+  const imageBorder = useColorModeValue('gray.200', 'whiteAlpha.200')
+  const trustTextColor = useColorModeValue('gray.600', 'whiteAlpha.700')
+  const helperTextColor = useColorModeValue('gray.500', 'whiteAlpha.700')
+  const switchLabelColor = useColorModeValue('gray.600', 'whiteAlpha.700')
 
   useEffect(() => {
     let cancel = false
@@ -197,7 +204,7 @@ export default function ProductDetail() {
   return (
     <Box>
       {/* Encabezado simple tipo breadcrumb */}
-      <HStack spacing={2} mb={3} color="whiteAlpha.600" fontSize="sm">
+      <HStack spacing={2} mb={3} color={breadcrumbColor} fontSize="sm">
         <Text>Catálogo</Text>
         <Text>›</Text>
         <Text noOfLines={1}>{product.title}</Text>
@@ -213,7 +220,7 @@ export default function ProductDetail() {
               objectFit="cover"
               rounded="2xl"
               border="1px solid"
-              borderColor="whiteAlpha.200"
+              borderColor={imageBorder}
             />
           </AspectRatio>
 
@@ -245,8 +252,8 @@ export default function ProductDetail() {
         {/* Panel derecho */}
         <Card
           variant="outline"
-          bg="whiteAlpha.50"
-          borderColor="whiteAlpha.200"
+          bg={cardBg}
+          borderColor={cardBorder}
           rounded="2xl"
           shadow="lg"
           position="relative"
@@ -340,7 +347,7 @@ export default function ProductDetail() {
                 </Box>
               )}
 
-              <Divider my={4} />
+              <Divider my={4} borderColor={cardBorder} />
 
               {/* Personalización */}
               {CUSTOMIZATION_ENABLED && (
@@ -348,7 +355,7 @@ export default function ProductDetail() {
                 <HStack justify="space-between" mb={2}>
                   <Text fontWeight="semibold">Personalización</Text>
                   <HStack>
-                    <Text fontSize="sm" color="whiteAlpha.700">
+                    <Text fontSize="sm" color={switchLabelColor}>
                       No
                     </Text>
                     <Switch
@@ -356,7 +363,7 @@ export default function ProductDetail() {
                       onChange={(e) => setCustomized(e.target.checked)}
                       colorScheme="teal"
                     />
-                    <Text fontSize="sm" color="whiteAlpha.700">
+                    <Text fontSize="sm" color={switchLabelColor}>
                       Sí
                     </Text>
                   </HStack>
@@ -377,13 +384,13 @@ export default function ProductDetail() {
                         />
                         <InputRightElement
                           fontSize="xs"
-                          color="whiteAlpha.600"
+                          color={helperTextColor}
                           pointerEvents="none"
                         >
                           {customName.length}/12
                         </InputRightElement>
                       </InputGroup>
-                      <FormHelperText>
+                      <FormHelperText color={helperTextColor}>
                         Máx. 12 caracteres. Solo letras.
                       </FormHelperText>
                     </FormControl>
@@ -398,7 +405,7 @@ export default function ProductDetail() {
                       >
                         <NumberInputField placeholder="0–99" />
                       </NumberInput>
-                      <FormHelperText>
+                      <FormHelperText color={helperTextColor}>
                         Números permitidos: 0 a 99.
                       </FormHelperText>
                     </FormControl>
@@ -615,13 +622,13 @@ export default function ProductDetail() {
                 </Button>
               </Tooltip>
 
-              <Divider my={6} />
+              <Divider my={6} borderColor={cardBorder} />
 
               {/* Trust signals + fecha (se quedan arriba del footer) */}
               <Stack gap={3}>
                 <HStack
                   spacing={6}
-                  color="whiteAlpha.700"
+                  color={trustTextColor}
                   fontSize="sm"
                   justify="center"
                 >
@@ -635,14 +642,14 @@ export default function ProductDetail() {
                   </HStack>
                 </HStack>
 
-                <Divider />
+                <Divider borderColor={cardBorder} />
               </Stack>
             </Box>
           </CardBody>
         </Card>
       </SimpleGrid>
 
-      <Divider my={10} />
+      <Divider my={10} borderColor={cardBorder} />
 
       <Heading size="md" mb={4}>
         Productos relacionados

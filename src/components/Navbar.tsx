@@ -11,20 +11,24 @@ import {
   Link as ChakraLink,
   Flex,
   HStack,
+  Icon,
   IconButton,
   Image,
   Menu,
   MenuButton,
+  MenuDivider,
   MenuItem,
   MenuList,
   Show,
   Spacer,
+  Text,
+  VStack,
   useBreakpointValue,
   useColorMode,
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react'
-import { FiMoon, FiShoppingCart, FiSun } from 'react-icons/fi'
+import { FiMoon, FiShoppingCart, FiSun, FiUser, FiPackage, FiGrid, FiBox, FiLogOut } from 'react-icons/fi'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import MobileMenu from './Navbarmobile'
 
@@ -162,62 +166,73 @@ export default function Navbar() {
                 h={controlH}
                 minH={controlH}
                 borderRadius="lg"
-                px={{ base: 3, md: 4 }}
-                whiteSpace="nowrap"
+                px={{ base: 2, md: 3 }}
+                bg={useColorModeValue('gray.100', 'gray.700')}
+                _hover={{
+                  bg: useColorModeValue('gray.200', 'gray.600'),
+                }}
+                _active={{
+                  bg: useColorModeValue('gray.200', 'gray.600'),
+                }}
               >
-                {me?.name || me?.email}
-                <RoleBadge role={me?.role as any} />
+                <HStack spacing={2}>
+                  <Icon
+                    as={FiUser}
+                    boxSize={{ base: 4, md: 5 }}
+                    color={useColorModeValue('gray.600', 'gray.400')}
+                  />
+                  <Show above="md">
+                    <VStack spacing={0} align="flex-start">
+                      <Text
+                        fontSize="sm"
+                        fontWeight="medium"
+                        lineHeight="1.2"
+                        noOfLines={1}
+                        maxW="150px"
+                      >
+                        {me?.name || me?.email}
+                      </Text>
+                      <Box ml={-2}>
+                        <RoleBadge role={me?.role as any} size="sm" />
+                      </Box>
+                    </VStack>
+                  </Show>
+                  <Show below="md">
+                    <RoleBadge role={me?.role as any} size="xs" />
+                  </Show>
+                </HStack>
               </MenuButton>
-              <MenuList>
+              <MenuList py={2} minW="220px">
                 {me?.role === 'user' && (
                   <>
-                    <MenuItem as={RouterLink} to="/mis-ordenes">
+                    <MenuItem as={RouterLink} to="/mis-ordenes" icon={<Icon as={FiPackage} />}>
                       Mis pedidos
                     </MenuItem>
                   </>
                 )}
+
                 {me?.role === 'admin' && (
                   <>
-                    <MenuItem as={RouterLink} to="/admin">
+                    <MenuItem as={RouterLink} to="/admin" icon={<Icon as={FiGrid} />}>
                       Dashboard
                     </MenuItem>
-                    <MenuItem as={RouterLink} to="/admin/productos">
+                    <MenuItem as={RouterLink} to="/admin/productos" icon={<Icon as={FiBox} />}>
                       Productos
                     </MenuItem>
-                    <MenuItem as={RouterLink} to="/admin/Pedidos">
+                    <MenuItem as={RouterLink} to="/admin/Pedidos" icon={<Icon as={FiPackage} />}>
                       Pedidos
                     </MenuItem>
                   </>
                 )}
-                <MenuItem onClick={logout}>Salir</MenuItem>
+
+                {(me?.role === 'user' || me?.role === 'admin') && <MenuDivider />}
+
+                <MenuItem onClick={logout} icon={<Icon as={FiLogOut} />} color="red.500">
+                  Salir
+                </MenuItem>
               </MenuList>
             </Menu>
-          ) : (
-            <>
-              <Button
-                as={RouterLink}
-                to="/login"
-                colorScheme="teal"
-                size="sm"
-                h={controlH}
-                minH={controlH}
-                px={{ base: 3, md: 4 }}
-                display={{ base: 'none', md: 'inline-flex' }}
-              >
-                Ingresar
-              </Button>
-              <IconButton
-                aria-label="Ingresar"
-                icon={<span style={{ fontWeight: 700 }}>⇥</span>} // reemplazá por un ícono de login
-                as={RouterLink}
-                to="/login"
-                size="sm"
-                variant="solid"
-                colorScheme="teal"
-                display={{ base: 'inline-flex', md: 'none' }} // ícono solo en mobile
-              />
-            </>
-          )}
+          ) : null}
         </HStack>
       </Flex>
 

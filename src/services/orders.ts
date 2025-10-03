@@ -5,6 +5,8 @@ export async function createOrder(payload: {
   phone: string
   address: string
   notes?: string
+  lat?: number
+  lng?: number
   items: { productId: string; variantId: string | undefined; qty: number }[]
 }) {
   const { data } = await api.post<{ id: string }>('/api/orders', payload)
@@ -36,6 +38,8 @@ export type OrderDetail = {
   phone: string
   address: string
   notes?: string | null
+  lat?: number | null
+  lng?: number | null
   subtotal: number
   createdAt: string
   items: {

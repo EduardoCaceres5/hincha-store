@@ -12,19 +12,53 @@ import {
   SimpleGrid,
   Skeleton,
   Tag,
+  Text,
   Wrap,
   WrapItem,
+  useColorModeValue as mode,
+  Icon,
+  VStack,
 } from '@chakra-ui/react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { FiTrendingUp, FiPackage, FiArrowRight } from 'react-icons/fi'
 
-function SectionHeader({ title, to }: { title: string; to?: string }) {
+function SectionHeader({
+  title,
+  to,
+  icon,
+  subtitle
+}: {
+  title: string
+  to?: string
+  icon?: React.ElementType
+  subtitle?: string
+}) {
+  const subtitleColor = mode('gray.600', 'gray.400')
+
   return (
-    <HStack justify="space-between" mb={3}>
-      <Heading size="md">{title}</Heading>
+    <HStack justify="space-between" mb={6} align="start">
+      <VStack align="start" spacing={1}>
+        <HStack spacing={2}>
+          {icon && <Icon as={icon} boxSize={5} color="teal.500" />}
+          <Heading size="lg" fontWeight="bold">{title}</Heading>
+        </HStack>
+        {subtitle && (
+          <Text color={subtitleColor} fontSize="sm">
+            {subtitle}
+          </Text>
+        )}
+      </VStack>
       {to && (
-        <Button as={RouterLink} to={to} variant="link" colorScheme="teal">
-          Ver todo →
+        <Button
+          as={RouterLink}
+          to={to}
+          variant="ghost"
+          colorScheme="teal"
+          rightIcon={<FiArrowRight />}
+          size="sm"
+        >
+          Ver todo
         </Button>
       )}
     </HStack>
@@ -38,8 +72,18 @@ export default function Home() {
   const [news, setNews] = useState<Product[]>([])
   const [trends, setTrends] = useState<Product[]>([])
 
+  const bgColor = mode('gray.50', 'gray.900')
+  const categoryBg = mode('white', 'gray.800')
+  const categoryHoverBg = mode('gray.100', 'gray.700')
+  const categoryBorder = mode('gray.200', 'gray.700')
+
   const categories = useMemo(
-    () => ['Camisetas', 'Shorts', 'Entrenamiento', 'Accesorios'],
+    () => [
+      { name: 'Camisetas', emoji: '👕' },
+      { name: 'Shorts', emoji: '🩳' },
+      { name: 'Entrenamiento', emoji: '⚽' },
+      { name: 'Accesorios', emoji: '🎒' },
+    ],
     [],
   )
 
@@ -78,29 +122,52 @@ export default function Home() {
       {/* Hero */}
       <HeroSection />
 
-      {/* Categorías / filtros rápidos */}
-      <Container maxW="container.xl" py={6}>
-        <Wrap spacing={3}>
-          {categories.map((c) => (
-            <WrapItem key={c}>
-              <Tag
-                size="lg"
-                colorScheme="gray"
-                variant="subtle"
-                cursor="pointer"
-                onClick={() => nav(`/catalogo?search=${encodeURIComponent(c)}`)}
-              >
-                {c}
-              </Tag>
-            </WrapItem>
-          ))}
-        </Wrap>
-      </Container>
+      {/* Categorías mejoradas */}
+      <Box bg={bgColor} py={8}>
+        <Container maxW="container.xl">
+          <VStack spacing={4} align="start">
+            <Heading size="md">Explorar por categoría</Heading>
+            <SimpleGrid
+              columns={{ base: 2, md: 4 }}
+              spacing={4}
+              w="full"
+            >
+              {categories.map((c) => (
+                <Box
+                  key={c.name}
+                  as="button"
+                  p={6}
+                  bg={categoryBg}
+                  borderRadius="xl"
+                  borderWidth="1px"
+                  borderColor={categoryBorder}
+                  _hover={{
+                    bg: categoryHoverBg,
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'lg',
+                  }}
+                  transition="all 0.2s"
+                  onClick={() => nav(`/catalogo?search=${encodeURIComponent(c.name)}`)}
+                >
+                  <VStack spacing={2}>
+                    <Text fontSize="3xl">{c.emoji}</Text>
+                    <Text fontWeight="semibold" fontSize="sm">
+                      {c.name}
+                    </Text>
+                  </VStack>
+                </Box>
+              ))}
+            </SimpleGrid>
+          </VStack>
+        </Container>
+      </Box>
 
       {/* Nuevos ingresos */}
-      <Container maxW="container.xl" py={4}>
+      <Container maxW="container.xl" py={12}>
         <SectionHeader
           title="Nuevos ingresos"
+          subtitle="Las últimas camisetas agregadas a la tienda"
+          icon={FiPackage}
           to="/catalogo?sort=createdAt:desc"
         />
         {loadingNew ? (
@@ -115,25 +182,30 @@ export default function Home() {
       </Container>
 
       {/* Tendencias */}
-      <Container maxW="container.xl" py={8}>
-        <SectionHeader title="Tendencias" to="/catalogo?sort=price:desc" />
-        {loadingTrend ? (
-          <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} height="320px" borderRadius="xl" />
-            ))}
-          </SimpleGrid>
-        ) : (
-          <ProductGrid products={trends} />
-        )}
-      </Container>
-
-      {/* CTA vendedor */}
-      <Box py={10} mt={6}>
-        <Container maxW="container.lg">
-          <HomePromoBanner />
+      <Box bg={bgColor} py={12}>
+        <Container maxW="container.xl">
+          <SectionHeader
+            title="Tendencias"
+            subtitle="Los productos más populares del momento"
+            icon={FiTrendingUp}
+            to="/catalogo?sort=price:desc"
+          />
+          {loadingTrend ? (
+            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} height="320px" borderRadius="xl" />
+              ))}
+            </SimpleGrid>
+          ) : (
+            <ProductGrid products={trends} />
+          )}
         </Container>
       </Box>
+
+      {/* CTA vendedor */}
+      <Container maxW="container.xl" py={12}>
+        <HomePromoBanner />
+      </Container>
     </Box>
   )
 }
