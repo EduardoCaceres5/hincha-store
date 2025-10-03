@@ -39,7 +39,7 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { useEffect, useMemo, useState } from 'react'
-import { FiCheck, FiShield, FiTruck } from 'react-icons/fi'
+import { FiCheck, FiChevronLeft, FiChevronRight, FiShield, FiTruck } from 'react-icons/fi'
 import { ImBlocked } from 'react-icons/im'
 import { useParams } from 'react-router-dom'
 
@@ -69,6 +69,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true)
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [variantId, setVariantId] = useState<string>('')
   const [selectedSize, setSelectedSize] = useState<string>('')
 
@@ -217,23 +218,85 @@ export default function ProductDetail() {
       </HStack>
 
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8}>
-        {/* Galería */}
+        {/* Galería - Carousel */}
         <Stack>
-          <AspectRatio ratio={1}>
-            <Image
-              src={selectedImage ?? product.imageUrl}
-              alt={product.title}
-              objectFit="cover"
-              rounded="2xl"
-              border="1px solid"
-              borderColor={imageBorder}
-            />
-          </AspectRatio>
+          <Box position="relative">
+            <AspectRatio ratio={1}>
+              <Image
+                src={images[currentImageIndex]}
+                alt={product.title}
+                objectFit="cover"
+                rounded="2xl"
+                border="1px solid"
+                borderColor={imageBorder}
+              />
+            </AspectRatio>
+
+            {images.length > 1 && (
+              <>
+                <Button
+                  position="absolute"
+                  left={2}
+                  top="50%"
+                  transform="translateY(-50%)"
+                  size="sm"
+                  colorScheme="blackAlpha"
+                  borderRadius="full"
+                  onClick={() =>
+                    setCurrentImageIndex((prev) =>
+                      prev === 0 ? images.length - 1 : prev - 1,
+                    )
+                  }
+                >
+                  <Icon as={FiChevronLeft} />
+                </Button>
+                <Button
+                  position="absolute"
+                  right={2}
+                  top="50%"
+                  transform="translateY(-50%)"
+                  size="sm"
+                  colorScheme="blackAlpha"
+                  borderRadius="full"
+                  onClick={() =>
+                    setCurrentImageIndex((prev) =>
+                      prev === images.length - 1 ? 0 : prev + 1,
+                    )
+                  }
+                >
+                  <Icon as={FiChevronRight} />
+                </Button>
+
+                {/* Indicadores */}
+                <HStack
+                  position="absolute"
+                  bottom={4}
+                  left="50%"
+                  transform="translateX(-50%)"
+                  spacing={2}
+                >
+                  {images.map((_, i) => (
+                    <Box
+                      key={i}
+                      w={2}
+                      h={2}
+                      borderRadius="full"
+                      bg={i === currentImageIndex ? 'white' : 'whiteAlpha.500'}
+                      cursor="pointer"
+                      onClick={() => setCurrentImageIndex(i)}
+                      transition="all 0.2s"
+                      _hover={{ bg: 'white' }}
+                    />
+                  ))}
+                </HStack>
+              </>
+            )}
+          </Box>
 
           {images.length > 1 && (
-            <HStack spacing={3}>
+            <HStack spacing={3} overflowX="auto">
               {images.map((src, i) => (
-                <AspectRatio key={i} ratio={1} w="88px">
+                <AspectRatio key={i} ratio={1} w="88px" flexShrink={0}>
                   <Image
                     src={src}
                     alt={`vista ${i + 1}`}
@@ -241,12 +304,10 @@ export default function ProductDetail() {
                     rounded="xl"
                     border="2px solid"
                     borderColor={
-                      (selectedImage ?? product.imageUrl) === src
-                        ? 'teal.400'
-                        : 'whiteAlpha.300'
+                      i === currentImageIndex ? 'teal.400' : 'whiteAlpha.300'
                     }
                     cursor="pointer"
-                    onClick={() => setSelectedImage(src)}
+                    onClick={() => setCurrentImageIndex(i)}
                     _hover={{ borderColor: 'teal.300' }}
                   />
                 </AspectRatio>
