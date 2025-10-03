@@ -44,7 +44,7 @@ const schema = z.object({
   basePrice: z.coerce.number().int().min(1000, 'Mínimo Gs. 1.000'),
   size: z.string().optional(),
   kit: z.enum(['HOME', 'AWAY', 'THIRD', 'RETRO']).optional(),
-  quality: z.enum(['FAN', 'PLAYER']),
+  quality: z.enum(['FAN', 'PLAYER_VERSION']),
   seasonLabel: z.string().max(20, 'Máx. 20 caracteres').optional(),
   seasonStart: z.coerce
     .number()
@@ -162,9 +162,7 @@ export default function EditProduct() {
         <CardHeader pb={0}>
           <Stack spacing={1}>
             <Heading size="md">Detalles del producto</Heading>
-            <Text color="gray.500">
-              Actualizá la información del producto
-            </Text>
+            <Text color="gray.500">Actualizá la información del producto</Text>
           </Stack>
         </CardHeader>
 
@@ -239,7 +237,7 @@ export default function EditProduct() {
                         {...register('quality')}
                       >
                         <option value="FAN">Fan</option>
-                        <option value="PLAYER">Versión jugador</option>
+                        <option value="PLAYER_VERSION">Versión jugador</option>
                       </Select>
                     </Box>
                     <FormErrorMessage>

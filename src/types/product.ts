@@ -1,6 +1,6 @@
 // --- Enums ---
 export type KitType = 'HOME' | 'AWAY' | 'THIRD' | 'RETRO'
-export type ProductQuality = 'FAN' | 'PLAYER'
+export type ProductQuality = 'FAN' | 'PLAYER_VERSION'
 
 // --- Variantes ---
 export interface ProductVariant {
@@ -27,7 +27,7 @@ export interface Product {
   seasonLabel?: string | null // ej: "2024/2025"
   seasonStart?: number | null // ej: 2024
   kit?: KitType | null // ej: HOME / AWAY / THIRD / RETRO
-  quality?: ProductQuality | null // FAN o PLAYER
+  quality?: ProductQuality | null // FAN o PLAYER_VERSION
 
   // Imagen
   imageUrl: string

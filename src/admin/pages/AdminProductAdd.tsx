@@ -290,7 +290,7 @@ export default function PublishProduct() {
                         {...register('quality')}
                       >
                         <option value="FAN">Fan</option>
-                        <option value="PLAYER">Versión jugador</option>
+                        <option value="PLAYER_VERSION">Versión jugador</option>
                       </Select>
                     </Box>
                     <FormErrorMessage>
