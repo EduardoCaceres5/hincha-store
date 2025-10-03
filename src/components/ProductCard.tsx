@@ -20,14 +20,28 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
 export default function ProductCard({ product }: { product: Product }) {
   const nav = useNavigate()
-  const { id, title, basePrice, imageUrl, quality, ProductVariant } = product
+  const {
+    id,
+    title,
+    basePrice,
+    imageUrl,
+    quality,
+    ProductVariant,
+    ProductImage,
+  } = product
 
   // Obtener el primer talle disponible si existe
   const firstVariant = ProductVariant?.[0]
   const size = firstVariant?.name !== 'Única' ? firstVariant?.name : undefined
 
+  // Usar la primera imagen de ProductImage o imageUrl como fallback
+  const mainImage =
+    ProductImage && ProductImage.length > 0
+      ? ProductImage[0].imageUrl
+      : imageUrl
+
   // Miniatura cuadrada optimizada
-  const thumb = cldUrl(imageUrl, {
+  const thumb = cldUrl(mainImage, {
     w: 600,
     h: 600,
     crop: 'fill',

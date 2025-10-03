@@ -111,7 +111,10 @@ export default function EditProduct() {
         fd.append('seasonStart', String(data.seasonStart))
       }
       if (data.image && (data.image as FileList).length > 0) {
-        fd.append('image', (data.image as FileList)[0])
+        // Si se sube una nueva imagen, la enviamos como array de imágenes
+        Array.from(data.image as FileList).forEach((file) => {
+          fd.append('images', file)
+        })
       }
 
       await api.put(`/api/products/${id}`, fd, {

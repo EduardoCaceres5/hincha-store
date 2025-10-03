@@ -2,6 +2,16 @@
 export type KitType = 'HOME' | 'AWAY' | 'THIRD' | 'RETRO'
 export type ProductQuality = 'FAN' | 'PLAYER_VERSION'
 
+// --- Imágenes ---
+export interface ProductImage {
+  id: string
+  productId: string
+  imageUrl: string
+  imagePublicId?: string | null
+  order: number
+  createdAt: string
+}
+
 // --- Variantes ---
 export interface ProductVariant {
   id: string
@@ -29,9 +39,10 @@ export interface Product {
   kit?: KitType | null // ej: HOME / AWAY / THIRD / RETRO
   quality?: ProductQuality | null // FAN o PLAYER_VERSION
 
-  // Imagen
-  imageUrl: string
+  // Imágenes
+  imageUrl: string // imagen principal (legacy/fallback)
   imagePublicId?: string | null
+  ProductImage?: ProductImage[] // múltiples imágenes
 
   // Auditoría
   ownerId: string

@@ -62,15 +62,15 @@ const schema = z.object({
   description: z.string().max(500, 'Máx. 500 caracteres').optional(),
 
   // Usamos z.any + refine para evitar fallas de instanceof cuando el ref de RHF se encadena
-  image: z
+  images: z
     .any()
     .refine(
       (v) =>
         v &&
         typeof v === 'object' &&
         'length' in v &&
-        (v as FileList).length === 1,
-      'Subí una imagen',
+        (v as FileList).length >= 1,
+      'Subí al menos una imagen',
     ),
 })
 
@@ -81,7 +81,7 @@ type FormData = z.output<typeof schema>
 export default function PublishProduct() {
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [previews, setPreviews] = useState<string[]>([])
   const toast = useToast()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -94,13 +94,13 @@ export default function PublishProduct() {
   } = useForm<FormInput, any, FormData>({ resolver: zodResolver(schema) })
 
   // Registro encadenado para el input file
-  const imageReg = register('image')
+  const imagesReg = register('images')
 
   useEffect(
     () => () => {
-      if (preview) URL.revokeObjectURL(preview)
+      previews.forEach((url) => URL.revokeObjectURL(url))
     },
-    [preview],
+    [previews],
   )
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
@@ -120,8 +120,11 @@ export default function PublishProduct() {
         fd.append('seasonStart', String(data.seasonStart))
       }
 
-      // Imagen
-      fd.append('image', (data.image as FileList)[0])
+      // Imágenes múltiples
+      const files = data.images as FileList
+      Array.from(files).forEach((file) => {
+        fd.append('images', file)
+      })
 
       // Variante por defecto (usa basePrice en backend si price=null/undefined)
       const variants = [
@@ -140,8 +143,8 @@ export default function PublishProduct() {
       })
 
       reset()
-      if (preview) URL.revokeObjectURL(preview)
-      setPreview(null)
+      previews.forEach((url) => URL.revokeObjectURL(url))
+      setPreviews([])
 
       toast({
         title: 'Producto publicado',
@@ -180,21 +183,37 @@ export default function PublishProduct() {
   const onPickFile = () => fileInputRef.current?.click()
 
   const onFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    const f = e.target.files?.[0]
-    if (preview) URL.revokeObjectURL(preview)
-    setPreview(f ? URL.createObjectURL(f) : null)
+    const files = e.target.files
+    if (!files) return
+    previews.forEach((url) => URL.revokeObjectURL(url))
+    const newPreviews = Array.from(files).map((f) => URL.createObjectURL(f))
+    setPreviews(newPreviews)
   }
 
   const onDrop: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault()
-    const file = e.dataTransfer.files?.[0]
-    if (!file) return
+    const files = e.dataTransfer.files
+    if (!files || files.length === 0) return
     const dt = new DataTransfer()
-    dt.items.add(file)
+    Array.from(files).forEach((f) => dt.items.add(f))
     const list = dt.files
-    setValue('image', list as unknown as FileList, { shouldValidate: true })
-    if (preview) URL.revokeObjectURL(preview)
-    setPreview(URL.createObjectURL(file))
+    setValue('images', list as unknown as FileList, { shouldValidate: true })
+    previews.forEach((url) => URL.revokeObjectURL(url))
+    const newPreviews = Array.from(files).map((f) => URL.createObjectURL(f))
+    setPreviews(newPreviews)
+  }
+
+  const removeImage = (index: number) => {
+    const input = fileInputRef.current
+    if (!input?.files) return
+    const dt = new DataTransfer()
+    Array.from(input.files).forEach((file, i) => {
+      if (i !== index) dt.items.add(file)
+    })
+    const newList = dt.files
+    setValue('images', newList as unknown as FileList, { shouldValidate: true })
+    URL.revokeObjectURL(previews[index])
+    setPreviews(previews.filter((_, i) => i !== index))
   }
 
   return (
@@ -260,15 +279,28 @@ export default function PublishProduct() {
                 <HStack spacing={4}>
                   <FormControl>
                     <FormLabel>Talle</FormLabel>
-                    <InputGroup>
-                      <InputLeftElement pointerEvents="none">
-                        <Icon as={FaShirt} color="gray.400" />
-                      </InputLeftElement>
-                      <Input
-                        placeholder="P / M / G / XG"
-                        {...register('size')}
+                    <Box position="relative">
+                      <Icon
+                        as={FaShirt}
+                        color="gray.400"
+                        position="absolute"
+                        left="12px"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        pointerEvents="none"
                       />
-                    </InputGroup>
+                      <Select
+                        placeholder="Seleccionar"
+                        pl="40px"
+                        size="md"
+                        {...register('size')}
+                      >
+                        <option value="P">P</option>
+                        <option value="M">M</option>
+                        <option value="G">G</option>
+                        <option value="XG">XG</option>
+                      </Select>
+                    </Box>
                   </FormControl>
 
                   <FormControl isInvalid={!!errors.quality} isRequired>
@@ -312,17 +344,10 @@ export default function PublishProduct() {
 
                   <FormControl>
                     <FormLabel>Temporada</FormLabel>
-                    <HStack>
-                      <Input
-                        placeholder="2024/25"
-                        {...register('seasonLabel')}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="2024"
-                        {...register('seasonStart', { valueAsNumber: true })}
-                      />
-                    </HStack>
+                    <Input
+                      placeholder="2024/25"
+                      {...register('seasonLabel')}
+                    />
                   </FormControl>
                 </HStack>
 
@@ -342,8 +367,8 @@ export default function PublishProduct() {
 
               {/* Columna derecha: uploader */}
               <Stack spacing={4}>
-                <FormControl isInvalid={!!errors.image} isRequired>
-                  <FormLabel>Imagen</FormLabel>
+                <FormControl isInvalid={!!errors.images} isRequired>
+                  <FormLabel>Imágenes (múltiples)</FormLabel>
 
                   <Box
                     onClick={onPickFile}
@@ -362,7 +387,9 @@ export default function PublishProduct() {
                   >
                     <Stack align="center" spacing={2}>
                       <Icon as={FiUploadCloud} boxSize={8} color="teal.400" />
-                      <Text fontWeight="medium">Arrastrá tu imagen aquí</Text>
+                      <Text fontWeight="medium">
+                        Arrastrá tus imágenes aquí
+                      </Text>
                       <Text fontSize="sm" color="gray.500">
                         o{' '}
                         <Box as="span" textDecoration="underline">
@@ -373,14 +400,15 @@ export default function PublishProduct() {
                       <Input
                         type="file"
                         accept="image/*"
+                        multiple
                         // Registro encadenado: mantenemos el ref de RHF y el nuestro
-                        {...imageReg}
+                        {...imagesReg}
                         ref={(el) => {
-                          imageReg.ref(el)
+                          imagesReg.ref(el)
                           if (el) fileInputRef.current = el
                         }}
                         onChange={(e) => {
-                          imageReg.onChange(e) // RHF necesita esto para tener FileList
+                          imagesReg.onChange(e) // RHF necesita esto para tener FileList
                           onFileChange(e) // nuestro preview
                         }}
                         display="none"
@@ -388,19 +416,37 @@ export default function PublishProduct() {
                     </Stack>
                   </Box>
 
-                  {preview && (
-                    <Image
-                      src={preview}
-                      alt="Vista previa"
-                      mt={3}
-                      borderRadius="xl"
-                      objectFit="cover"
-                      w="100%"
-                      maxH="280px"
-                    />
+                  {previews.length > 0 && (
+                    <SimpleGrid columns={2} spacing={3} mt={3}>
+                      {previews.map((url, idx) => (
+                        <Box key={idx} position="relative">
+                          <Image
+                            src={url}
+                            alt={`Preview ${idx + 1}`}
+                            borderRadius="xl"
+                            objectFit="cover"
+                            w="100%"
+                            h="150px"
+                          />
+                          <Button
+                            size="xs"
+                            colorScheme="red"
+                            position="absolute"
+                            top={2}
+                            right={2}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              removeImage(idx)
+                            }}
+                          >
+                            ✕
+                          </Button>
+                        </Box>
+                      ))}
+                    </SimpleGrid>
                   )}
                   <FormErrorMessage>
-                    {errors.image?.message as string}
+                    {errors.images?.message as string}
                   </FormErrorMessage>
                 </FormControl>
 
@@ -428,8 +474,8 @@ export default function PublishProduct() {
                 variant="ghost"
                 onClick={() => {
                   reset()
-                  if (preview) URL.revokeObjectURL(preview)
-                  setPreview(null)
+                  previews.forEach((url) => URL.revokeObjectURL(url))
+                  setPreviews([])
                 }}
                 isDisabled={loading}
               >

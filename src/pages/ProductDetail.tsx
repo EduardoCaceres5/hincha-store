@@ -123,7 +123,12 @@ export default function ProductDetail() {
 
         setSelectedSize(((prod as any).size as string) ?? '')
 
-        setSelectedImage(prod.imageUrl)
+        // Usar la primera imagen de ProductImage o imageUrl como fallback
+        const mainImage =
+          prod.ProductImage && prod.ProductImage.length > 0
+            ? prod.ProductImage[0].imageUrl
+            : prod.imageUrl
+        setSelectedImage(mainImage)
 
         const r = await getRelatedProducts({
           id: p.id,
@@ -197,9 +202,10 @@ export default function ProductDetail() {
 
   if (!product) return <Text color="red.500">Producto no encontrado.</Text>
 
-  const images = (product.images && product.images.length > 0
-    ? product.images
-    : [product.imageUrl]) ?? [product.imageUrl]
+  const images =
+    product.ProductImage && product.ProductImage.length > 0
+      ? product.ProductImage.map((img) => img.imageUrl)
+      : [product.imageUrl]
 
   return (
     <Box>
