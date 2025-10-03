@@ -9,25 +9,22 @@ import {
   Container,
   Heading,
   HStack,
+  Icon,
+  useColorModeValue as mode,
   SimpleGrid,
   Skeleton,
-  Tag,
   Text,
-  Wrap,
-  WrapItem,
-  useColorModeValue as mode,
-  Icon,
   VStack,
 } from '@chakra-ui/react'
 import { useEffect, useMemo, useState } from 'react'
+import { FiArrowRight, FiPackage, FiTrendingUp } from 'react-icons/fi'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import { FiTrendingUp, FiPackage, FiArrowRight } from 'react-icons/fi'
 
 function SectionHeader({
   title,
   to,
   icon,
-  subtitle
+  subtitle,
 }: {
   title: string
   to?: string
@@ -41,7 +38,9 @@ function SectionHeader({
       <VStack align="start" spacing={1}>
         <HStack spacing={2}>
           {icon && <Icon as={icon} boxSize={5} color="teal.500" />}
-          <Heading size="lg" fontWeight="bold">{title}</Heading>
+          <Heading size="lg" fontWeight="bold">
+            {title}
+          </Heading>
         </HStack>
         {subtitle && (
           <Text color={subtitleColor} fontSize="sm">
@@ -127,11 +126,7 @@ export default function Home() {
         <Container maxW="container.xl">
           <VStack spacing={4} align="start">
             <Heading size="md">Explorar por categoría</Heading>
-            <SimpleGrid
-              columns={{ base: 2, md: 4 }}
-              spacing={4}
-              w="full"
-            >
+            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} w="full">
               {categories.map((c) => (
                 <Box
                   key={c.name}
@@ -147,7 +142,9 @@ export default function Home() {
                     boxShadow: 'lg',
                   }}
                   transition="all 0.2s"
-                  onClick={() => nav(`/catalogo?search=${encodeURIComponent(c.name)}`)}
+                  onClick={() =>
+                    nav(`/catalogo?search=${encodeURIComponent(c.name)}`)
+                  }
                 >
                   <VStack spacing={2}>
                     <Text fontSize="3xl">{c.emoji}</Text>
