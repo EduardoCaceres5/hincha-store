@@ -67,9 +67,7 @@ function SectionHeader({
 export default function Home() {
   const nav = useNavigate()
   const [loadingNew, setLoadingNew] = useState(true)
-  const [loadingTrend, setLoadingTrend] = useState(true)
   const [news, setNews] = useState<Product[]>([])
-  const [trends, setTrends] = useState<Product[]>([])
 
   const bgColor = mode('gray.50', 'gray.900')
   const categoryBg = mode('white', 'gray.800')
@@ -97,18 +95,6 @@ export default function Home() {
         if (!cancel) setNews(data.items || [])
       } finally {
         if (!cancel) setLoadingNew(false)
-      }
-    })()
-    ;(async () => {
-      try {
-        setLoadingTrend(true)
-        // de momento usamos price:desc como “tendencia”; cambia cuando tengas métrica real
-        const { data } = await api.get<{ items: Product[] }>('/api/products', {
-          params: { sort: 'price:desc', limit: 8 },
-        })
-        if (!cancel) setTrends(data.items || [])
-      } finally {
-        if (!cancel) setLoadingTrend(false)
       }
     })()
     return () => {
@@ -185,17 +171,37 @@ export default function Home() {
             title="Tendencias"
             subtitle="Los productos más populares del momento"
             icon={FiTrendingUp}
-            to="/catalogo?sort=price:desc"
           />
-          {loadingTrend ? (
-            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} height="320px" borderRadius="xl" />
-              ))}
-            </SimpleGrid>
-          ) : (
-            <ProductGrid products={trends} />
-          )}
+          <Box
+            p={12}
+            textAlign="center"
+            borderRadius="2xl"
+            borderWidth="2px"
+            borderStyle="dashed"
+            borderColor={mode('gray.300', 'gray.600')}
+            bg={mode('white', 'gray.800')}
+          >
+            <Icon
+              as={FiTrendingUp}
+              boxSize={12}
+              color={mode('gray.400', 'gray.500')}
+              mb={4}
+            />
+            <Text
+              fontSize="xl"
+              fontWeight="semibold"
+              color={mode('gray.600', 'gray.400')}
+            >
+              Próximamente...
+            </Text>
+            <Text
+              fontSize="sm"
+              color={mode('gray.500', 'gray.500')}
+              mt={2}
+            >
+              Estamos trabajando en mostrar los productos más populares
+            </Text>
+          </Box>
         </Container>
       </Box>
 
