@@ -68,7 +68,6 @@ export default function ProductDetail() {
   const [related, setRelated] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [variantId, setVariantId] = useState<string>('')
   const [selectedSize, setSelectedSize] = useState<string>('')
@@ -123,13 +122,6 @@ export default function ProductDetail() {
         setVariantId(firstVar)
 
         setSelectedSize(((prod as any).size as string) ?? '')
-
-        // Usar la primera imagen de ProductImage o imageUrl como fallback
-        const mainImage =
-          prod.ProductImage && prod.ProductImage.length > 0
-            ? prod.ProductImage[0].imageUrl
-            : prod.imageUrl
-        setSelectedImage(mainImage)
 
         const r = await getRelatedProducts({
           id: p.id,
