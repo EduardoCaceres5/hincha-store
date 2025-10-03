@@ -339,6 +339,27 @@ export default function ProductDetail() {
                 {formatGs(finalPrice)}
               </Text>
 
+              {/* Descripción */}
+              {product.description && (
+                <Box
+                  mb={4}
+                  p={4}
+                  bg={useColorModeValue('gray.50', 'whiteAlpha.50')}
+                  borderRadius="xl"
+                  borderWidth="1px"
+                  borderColor={cardBorder}
+                >
+                  <Text
+                    fontSize="sm"
+                    color={useColorModeValue('gray.700', 'gray.300')}
+                    lineHeight="tall"
+                    whiteSpace="pre-line"
+                  >
+                    {product.description}
+                  </Text>
+                </Box>
+              )}
+
               {/* Tamaño - chips (solo si NO hay variantes) */}
               {!(
                 product.ProductVariant && product.ProductVariant.length > 0
