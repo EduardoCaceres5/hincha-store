@@ -152,10 +152,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardBody>
               {Array.isArray(salesChart) && salesChart.length > 0 ? (
-                <ResponsiveContainer
-                  width="100%"
-                  height={{ base: 250, md: 300 }}
-                >
+                <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={salesChart}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
@@ -195,10 +192,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardBody>
               {Array.isArray(topProducts) && topProducts.length > 0 ? (
-                <ResponsiveContainer
-                  width="100%"
-                  height={{ base: 250, md: 300 }}
-                >
+                <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={topProducts} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" tick={{ fontSize: 12 }} />

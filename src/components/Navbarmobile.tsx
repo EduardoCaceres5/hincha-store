@@ -3,7 +3,6 @@ import { getNavLinks } from '@/nav/links'
 import { HamburgerIcon } from '@chakra-ui/icons'
 import {
   Button,
-  Divider,
   Drawer,
   DrawerBody,
   DrawerCloseButton,
@@ -18,7 +17,7 @@ import { Link as RouterLink } from 'react-router-dom'
 
 export default function MobileMenu() {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { token, me, logout } = useAuth()
+  const { me } = useAuth()
   const links = getNavLinks(me?.role as any)
 
   return (

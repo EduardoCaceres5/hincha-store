@@ -1,7 +1,6 @@
 import logo from '@/assets/hincha-store-logo.png'
 import { useAuth } from '@/hooks/useAuth'
 import {
-  Badge,
   Box,
   Button,
   Drawer,

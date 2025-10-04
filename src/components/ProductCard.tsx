@@ -43,7 +43,6 @@ export default function ProductCard({ product }: { product: Product }) {
 
   // Obtener el primer talle disponible si existe
   const firstVariant = ProductVariant?.[0]
-  const size = firstVariant?.name !== 'Única' ? firstVariant?.name : undefined
 
   // Usar la primera imagen de ProductImage o imageUrl como fallback
   const mainImage =
