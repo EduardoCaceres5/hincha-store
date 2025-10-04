@@ -30,16 +30,8 @@ const translateKit = (kit: string) => {
 
 export default function ProductCard({ product }: { product: Product }) {
   const nav = useNavigate();
-  const {
-    id,
-    title,
-    basePrice,
-    imageUrl,
-    quality,
-    kit,
-    ProductVariant,
-    ProductImage,
-  } = product;
+  const { id, title, basePrice, imageUrl, quality, kit, ProductImage } =
+    product;
 
   // Usar la primera imagen de ProductImage o imageUrl como fallback
   const mainImage =
