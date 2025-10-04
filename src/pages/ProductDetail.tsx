@@ -59,6 +59,16 @@ const SIZES = ['P', 'M', 'G', 'XG'] as const
 
 const CUSTOMIZATION_ENABLED = import.meta.env.VITE_ENABLE_PRODUCT_CUSTOMIZATION === 'true'
 
+const translateKit = (kit: string) => {
+  const translations: Record<string, string> = {
+    HOME: 'Titular',
+    AWAY: 'Alternativa',
+    THIRD: 'Tercera',
+    RETRO: 'Retro',
+  }
+  return translations[kit] || kit
+}
+
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const { add } = useCart()
@@ -328,7 +338,7 @@ export default function ProductDetail() {
                 <HStack spacing={2}>
                   {product.kit && (
                     <Badge colorScheme="purple" rounded="md" px={2}>
-                      {product.kit}
+                      {translateKit(product.kit)}
                     </Badge>
                   )}
                   {(product as any).quality && (

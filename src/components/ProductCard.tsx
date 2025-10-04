@@ -18,6 +18,16 @@ import {
 import { FiShoppingCart } from 'react-icons/fi'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
+const translateKit = (kit: string) => {
+  const translations: Record<string, string> = {
+    HOME: 'Titular',
+    AWAY: 'Alternativa',
+    THIRD: 'Tercera',
+    RETRO: 'Retro',
+  }
+  return translations[kit] || kit
+}
+
 export default function ProductCard({ product }: { product: Product }) {
   const nav = useNavigate()
   const {
@@ -26,6 +36,7 @@ export default function ProductCard({ product }: { product: Product }) {
     basePrice,
     imageUrl,
     quality,
+    kit,
     ProductVariant,
     ProductImage,
   } = product
@@ -80,9 +91,9 @@ export default function ProductCard({ product }: { product: Product }) {
               {formatGs(basePrice)}
             </Text>
             <HStack spacing={2}>
-              {size && (
-                <Tag size="sm" variant="subtle">
-                  {size}
+              {kit && (
+                <Tag size="sm" colorScheme="purple">
+                  {translateKit(kit)}
                 </Tag>
               )}
               {quality && (
