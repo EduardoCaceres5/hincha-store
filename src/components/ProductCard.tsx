@@ -88,9 +88,9 @@ export default function ProductCard({ product }: { product: Product }) {
               {quality && (
                 <Tag
                   size="sm"
-                  colorScheme={quality === 'FAN' ? 'green' : 'orange'}
+                  colorScheme={quality === 'PLAYER_VERSION' ? 'green' : 'blue'}
                 >
-                  {quality}
+                  {quality === 'PLAYER_VERSION' ? 'Jugador' : 'Fan'}
                 </Tag>
               )}
             </HStack>

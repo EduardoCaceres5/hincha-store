@@ -325,16 +325,28 @@ export default function ProductDetail() {
                 <Heading size="lg" lineHeight="shorter">
                   {product.title}
                 </Heading>
-                {product.kit && (
-                  <Badge
-                    colorScheme="purple"
-                    rounded="md"
-                    px={2}
-                    w="fit-content"
-                  >
-                    {product.kit}
-                  </Badge>
-                )}
+                <HStack spacing={2}>
+                  {product.kit && (
+                    <Badge colorScheme="purple" rounded="md" px={2}>
+                      {product.kit}
+                    </Badge>
+                  )}
+                  {(product as any).quality && (
+                    <Badge
+                      colorScheme={
+                        (product as any).quality === 'PLAYER_VERSION'
+                          ? 'green'
+                          : 'blue'
+                      }
+                      rounded="md"
+                      px={2}
+                    >
+                      {(product as any).quality === 'PLAYER_VERSION'
+                        ? 'Jugador'
+                        : 'Fan'}
+                    </Badge>
+                  )}
+                </HStack>
               </Stack>
 
               {/* Precio */}
