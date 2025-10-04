@@ -15,27 +15,37 @@ import ProductDetail from '@/pages/ProductDetail'
 import Register from '@/pages/Register'
 import About from '@/pages/About'
 import { Container } from '@chakra-ui/react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Catalog from './pages/Catalog'
 import Home from './pages/Home'
 
 export default function App() {
+  const location = useLocation()
+  const isAdminRoute = location.pathname.startsWith('/admin')
+
   return (
     <>
-      <Navbar />
-      <Container maxW="7xl" py={6}>
-        <Routes>
-          {/* públicas */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/catalogo" element={<Catalog />} />
-          <Route path="/producto/:id" element={<ProductDetail />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          <Route path="/nosotros" element={<About />} />
+      {!isAdminRoute && <Navbar />}
+      {!isAdminRoute ? (
+        <Container maxW="7xl" py={6}>
+          <Routes>
+            {/* públicas */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/catalogo" element={<Catalog />} />
+            <Route path="/producto/:id" element={<ProductDetail />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/nosotros" element={<About />} />
 
+            {/* fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Container>
+      ) : (
+        <Routes>
           {/* admin */}
           <Route
             path="/admin"
@@ -53,12 +63,9 @@ export default function App() {
             <Route path="usuarios" element={<AdminUsers />} />
             <Route path="editar/:id" element={<EditProduct />} />
           </Route>
-
-          {/* fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Container>
-      <AppFooter />
+      )}
+      {!isAdminRoute && <AppFooter />}
     </>
   )
 }
