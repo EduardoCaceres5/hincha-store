@@ -1,6 +1,6 @@
-import type { Product } from '@/types/product'
-import { cldUrl } from '@/utils/cdn'
-import { formatGs } from '@/utils/format'
+import type { Product } from "@/types/product";
+import { cldUrl } from "@/utils/cdn";
+import { formatGs } from "@/utils/format";
 import {
   AspectRatio,
   Button,
@@ -14,22 +14,22 @@ import {
   Stack,
   Tag,
   Text,
-} from '@chakra-ui/react'
-import { FiShoppingCart } from 'react-icons/fi'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+} from "@chakra-ui/react";
+import { FiShoppingCart } from "react-icons/fi";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 const translateKit = (kit: string) => {
   const translations: Record<string, string> = {
-    HOME: 'Titular',
-    AWAY: 'Alternativa',
-    THIRD: 'Tercera',
-    RETRO: 'Retro',
-  }
-  return translations[kit] || kit
-}
+    HOME: "Titular",
+    AWAY: "Alternativa",
+    THIRD: "Tercera",
+    RETRO: "Retro",
+  };
+  return translations[kit] || kit;
+};
 
 export default function ProductCard({ product }: { product: Product }) {
-  const nav = useNavigate()
+  const nav = useNavigate();
   const {
     id,
     title,
@@ -39,24 +39,21 @@ export default function ProductCard({ product }: { product: Product }) {
     kit,
     ProductVariant,
     ProductImage,
-  } = product
-
-  // Obtener el primer talle disponible si existe
-  const firstVariant = ProductVariant?.[0]
+  } = product;
 
   // Usar la primera imagen de ProductImage o imageUrl como fallback
   const mainImage =
     ProductImage && ProductImage.length > 0
       ? ProductImage[0].imageUrl
-      : imageUrl
+      : imageUrl;
 
   // Miniatura cuadrada optimizada
   const thumb = cldUrl(mainImage, {
     w: 600,
     h: 600,
-    crop: 'fill',
-    gravity: 'auto',
-  })
+    crop: "fill",
+    gravity: "auto",
+  });
 
   return (
     <LinkBox
@@ -64,7 +61,7 @@ export default function ProductCard({ product }: { product: Product }) {
       overflow="hidden"
       borderRadius="2xl"
       boxShadow="sm"
-      _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
+      _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
       transition="all 0.15s ease"
     >
       <AspectRatio ratio={1}>
@@ -98,9 +95,9 @@ export default function ProductCard({ product }: { product: Product }) {
               {quality && (
                 <Tag
                   size="sm"
-                  colorScheme={quality === 'PLAYER_VERSION' ? 'green' : 'blue'}
+                  colorScheme={quality === "PLAYER_VERSION" ? "green" : "blue"}
                 >
-                  {quality === 'PLAYER_VERSION' ? 'Jugador' : 'Fan'}
+                  {quality === "PLAYER_VERSION" ? "Jugador" : "Fan"}
                 </Tag>
               )}
             </HStack>
@@ -120,5 +117,5 @@ export default function ProductCard({ product }: { product: Product }) {
         </Stack>
       </CardBody>
     </LinkBox>
-  )
+  );
 }
