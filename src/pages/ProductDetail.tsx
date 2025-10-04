@@ -321,18 +321,21 @@ export default function ProductDetail() {
             {/* Contenido con padding extra abajo para no quedar tapado por el footer sticky */}
             <Box pb="132px">
               {/* Título y badge */}
-              <HStack align="baseline" justify="space-between" mb={1}>
-                <HStack spacing={3}>
-                  <Heading size="lg" noOfLines={1}>
-                    {product.title}
-                  </Heading>
-                  {product.kit && (
-                    <Badge colorScheme="purple" rounded="md" px={2}>
-                      {product.kit}
-                    </Badge>
-                  )}
-                </HStack>
-              </HStack>
+              <Stack spacing={2} mb={1}>
+                <Heading size="lg" lineHeight="shorter">
+                  {product.title}
+                </Heading>
+                {product.kit && (
+                  <Badge
+                    colorScheme="purple"
+                    rounded="md"
+                    px={2}
+                    w="fit-content"
+                  >
+                    {product.kit}
+                  </Badge>
+                )}
+              </Stack>
 
               {/* Precio */}
               <Text fontSize="3xl" fontWeight="bold" mt={2} mb={4}>
