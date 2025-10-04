@@ -47,36 +47,6 @@ export default function MobileMenu() {
                   {l.label}
                 </Button>
               ))}
-              <Divider />
-              {token ? (
-                <Button
-                  onClick={() => {
-                    logout()
-                    onClose()
-                  }}
-                >
-                  Salir
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    as={RouterLink}
-                    to="/login"
-                    onClick={onClose}
-                    variant="ghost"
-                  >
-                    Ingresar
-                  </Button>
-                  <Button
-                    as={RouterLink}
-                    to="/register"
-                    onClick={onClose}
-                    colorScheme="teal"
-                  >
-                    Crear cuenta
-                  </Button>
-                </>
-              )}
             </Stack>
           </DrawerBody>
         </DrawerContent>
