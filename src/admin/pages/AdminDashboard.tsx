@@ -90,11 +90,13 @@ export default function AdminDashboard() {
       </Flex>
 
       {/* Stats Cards */}
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={4} mb={6}>
+      <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap={4} mb={6}>
         <Stat as={Card} p={4} bg={cardBg}>
-          <StatLabel>Ventas hoy</StatLabel>
-          <StatNumber>{formatCurrency(stats?.salesToday || 0)}</StatNumber>
-          <StatHelpText>
+          <StatLabel fontSize={{ base: 'sm', md: 'md' }}>Ventas hoy</StatLabel>
+          <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>
+            {formatCurrency(stats?.salesToday || 0)}
+          </StatNumber>
+          <StatHelpText fontSize={{ base: 'xs', md: 'sm' }}>
             <StatArrow
               type={
                 (stats?.salesTodayChange || 0) >= 0 ? 'increase' : 'decrease'
@@ -105,21 +107,37 @@ export default function AdminDashboard() {
         </Stat>
 
         <Stat as={Card} p={4} bg={cardBg}>
-          <StatLabel>Pedidos pendientes</StatLabel>
-          <StatNumber>{stats?.pendingOrders || 0}</StatNumber>
-          <StatHelpText>Requieren atención</StatHelpText>
+          <StatLabel fontSize={{ base: 'sm', md: 'md' }}>
+            Pedidos pendientes
+          </StatLabel>
+          <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>
+            {stats?.pendingOrders || 0}
+          </StatNumber>
+          <StatHelpText fontSize={{ base: 'xs', md: 'sm' }}>
+            Requieren atención
+          </StatHelpText>
         </Stat>
 
         <Stat as={Card} p={4} bg={cardBg}>
-          <StatLabel>Productos activos</StatLabel>
-          <StatNumber>{stats?.activeProducts || 0}</StatNumber>
-          <StatHelpText>+{stats?.productsAddedToday || 0} hoy</StatHelpText>
+          <StatLabel fontSize={{ base: 'sm', md: 'md' }}>
+            Productos activos
+          </StatLabel>
+          <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>
+            {stats?.activeProducts || 0}
+          </StatNumber>
+          <StatHelpText fontSize={{ base: 'xs', md: 'sm' }}>
+            +{stats?.productsAddedToday || 0} hoy
+          </StatHelpText>
         </Stat>
 
         <Stat as={Card} p={4} bg={cardBg}>
-          <StatLabel>Usuarios</StatLabel>
-          <StatNumber>{stats?.totalUsers || 0}</StatNumber>
-          <StatHelpText>+{stats?.newUsersToday || 0} nuevos</StatHelpText>
+          <StatLabel fontSize={{ base: 'sm', md: 'md' }}>Usuarios</StatLabel>
+          <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>
+            {stats?.totalUsers || 0}
+          </StatNumber>
+          <StatHelpText fontSize={{ base: 'xs', md: 'sm' }}>
+            +{stats?.newUsersToday || 0} nuevos
+          </StatHelpText>
         </Stat>
       </SimpleGrid>
 
@@ -128,21 +146,28 @@ export default function AdminDashboard() {
         <GridItem>
           <Card bg={cardBg}>
             <CardHeader>
-              <Text fontSize="lg" fontWeight="semibold">
+              <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="semibold">
                 Ventas de los últimos 7 días
               </Text>
             </CardHeader>
             <CardBody>
               {Array.isArray(salesChart) && salesChart.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer
+                  width="100%"
+                  height={{ base: 250, md: 300 }}
+                >
                   <LineChart data={salesChart}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 12 }}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip
                       formatter={(value: number) => formatCurrency(value)}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
                     <Line
                       type="monotone"
                       dataKey="sales"
@@ -164,17 +189,25 @@ export default function AdminDashboard() {
         <GridItem>
           <Card bg={cardBg}>
             <CardHeader>
-              <Text fontSize="lg" fontWeight="semibold">
+              <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="semibold">
                 Top 5 Productos
               </Text>
             </CardHeader>
             <CardBody>
               {Array.isArray(topProducts) && topProducts.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer
+                  width="100%"
+                  height={{ base: 250, md: 300 }}
+                >
                   <BarChart data={topProducts} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="title" type="category" width={80} />
+                    <XAxis type="number" tick={{ fontSize: 12 }} />
+                    <YAxis
+                      dataKey="title"
+                      type="category"
+                      width={80}
+                      tick={{ fontSize: 10 }}
+                    />
                     <Tooltip
                       formatter={(value: number) => formatCurrency(value)}
                     />
@@ -194,47 +227,60 @@ export default function AdminDashboard() {
       {/* Recent Orders */}
       <Card bg={cardBg}>
         <CardHeader>
-          <Text fontSize="lg" fontWeight="semibold">
+          <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="semibold">
             Pedidos recientes
           </Text>
         </CardHeader>
         <CardBody>
-          <Table size="sm">
-            <Thead>
-              <Tr>
-                <Th>Pedido</Th>
-                <Th>Cliente</Th>
-                <Th>Estado</Th>
-                <Th>Fecha</Th>
-                <Th isNumeric>Total</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {Array.isArray(recentOrders) && recentOrders.length > 0 ? (
-                recentOrders.map((order) => (
-                  <Tr key={order.id}>
-                    <Td fontWeight="medium">{order.orderNumber}</Td>
-                    <Td>{order.customerName}</Td>
-                    <Td>
-                      <Badge colorScheme={getStatusColor(order.status)}>
-                        {order.status}
-                      </Badge>
-                    </Td>
-                    <Td>
-                      {new Date(order.createdAt).toLocaleDateString('es-PY')}
-                    </Td>
-                    <Td isNumeric>{formatCurrency(order.total)}</Td>
-                  </Tr>
-                ))
-              ) : (
+          <Box overflowX="auto">
+            <Table size="sm">
+              <Thead>
                 <Tr>
-                  <Td colSpan={5} textAlign="center" color="gray.500">
-                    No hay pedidos recientes
-                  </Td>
+                  <Th fontSize={{ base: 'xs', md: 'sm' }}>Pedido</Th>
+                  <Th fontSize={{ base: 'xs', md: 'sm' }}>Cliente</Th>
+                  <Th fontSize={{ base: 'xs', md: 'sm' }}>Estado</Th>
+                  <Th fontSize={{ base: 'xs', md: 'sm' }}>Fecha</Th>
+                  <Th isNumeric fontSize={{ base: 'xs', md: 'sm' }}>
+                    Total
+                  </Th>
                 </Tr>
-              )}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {Array.isArray(recentOrders) && recentOrders.length > 0 ? (
+                  recentOrders.map((order) => (
+                    <Tr key={order.id}>
+                      <Td fontWeight="medium" fontSize={{ base: 'xs', md: 'sm' }}>
+                        {order.orderNumber}
+                      </Td>
+                      <Td fontSize={{ base: 'xs', md: 'sm' }}>
+                        {order.customerName}
+                      </Td>
+                      <Td>
+                        <Badge
+                          colorScheme={getStatusColor(order.status)}
+                          fontSize={{ base: 'xs', md: 'sm' }}
+                        >
+                          {order.status}
+                        </Badge>
+                      </Td>
+                      <Td fontSize={{ base: 'xs', md: 'sm' }}>
+                        {new Date(order.createdAt).toLocaleDateString('es-PY')}
+                      </Td>
+                      <Td isNumeric fontSize={{ base: 'xs', md: 'sm' }}>
+                        {formatCurrency(order.total)}
+                      </Td>
+                    </Tr>
+                  ))
+                ) : (
+                  <Tr>
+                    <Td colSpan={5} textAlign="center" color="gray.500">
+                      No hay pedidos recientes
+                    </Td>
+                  </Tr>
+                )}
+              </Tbody>
+            </Table>
+          </Box>
         </CardBody>
       </Card>
     </Box>

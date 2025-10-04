@@ -218,7 +218,7 @@ export default function PublishProduct() {
 
   return (
     <Box>
-      <Heading size="lg" mb={4}>
+      <Heading size={{ base: 'md', md: 'lg' }} mb={4}>
         Publicar producto
       </Heading>
 
@@ -226,13 +226,15 @@ export default function PublishProduct() {
         bg={cardBg}
         borderWidth="1px"
         borderColor={cardBorder}
-        borderRadius="2xl"
+        borderRadius={{ base: 'lg', md: '2xl' }}
         shadow="md"
       >
         <CardHeader pb={0}>
           <Stack spacing={1}>
-            <Heading size="md">Detalles del producto</Heading>
-            <Text color="gray.500">
+            <Heading size={{ base: 'sm', md: 'md' }}>
+              Detalles del producto
+            </Heading>
+            <Text color="gray.500" fontSize={{ base: 'sm', md: 'md' }}>
               Completá la información y subí una imagen
             </Text>
           </Stack>
@@ -240,12 +242,14 @@ export default function PublishProduct() {
 
         <CardBody>
           <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 6, md: 8 }}>
               {/* Columna izquierda: campos */}
               <Stack spacing={4}>
                 <FormControl isInvalid={!!errors.title} isRequired>
-                  <FormLabel>Título</FormLabel>
-                  <InputGroup>
+                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                    Título
+                  </FormLabel>
+                  <InputGroup size={{ base: 'md', md: 'lg' }}>
                     <InputLeftElement pointerEvents="none">
                       <Icon as={FiTag} color="gray.400" />
                     </InputLeftElement>
@@ -254,12 +258,16 @@ export default function PublishProduct() {
                       {...register('title')}
                     />
                   </InputGroup>
-                  <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
+                  <FormErrorMessage fontSize="sm">
+                    {errors.title?.message}
+                  </FormErrorMessage>
                 </FormControl>
 
                 <FormControl isInvalid={!!errors.basePrice} isRequired>
-                  <FormLabel>Precio base (Gs)</FormLabel>
-                  <InputGroup>
+                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                    Precio base (Gs)
+                  </FormLabel>
+                  <InputGroup size={{ base: 'md', md: 'lg' }}>
                     <InputLeftElement pointerEvents="none">
                       <Icon as={FiDollarSign} color="gray.400" />
                     </InputLeftElement>
@@ -271,14 +279,16 @@ export default function PublishProduct() {
                       {...register('basePrice', { valueAsNumber: true })}
                     />
                   </InputGroup>
-                  <FormErrorMessage>
+                  <FormErrorMessage fontSize="sm">
                     {errors.basePrice?.message}
                   </FormErrorMessage>
                 </FormControl>
 
-                <HStack spacing={4}>
+                <Stack direction={{ base: 'column', sm: 'row' }} spacing={4}>
                   <FormControl>
-                    <FormLabel>Talle</FormLabel>
+                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                      Talle
+                    </FormLabel>
                     <Box position="relative">
                       <Icon
                         as={FaShirt}
@@ -292,7 +302,7 @@ export default function PublishProduct() {
                       <Select
                         placeholder="Seleccionar"
                         pl="40px"
-                        size="md"
+                        size={{ base: 'md', md: 'lg' }}
                         {...register('size')}
                       >
                         <option value="P">P</option>
@@ -304,7 +314,9 @@ export default function PublishProduct() {
                   </FormControl>
 
                   <FormControl isInvalid={!!errors.quality} isRequired>
-                    <FormLabel>Calidad</FormLabel>
+                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                      Calidad
+                    </FormLabel>
                     <Box position="relative">
                       <Icon
                         as={FiAward}
@@ -318,23 +330,29 @@ export default function PublishProduct() {
                       <Select
                         placeholder="Seleccionar"
                         pl="40px"
-                        size="md"
+                        size={{ base: 'md', md: 'lg' }}
                         {...register('quality')}
                       >
                         <option value="FAN">Fan</option>
                         <option value="PLAYER_VERSION">Versión jugador</option>
                       </Select>
                     </Box>
-                    <FormErrorMessage>
+                    <FormErrorMessage fontSize="sm">
                       {errors.quality?.message}
                     </FormErrorMessage>
                   </FormControl>
-                </HStack>
+                </Stack>
 
-                <HStack spacing={4}>
+                <Stack direction={{ base: 'column', sm: 'row' }} spacing={4}>
                   <FormControl>
-                    <FormLabel>Equipación</FormLabel>
-                    <Select placeholder="Seleccionar" {...register('kit')}>
+                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                      Equipación
+                    </FormLabel>
+                    <Select
+                      placeholder="Seleccionar"
+                      size={{ base: 'md', md: 'lg' }}
+                      {...register('kit')}
+                    >
                       <option value="HOME">Titular</option>
                       <option value="AWAY">Alternativa</option>
                       <option value="THIRD">Tercera</option>
@@ -343,23 +361,33 @@ export default function PublishProduct() {
                   </FormControl>
 
                   <FormControl>
-                    <FormLabel>Temporada</FormLabel>
+                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                      Temporada
+                    </FormLabel>
                     <Input
                       placeholder="2024/25"
+                      size={{ base: 'md', md: 'lg' }}
                       {...register('seasonLabel')}
                     />
                   </FormControl>
-                </HStack>
+                </Stack>
 
                 <FormControl isInvalid={!!errors.description}>
-                  <FormLabel>Descripción</FormLabel>
+                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                    Descripción
+                  </FormLabel>
                   <InputGroup alignItems="flex-start">
                     <InputLeftElement pointerEvents="none" pt={3}>
                       <Icon as={FiFileText} color="gray.400" />
                     </InputLeftElement>
-                    <Textarea pl="40px" rows={5} {...register('description')} />
+                    <Textarea
+                      pl="40px"
+                      rows={5}
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      {...register('description')}
+                    />
                   </InputGroup>
-                  <FormErrorMessage>
+                  <FormErrorMessage fontSize="sm">
                     {errors.description?.message}
                   </FormErrorMessage>
                 </FormControl>
@@ -368,7 +396,9 @@ export default function PublishProduct() {
               {/* Columna derecha: uploader */}
               <Stack spacing={4}>
                 <FormControl isInvalid={!!errors.images} isRequired>
-                  <FormLabel>Imágenes (múltiples)</FormLabel>
+                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                    Imágenes (múltiples)
+                  </FormLabel>
 
                   <Box
                     onClick={onPickFile}
@@ -381,16 +411,23 @@ export default function PublishProduct() {
                     bg={dropBg}
                     _hover={{ bg: dropHover, borderColor: 'teal.400' }}
                     transition="all .15s ease"
-                    p={4}
+                    p={{ base: 6, md: 8 }}
                     borderRadius="xl"
                     textAlign="center"
                   >
                     <Stack align="center" spacing={2}>
-                      <Icon as={FiUploadCloud} boxSize={8} color="teal.400" />
-                      <Text fontWeight="medium">
+                      <Icon
+                        as={FiUploadCloud}
+                        boxSize={{ base: 10, md: 12 }}
+                        color="teal.400"
+                      />
+                      <Text
+                        fontWeight="medium"
+                        fontSize={{ base: 'sm', md: 'md' }}
+                      >
                         Arrastrá tus imágenes aquí
                       </Text>
-                      <Text fontSize="sm" color="gray.500">
+                      <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
                         o{' '}
                         <Box as="span" textDecoration="underline">
                           hacé clic para seleccionar
@@ -417,7 +454,7 @@ export default function PublishProduct() {
                   </Box>
 
                   {previews.length > 0 && (
-                    <SimpleGrid columns={2} spacing={3} mt={3}>
+                    <SimpleGrid columns={{ base: 2, md: 2 }} spacing={3} mt={3}>
                       {previews.map((url, idx) => (
                         <Box key={idx} position="relative">
                           <Image
@@ -426,7 +463,7 @@ export default function PublishProduct() {
                             borderRadius="xl"
                             objectFit="cover"
                             w="100%"
-                            h="150px"
+                            h={{ base: '120px', md: '150px' }}
                           />
                           <Button
                             size="xs"
@@ -445,14 +482,14 @@ export default function PublishProduct() {
                       ))}
                     </SimpleGrid>
                   )}
-                  <FormErrorMessage>
+                  <FormErrorMessage fontSize="sm">
                     {errors.images?.message as string}
                   </FormErrorMessage>
                 </FormControl>
 
                 <Divider />
 
-                <Stack spacing={1} fontSize="sm" color="gray.500">
+                <Stack spacing={1} fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
                   <Text>Recomendaciones:</Text>
                   <Text>• Formato JPG/PNG, 1500×1500, fondo claro.</Text>
                   <Text>• Mostrá el escudo o detalle principal.</Text>
@@ -463,13 +500,18 @@ export default function PublishProduct() {
             {loading && (
               <Box mt={6}>
                 <Progress value={progress} size="sm" borderRadius="md" />
-                <Text mt={2} fontSize="sm" color="gray.500">
+                <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
                   Subiendo… {progress}%
                 </Text>
               </Box>
             )}
 
-            <HStack justify="flex-end" spacing={3} mt={8}>
+            <Stack
+              direction={{ base: 'column', sm: 'row' }}
+              justify="flex-end"
+              spacing={3}
+              mt={8}
+            >
               <Button
                 variant="ghost"
                 onClick={() => {
@@ -478,13 +520,21 @@ export default function PublishProduct() {
                   setPreviews([])
                 }}
                 isDisabled={loading}
+                size={{ base: 'md', md: 'lg' }}
+                width={{ base: 'full', sm: 'auto' }}
               >
                 Limpiar
               </Button>
-              <Button type="submit" colorScheme="teal" isLoading={loading}>
+              <Button
+                type="submit"
+                colorScheme="teal"
+                isLoading={loading}
+                size={{ base: 'md', md: 'lg' }}
+                width={{ base: 'full', sm: 'auto' }}
+              >
                 Publicar
               </Button>
-            </HStack>
+            </Stack>
           </Box>
         </CardBody>
       </Card>

@@ -20,6 +20,7 @@ import {
   IconButton,
   Image,
   Spinner,
+  Stack,
   Table,
   Tbody,
   Td,
@@ -214,18 +215,24 @@ export default function DashboardProducts() {
       </Heading>
 
       {/* Barra de acciones */}
-      <HStack justify="space-between" mb={3}>
-        <HStack spacing={3}>
+      <Stack
+        direction={{ base: 'column', md: 'row' }}
+        justify="space-between"
+        mb={3}
+        spacing={3}
+      >
+        <HStack spacing={3} flexWrap="wrap">
           {/* NEW: botón agregar producto */}
           <Button
             as={RouterLink}
             to={`/admin/productos/agregar`}
             colorScheme="teal"
             leftIcon={<AddIcon />}
+            size={{ base: 'sm', md: 'md' }}
           >
             Agregar producto
           </Button>
-          <Text color="gray.600">
+          <Text color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>
             {selectedIds.length
               ? `${selectedIds.length} seleccionados`
               : 'Seleccioná productos para acciones masivas'}
@@ -237,10 +244,11 @@ export default function DashboardProducts() {
           leftIcon={<DeleteIcon />}
           onClick={() => setConfirmBulkOpen(true)}
           isDisabled={!selectedIds.length}
+          size={{ base: 'sm', md: 'md' }}
         >
           Eliminar seleccionados
         </Button>
-      </HStack>
+      </Stack>
 
       {loading ? (
         <HStack py={8} justify="center">
@@ -248,49 +256,44 @@ export default function DashboardProducts() {
         </HStack>
       ) : (
         <>
-          <Table variant="simple" size="sm">
-            <Thead>
-              <Tr>
-                <Th w="1%">
-                  <Checkbox
-                    isChecked={allChecked}
-                    isIndeterminate={indeterminate}
-                    onChange={toggleAll}
-                  />
-                </Th>
-                <Th>Imagen</Th>
-                <Th>Título</Th>
-                <Th isNumeric>Precio</Th>
-                <Th>Equipación</Th>
-                <Th>Tipo</Th>
-                <Th></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+          {/* Vista móvil: Cards */}
+          <Box display={{ base: 'block', md: 'none' }}>
+            <Stack spacing={3}>
               {data?.items.map((p) => {
                 const checked = !!selected[p.id]
                 return (
-                  <Tr key={p.id} bg={checked ? 'red.50' : undefined}>
-                    <Td>
+                  <Box
+                    key={p.id}
+                    borderWidth="1px"
+                    borderRadius="md"
+                    p={3}
+                    bg={checked ? 'red.50' : undefined}
+                  >
+                    <HStack align="start" spacing={3}>
                       <Checkbox
                         isChecked={checked}
                         onChange={(e) => toggleOne(p.id, e.target.checked)}
                       />
-                    </Td>
-                    <Td>
                       <Image
                         src={p.imageUrl}
                         alt={p.title}
-                        boxSize="64px"
+                        boxSize="60px"
                         objectFit="cover"
                         borderRadius="md"
                       />
-                    </Td>
-                    <Td>{p.title}</Td>
-                    <Td isNumeric>{p.basePrice.toLocaleString('es-PY')}</Td>
-                    <Td>{p.kit || '-'}</Td>
-                    <Td>{p.quality || '-'}</Td>
-                    <Td>
+                      <Box flex="1">
+                        <Text fontWeight="semibold" fontSize="sm" noOfLines={2}>
+                          {p.title}
+                        </Text>
+                        <Text fontSize="sm" fontWeight="bold" mt={1}>
+                          {p.basePrice.toLocaleString('es-PY')}
+                        </Text>
+                        <HStack fontSize="xs" color="gray.600" mt={1}>
+                          <Text>{p.kit || '-'}</Text>
+                          <Text>•</Text>
+                          <Text>{p.quality || '-'}</Text>
+                        </HStack>
+                      </Box>
                       <HStack>
                         <IconButton
                           aria-label="Editar"
@@ -309,26 +312,104 @@ export default function DashboardProducts() {
                           }}
                         />
                       </HStack>
-                    </Td>
-                  </Tr>
+                    </HStack>
+                  </Box>
                 )
               })}
-            </Tbody>
-          </Table>
+            </Stack>
+          </Box>
+
+          {/* Vista desktop: Tabla */}
+          <Box display={{ base: 'none', md: 'block' }} overflowX="auto">
+            <Table variant="simple" size="sm">
+              <Thead>
+                <Tr>
+                  <Th w="1%">
+                    <Checkbox
+                      isChecked={allChecked}
+                      isIndeterminate={indeterminate}
+                      onChange={toggleAll}
+                    />
+                  </Th>
+                  <Th>Imagen</Th>
+                  <Th>Título</Th>
+                  <Th isNumeric>Precio</Th>
+                  <Th>Equipación</Th>
+                  <Th>Tipo</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {data?.items.map((p) => {
+                  const checked = !!selected[p.id]
+                  return (
+                    <Tr key={p.id} bg={checked ? 'red.50' : undefined}>
+                      <Td>
+                        <Checkbox
+                          isChecked={checked}
+                          onChange={(e) => toggleOne(p.id, e.target.checked)}
+                        />
+                      </Td>
+                      <Td>
+                        <Image
+                          src={p.imageUrl}
+                          alt={p.title}
+                          boxSize="64px"
+                          objectFit="cover"
+                          borderRadius="md"
+                        />
+                      </Td>
+                      <Td>{p.title}</Td>
+                      <Td isNumeric>{p.basePrice.toLocaleString('es-PY')}</Td>
+                      <Td>{p.kit || '-'}</Td>
+                      <Td>{p.quality || '-'}</Td>
+                      <Td>
+                        <HStack>
+                          <IconButton
+                            aria-label="Editar"
+                            icon={<EditIcon />}
+                            size="sm"
+                            onClick={() => nav(`/admin/editar/${p.id}`)}
+                          />
+                          <IconButton
+                            aria-label="Eliminar"
+                            icon={<DeleteIcon />}
+                            size="sm"
+                            colorScheme="red"
+                            onClick={() => {
+                              setDeletingOne(p.id)
+                              setConfirmOneOpen(true)
+                            }}
+                          />
+                        </HStack>
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </Tbody>
+            </Table>
+          </Box>
 
           {/* Barra de paginación */}
           {data?.total ? (
-            <HStack mt={4} justify="space-between">
-              <Text color="gray.600">
+            <Stack
+              mt={4}
+              direction={{ base: 'column', md: 'row' }}
+              justify="space-between"
+              align="center"
+              spacing={3}
+            >
+              <Text color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>
                 Mostrando {(page - 1) * (data?.limit ?? LIMIT) + 1}–
                 {Math.min(page * (data?.limit ?? LIMIT), data.total)} de{' '}
                 {data.total}
               </Text>
-              <HStack>
+              <HStack flexWrap="wrap" justify="center">
                 <Button
                   size="sm"
                   onClick={() => goToPage(1)}
                   isDisabled={page === 1}
+                  display={{ base: 'none', md: 'inline-flex' }}
                 >
                   « Primero
                 </Button>
@@ -339,7 +420,7 @@ export default function DashboardProducts() {
                 >
                   ‹ Anterior
                 </Button>
-                <Text>
+                <Text fontSize={{ base: 'sm', md: 'md' }}>
                   Página {page} / {totalPages}
                 </Text>
                 <Button
@@ -353,11 +434,12 @@ export default function DashboardProducts() {
                   size="sm"
                   onClick={() => goToPage(totalPages)}
                   isDisabled={page >= totalPages}
+                  display={{ base: 'none', md: 'inline-flex' }}
                 >
                   Última »
                 </Button>
               </HStack>
-            </HStack>
+            </Stack>
           ) : null}
         </>
       )}

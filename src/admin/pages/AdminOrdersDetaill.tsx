@@ -59,10 +59,10 @@ export default function OrderDetail() {
 
   return (
     <Box>
-      <Heading size="lg" mb={2}>
+      <Heading size={{ base: 'md', md: 'lg' }} mb={2}>
         Orden {order.id}
       </Heading>
-      <HStack mb={4}>
+      <Stack direction={{ base: 'column', sm: 'row' }} mb={4} spacing={2}>
         <Badge
           colorScheme={
             order.status === 'paid'
@@ -71,33 +71,34 @@ export default function OrderDetail() {
                 ? 'red'
                 : 'yellow'
           }
+          fontSize={{ base: 'xs', md: 'sm' }}
         >
           {order.status.toUpperCase()}
         </Badge>
-        <Text color="gray.600">
+        <Text color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>
           Creada el {new Date(order.createdAt).toLocaleString('es-PY')}
         </Text>
-      </HStack>
+      </Stack>
 
       <Stack
         direction={{ base: 'column', md: 'row' }}
-        spacing={10}
+        spacing={{ base: 6, md: 10 }}
         align="start"
       >
         {/* Envío / contacto */}
         <Stack flex="1" spacing={2}>
-          <Heading size="md">Datos de contacto</Heading>
-          <Text>
+          <Heading size={{ base: 'sm', md: 'md' }}>Datos de contacto</Heading>
+          <Text fontSize={{ base: 'sm', md: 'md' }}>
             <b>Nombre:</b> {order.name}
           </Text>
-          <Text>
+          <Text fontSize={{ base: 'sm', md: 'md' }}>
             <b>Teléfono:</b> {order.phone}
           </Text>
-          <Text whiteSpace="pre-wrap">
+          <Text whiteSpace="pre-wrap" fontSize={{ base: 'sm', md: 'md' }}>
             <b>Dirección:</b> {order.address}
           </Text>
           {order.notes && (
-            <Text whiteSpace="pre-wrap">
+            <Text whiteSpace="pre-wrap" fontSize={{ base: 'sm', md: 'md' }}>
               <b>Notas:</b> {order.notes}
             </Text>
           )}
@@ -105,33 +106,47 @@ export default function OrderDetail() {
 
         {/* Items */}
         <Stack flex="1.5" spacing={4}>
-          <Heading size="md">Items</Heading>
+          <Heading size={{ base: 'sm', md: 'md' }}>Items</Heading>
           <Stack spacing={3}>
             {order.items.map((it) => (
-              <HStack key={it.id} align="start">
+              <HStack key={it.id} align="start" spacing={{ base: 2, md: 4 }}>
                 <Image
                   src={it.imageUrl}
                   alt={it.title}
-                  boxSize="72px"
+                  boxSize={{ base: '60px', md: '72px' }}
                   objectFit="cover"
                   borderRadius="md"
                 />
                 <Box flex="1">
-                  <Text fontWeight="semibold" noOfLines={2}>
+                  <Text
+                    fontWeight="semibold"
+                    noOfLines={2}
+                    fontSize={{ base: 'sm', md: 'md' }}
+                  >
                     {it.title}
                   </Text>
-                  <Text color="gray.600">
+                  <Text color="gray.600" fontSize={{ base: 'xs', md: 'sm' }}>
                     x{it.quantity} · {formatGs(it.price)}
                   </Text>
                 </Box>
-                <Text>{formatGs(it.price * it.quantity)}</Text>
+                <Text
+                  fontWeight="medium"
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  whiteSpace="nowrap"
+                >
+                  {formatGs(it.price * it.quantity)}
+                </Text>
               </HStack>
             ))}
           </Stack>
           <Divider />
           <HStack justify="space-between">
-            <Text fontWeight="semibold">Subtotal</Text>
-            <Text fontWeight="bold">{formatGs(order.subtotal)}</Text>
+            <Text fontWeight="semibold" fontSize={{ base: 'sm', md: 'md' }}>
+              Subtotal
+            </Text>
+            <Text fontWeight="bold" fontSize={{ base: 'md', md: 'lg' }}>
+              {formatGs(order.subtotal)}
+            </Text>
           </HStack>
         </Stack>
       </Stack>
@@ -142,6 +157,8 @@ export default function OrderDetail() {
         mt={6}
         variant="outline"
         colorScheme="teal"
+        size={{ base: 'sm', md: 'md' }}
+        width={{ base: 'full', sm: 'auto' }}
       >
         Volver a mis órdenes
       </Button>
