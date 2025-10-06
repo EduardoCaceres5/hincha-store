@@ -1,4 +1,5 @@
 import EmptyState from '@/components/EmptyState'
+import LoadingModal from '@/components/LoadingModal'
 import ProductGrid from '@/components/ProductGrid'
 import { useProducts, type CatalogFilters } from '@/hooks/useProducts'
 import { SearchIcon } from '@chakra-ui/icons'
@@ -31,6 +32,7 @@ export default function Catalog() {
   )
   const [filters, setFilters] = useState<CatalogFilters>(initialFilters)
   const [page, setPage] = useState<number>(Number(sp.get('page') || 1))
+  const [isChangingPage, setIsChangingPage] = useState(false)
   const limit = 12
 
   useEffect(() => {
@@ -44,6 +46,18 @@ export default function Catalog() {
   }, [filters, page, setSp])
 
   const { data, loading, error } = useProducts(filters, page, limit)
+
+  // Resetear el loader cuando termina de cargar y hacer scroll arriba
+  useEffect(() => {
+    if (!loading && isChangingPage) {
+      // Delay mínimo para asegurar que el modal sea visible
+      const timer = setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        setIsChangingPage(false)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [loading, isChangingPage])
 
   // --- Toast de error (una sola vez por cambio de error) ---
   const lastErrorRef = useRef<any>(null)
@@ -169,8 +183,11 @@ export default function Catalog() {
           <ProductGrid products={data.items} />
           <HStack justify="center" mt={6}>
             <Button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              isDisabled={page === 1}
+              onClick={() => {
+                setIsChangingPage(true)
+                setPage((p) => Math.max(1, p - 1))
+              }}
+              isDisabled={page === 1 || isChangingPage}
             >
               Anterior
             </Button>
@@ -179,14 +196,20 @@ export default function Catalog() {
               Página {data.page} de {totalPages}{' '}
             </Text>
             <Button
-              onClick={() => setPage((p) => (p < totalPages ? p + 1 : p))}
-              isDisabled={page >= totalPages}
+              onClick={() => {
+                setIsChangingPage(true)
+                setPage((p) => (p < totalPages ? p + 1 : p))
+              }}
+              isDisabled={page >= totalPages || isChangingPage}
             >
               Siguiente
             </Button>
           </HStack>
         </>
       )}
+
+      {/* Modal de carga al cambiar de página */}
+      <LoadingModal isOpen={isChangingPage} message="Cargando productos..." />
     </Box>
   )
 }
