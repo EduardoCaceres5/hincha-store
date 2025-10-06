@@ -1,6 +1,15 @@
 // --- Enums ---
 export type KitType = 'HOME' | 'AWAY' | 'THIRD' | 'RETRO'
 export type ProductQuality = 'FAN' | 'PLAYER_VERSION'
+export type League =
+  | 'PREMIER_LEAGUE'
+  | 'LA_LIGA'
+  | 'LIGUE_1'
+  | 'SERIE_A'
+  | 'BUNDESLIGA'
+  | 'LIGA_PROFESIONAL'
+  | 'INTERNACIONAL'
+  | 'LIGA_SAUDI'
 
 // --- Imágenes ---
 export interface ProductImage {
@@ -38,6 +47,7 @@ export interface Product {
   seasonStart?: number | null // ej: 2024
   kit?: KitType | null // ej: HOME / AWAY / THIRD / RETRO
   quality?: ProductQuality | null // FAN o PLAYER_VERSION
+  league?: League | null // ej: PREMIER_LEAGUE, LA_LIGA, etc.
 
   // Imágenes
   imageUrl: string // imagen principal (legacy/fallback)

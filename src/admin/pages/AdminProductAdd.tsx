@@ -49,6 +49,18 @@ const schema = z.object({
   quality: z.enum(['FAN', 'PLAYER_VERSION'], {
     message: 'Seleccioná la calidad',
   }),
+  league: z
+    .enum([
+      'PREMIER_LEAGUE',
+      'LA_LIGA',
+      'LIGUE_1',
+      'SERIE_A',
+      'BUNDESLIGA',
+      'LIGA_PROFESIONAL',
+      'LIGA_SAUDI',
+      'INTERNACIONAL',
+    ])
+    .optional(),
 
   seasonLabel: z.string().max(20, 'Máx. 20 caracteres').optional(),
   seasonStart: z.coerce
@@ -114,6 +126,7 @@ export default function PublishProduct() {
       // Nuevos metadatos
       if (data.kit) fd.append('kit', data.kit)
       fd.append('quality', data.quality) // requerido
+      if (data.league) fd.append('league', data.league)
       if (data.seasonLabel) fd.append('seasonLabel', data.seasonLabel)
       if (typeof data.seasonStart === 'number') {
         fd.append('seasonStart', String(data.seasonStart))
@@ -370,6 +383,24 @@ export default function PublishProduct() {
                     />
                   </FormControl>
                 </Stack>
+
+                <FormControl>
+                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Liga</FormLabel>
+                  <Select
+                    placeholder="Seleccionar"
+                    size={{ base: 'md', md: 'lg' }}
+                    {...register('league')}
+                  >
+                    <option value="PREMIER_LEAGUE">Premier League</option>
+                    <option value="LA_LIGA">La Liga</option>
+                    <option value="LIGUE_1">Ligue 1</option>
+                    <option value="SERIE_A">Serie A</option>
+                    <option value="BUNDESLIGA">Bundesliga</option>
+                    <option value="LIGA_PROFESIONAL">Liga Profesional</option>
+                    <option value="LIGA_SAUDI">Liga Saudí</option>
+                    <option value="INTERNACIONAL">Internacional</option>
+                  </Select>
+                </FormControl>
 
                 <FormControl isInvalid={!!errors.description}>
                   <FormLabel fontSize={{ base: 'sm', md: 'md' }}>

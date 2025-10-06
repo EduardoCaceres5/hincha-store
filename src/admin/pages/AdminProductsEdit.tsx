@@ -45,6 +45,18 @@ const schema = z.object({
   size: z.string().optional(),
   kit: z.enum(['HOME', 'AWAY', 'THIRD', 'RETRO']).optional(),
   quality: z.enum(['FAN', 'PLAYER_VERSION']),
+  league: z
+    .enum([
+      'PREMIER_LEAGUE',
+      'LA_LIGA',
+      'LIGUE_1',
+      'SERIE_A',
+      'BUNDESLIGA',
+      'LIGA_PROFESIONAL',
+      'LIGA_SAUDI',
+      'INTERNACIONAL',
+    ])
+    .optional(),
   seasonLabel: z.string().max(20, 'Máx. 20 caracteres').optional(),
   seasonStart: z.coerce
     .number()
@@ -84,6 +96,7 @@ export default function EditProduct() {
           size: data.ProductVariant?.[0]?.name || '',
           kit: data.kit || undefined,
           quality: data.quality || 'FAN',
+          league: data.league || undefined,
           seasonLabel: data.seasonLabel || '',
           seasonStart: data.seasonStart || undefined,
           description: data.description || '',
@@ -106,6 +119,7 @@ export default function EditProduct() {
       if (data.description) fd.append('description', data.description)
       if (data.kit) fd.append('kit', data.kit)
       fd.append('quality', data.quality)
+      if (data.league) fd.append('league', data.league)
       if (data.seasonLabel) fd.append('seasonLabel', data.seasonLabel)
       if (typeof data.seasonStart === 'number') {
         fd.append('seasonStart', String(data.seasonStart))
@@ -275,6 +289,20 @@ export default function EditProduct() {
                     </HStack>
                   </FormControl>
                 </HStack>
+
+                <FormControl>
+                  <FormLabel>Liga</FormLabel>
+                  <Select placeholder="Seleccionar" {...register('league')}>
+                    <option value="PREMIER_LEAGUE">Premier League</option>
+                    <option value="LA_LIGA">La Liga</option>
+                    <option value="LIGUE_1">Ligue 1</option>
+                    <option value="SERIE_A">Serie A</option>
+                    <option value="BUNDESLIGA">Bundesliga</option>
+                    <option value="LIGA_PROFESIONAL">Liga Profesional</option>
+                    <option value="LIGA_SAUDI">Liga Saudí</option>
+                    <option value="INTERNACIONAL">Internacional</option>
+                  </Select>
+                </FormControl>
 
                 <FormControl isInvalid={!!errors.description}>
                   <FormLabel>Descripción</FormLabel>
