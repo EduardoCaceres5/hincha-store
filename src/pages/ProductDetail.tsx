@@ -186,8 +186,7 @@ export default function ProductDetail() {
 
   const canAdd =
     !!product &&
-    (!product.ProductVariant?.length ||
-      (selectedVariant && selectedVariant.stock > 0)) &&
+    !!selectedSize &&
     (!customized ||
       customNumber === '' ||
       (!isNaN(Number(customNumber)) &&
@@ -385,72 +384,31 @@ export default function ProductDetail() {
                 </Box>
               )}
 
-              {/* Tamaño - chips (solo si NO hay variantes) */}
-              {!(
-                product.ProductVariant && product.ProductVariant.length > 0
-              ) && (
-                <Box mb={4}>
-                  <Text fontWeight="semibold" mb={2}>
-                    Tamaño
-                  </Text>
-                  <Wrap>
-                    {SIZES.map((t) => (
-                      <WrapItem key={t}>
-                        <Tag
-                          size="lg"
-                          variant={selectedSize === t ? 'solid' : 'subtle'}
-                          colorScheme={selectedSize === t ? 'teal' : 'gray'}
-                          rounded="full"
-                          px={4}
-                          py={2}
-                          cursor="pointer"
-                          onClick={() => setSelectedSize(t)}
-                          transition="all .2s ease"
-                        >
-                          <TagLabel>{t}</TagLabel>
-                        </Tag>
-                      </WrapItem>
-                    ))}
-                  </Wrap>
-                </Box>
-              )}
-
-              {/* Variantes */}
-              {product.ProductVariant && product.ProductVariant.length > 0 && (
-                <Box mb={4}>
-                  <Text fontWeight="semibold" mb={2}>
-                    Talle
-                  </Text>
-                  <Wrap>
-                    {product.ProductVariant.map((v) => {
-                      const isActive = v.id === variantId
-                      const isOut = v.stock <= 0
-                      return (
-                        <WrapItem key={v.id}>
-                          <Tag
-                            size="lg"
-                            variant={isActive ? 'solid' : 'subtle'}
-                            colorScheme={
-                              isOut ? 'gray' : isActive ? 'teal' : 'gray'
-                            }
-                            rounded="full"
-                            px={4}
-                            py={2}
-                            opacity={isOut ? 0.5 : 1}
-                            cursor={isOut ? 'not-allowed' : 'pointer'}
-                            onClick={() => !isOut && setVariantId(v.id)}
-                            transition="all .2s ease"
-                          >
-                            <TagLabel>
-                              {v.name} {isOut ? '(Sin stock)' : ''}
-                            </TagLabel>
-                          </Tag>
-                        </WrapItem>
-                      )
-                    })}
-                  </Wrap>
-                </Box>
-              )}
+              {/* Tamaño - chips (siempre disponible) */}
+              <Box mb={4}>
+                <Text fontWeight="semibold" mb={2}>
+                  Tamaño
+                </Text>
+                <Wrap>
+                  {SIZES.map((t) => (
+                    <WrapItem key={t}>
+                      <Tag
+                        size="lg"
+                        variant={selectedSize === t ? 'solid' : 'subtle'}
+                        colorScheme={selectedSize === t ? 'teal' : 'gray'}
+                        rounded="full"
+                        px={4}
+                        py={2}
+                        cursor="pointer"
+                        onClick={() => setSelectedSize(t)}
+                        transition="all .2s ease"
+                      >
+                        <TagLabel>{t}</TagLabel>
+                      </Tag>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+              </Box>
 
               <Divider my={4} borderColor={cardBorder} />
 
@@ -662,19 +620,14 @@ export default function ProductDetail() {
               pb="calc(env(safe-area-inset-bottom, 0px) + 12px)"
             >
               <Tooltip
-                label="Selecciona una talla"
-                isDisabled={!!selectedSize || !SIZES.length}
+                label="Selecciona un tamaño"
+                isDisabled={!!selectedSize}
               >
                 <Button
                   colorScheme="teal"
                   size="lg"
                   w="full"
-                  isDisabled={
-                    !canAdd ||
-                    (product.ProductVariant &&
-                      product.ProductVariant.length > 0 &&
-                      !selectedVariant)
-                  }
+                  isDisabled={!canAdd}
                   onClick={() => {
                     const extrasLabel = [
                       selectedSize || undefined,
