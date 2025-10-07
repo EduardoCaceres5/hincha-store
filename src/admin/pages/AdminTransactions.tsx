@@ -46,7 +46,6 @@ import {
   VStack,
   useToast,
   Image,
-  Flex,
   Badge,
 } from '@chakra-ui/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -218,23 +217,6 @@ export default function AdminTransactions() {
       toast({ title: 'No se pudo eliminar la selección', status: 'error' })
     } finally {
       setBulkLoading(false)
-    }
-  }
-
-  async function quickAdd(type: 'INCOME' | 'EXPENSE') {
-    const amountStr = prompt(
-      type === 'INCOME' ? 'Monto de ingreso (Gs)' : 'Monto de egreso (Gs)',
-    )
-    if (!amountStr) return
-    const amount = Number(amountStr.replace(/\D+/g, ''))
-    if (!amount || amount <= 0)
-      return toast({ title: 'Monto inválido', status: 'warning' })
-    try {
-      await createTransaction({ type, amount })
-      toast({ title: 'Transacción creada', status: 'success' })
-      load()
-    } catch {
-      toast({ title: 'No se pudo crear', status: 'error' })
     }
   }
 
