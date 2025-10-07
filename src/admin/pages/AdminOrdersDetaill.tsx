@@ -26,19 +26,18 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
-import { Link as RouterLink, useParams } from 'react-router-dom'
 import {
-  FiUser,
-  FiPhone,
-  FiMapPin,
-  FiPackage,
-  FiTruck,
   FiCheckCircle,
   FiClock,
-  FiAlertCircle,
   FiDownload,
   FiEdit,
+  FiMapPin,
+  FiPackage,
+  FiPhone,
+  FiTruck,
+  FiUser,
 } from 'react-icons/fi'
+import { Link as RouterLink, useParams } from 'react-router-dom'
 
 // Helper functions
 function getStatusLabel(status: string): string {
@@ -65,18 +64,6 @@ function getStatusColor(status: string): string {
   return colors[status.toLowerCase()] || 'gray'
 }
 
-function getStatusIcon(status: string) {
-  const icons: Record<string, any> = {
-    pending: FiClock,
-    confirmed: FiCheckCircle,
-    preparing: FiPackage,
-    ready: FiPackage,
-    delivered: FiTruck,
-    cancelled: FiAlertCircle,
-  }
-  return icons[status.toLowerCase()] || FiClock
-}
-
 // Timeline data
 function getTimelineSteps(currentStatus: string) {
   const allSteps = [
@@ -87,7 +74,13 @@ function getTimelineSteps(currentStatus: string) {
     { status: 'delivered', label: 'Entregado', icon: FiTruck },
   ]
 
-  const statusOrder = ['pending', 'confirmed', 'preparing', 'ready', 'delivered']
+  const statusOrder = [
+    'pending',
+    'confirmed',
+    'preparing',
+    'ready',
+    'delivered',
+  ]
   const currentIndex = statusOrder.indexOf(currentStatus.toLowerCase())
 
   return allSteps.map((step, idx) => ({
@@ -159,10 +152,7 @@ export default function OrderDetail() {
     return (
       <Stack spacing={6}>
         <Skeleton h="40px" w="70%" />
-        <Grid
-          templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }}
-          gap={4}
-        >
+        <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
           <Skeleton h="100px" />
           <Skeleton h="100px" />
           <Skeleton h="100px" />
@@ -226,10 +216,7 @@ export default function OrderDetail() {
         </HStack>
 
         {/* Cards de información clave */}
-        <Grid
-          templateColumns={{ base: '1fr', sm: 'repeat(3, 1fr)' }}
-          gap={4}
-        >
+        <Grid templateColumns={{ base: '1fr', sm: 'repeat(3, 1fr)' }} gap={4}>
           <Box
             borderWidth="1px"
             borderRadius="lg"
@@ -258,7 +245,8 @@ export default function OrderDetail() {
               {order.items.length}
             </Text>
             <Text fontSize="xs" color="gray.600">
-              {order.items.reduce((sum, item) => sum + item.quantity, 0)} unidades
+              {order.items.reduce((sum, item) => sum + item.quantity, 0)}{' '}
+              unidades
             </Text>
           </Box>
           <Box
@@ -298,11 +286,20 @@ export default function OrderDetail() {
             display={{ base: 'none', md: 'flex' }}
           >
             {timelineSteps.map((step, idx) => (
-              <VStack key={step.status} flex="1" spacing={2} position="relative">
+              <VStack
+                key={step.status}
+                flex="1"
+                spacing={2}
+                position="relative"
+              >
                 <Box
                   position="relative"
                   zIndex={2}
-                  bg={step.isComplete ? getStatusColor(step.status) + '.500' : 'gray.200'}
+                  bg={
+                    step.isComplete
+                      ? getStatusColor(step.status) + '.500'
+                      : 'gray.200'
+                  }
                   borderRadius="full"
                   p={3}
                   color="white"
@@ -312,7 +309,11 @@ export default function OrderDetail() {
                 <Text
                   fontSize="xs"
                   fontWeight={step.isCurrent ? 'bold' : 'medium'}
-                  color={step.isComplete ? getStatusColor(step.status) + '.700' : 'gray.500'}
+                  color={
+                    step.isComplete
+                      ? getStatusColor(step.status) + '.700'
+                      : 'gray.500'
+                  }
                   textAlign="center"
                 >
                   {step.label}
@@ -324,7 +325,11 @@ export default function OrderDetail() {
                     left="50%"
                     width="100%"
                     height="3px"
-                    bg={step.isComplete ? getStatusColor(step.status) + '.500' : 'gray.200'}
+                    bg={
+                      step.isComplete
+                        ? getStatusColor(step.status) + '.500'
+                        : 'gray.200'
+                    }
                     zIndex={1}
                   />
                 )}
@@ -333,11 +338,19 @@ export default function OrderDetail() {
           </HStack>
 
           {/* Timeline mobile - vertical */}
-          <VStack align="stretch" spacing={4} display={{ base: 'flex', md: 'none' }}>
+          <VStack
+            align="stretch"
+            spacing={4}
+            display={{ base: 'flex', md: 'none' }}
+          >
             {timelineSteps.map((step) => (
               <HStack key={step.status} spacing={3}>
                 <Box
-                  bg={step.isComplete ? getStatusColor(step.status) + '.500' : 'gray.200'}
+                  bg={
+                    step.isComplete
+                      ? getStatusColor(step.status) + '.500'
+                      : 'gray.200'
+                  }
                   borderRadius="full"
                   p={2}
                   color="white"
@@ -348,7 +361,11 @@ export default function OrderDetail() {
                 <Text
                   fontSize="sm"
                   fontWeight={step.isCurrent ? 'bold' : 'medium'}
-                  color={step.isComplete ? getStatusColor(step.status) + '.700' : 'gray.500'}
+                  color={
+                    step.isComplete
+                      ? getStatusColor(step.status) + '.700'
+                      : 'gray.500'
+                  }
                 >
                   {step.label}
                 </Text>
@@ -359,11 +376,7 @@ export default function OrderDetail() {
       )}
 
       {/* Grid principal - Cliente y Productos */}
-      <Grid
-        templateColumns={{ base: '1fr', lg: '1fr 1.5fr' }}
-        gap={6}
-        mb={6}
-      >
+      <Grid templateColumns={{ base: '1fr', lg: '1fr 1.5fr' }} gap={6} mb={6}>
         {/* Columna izquierda - Cliente y Envío */}
         <Stack spacing={6}>
           {/* Card de cliente */}
@@ -375,12 +388,7 @@ export default function OrderDetail() {
             _dark={{ bg: 'gray.800' }}
           >
             <HStack spacing={3} mb={4}>
-              <Box
-                bg="teal.500"
-                borderRadius="full"
-                p={3}
-                color="white"
-              >
+              <Box bg="teal.500" borderRadius="full" p={3} color="white">
                 <Icon as={FiUser} boxSize={5} />
               </Box>
               <Heading size="sm">Información del Cliente</Heading>
@@ -421,12 +429,7 @@ export default function OrderDetail() {
             _dark={{ bg: 'gray.800' }}
           >
             <HStack spacing={3} mb={4}>
-              <Box
-                bg="orange.500"
-                borderRadius="full"
-                p={3}
-                color="white"
-              >
+              <Box bg="orange.500" borderRadius="full" p={3} color="white">
                 <Icon as={FiMapPin} boxSize={5} />
               </Box>
               <Heading size="sm">Información de Envío</Heading>
@@ -447,10 +450,19 @@ export default function OrderDetail() {
                 <>
                   <Divider />
                   <Box>
-                    <Text fontSize="xs" fontWeight="medium" color="gray.600" mb={1}>
+                    <Text
+                      fontSize="xs"
+                      fontWeight="medium"
+                      color="gray.600"
+                      mb={1}
+                    >
                       Notas Adicionales
                     </Text>
-                    <Text fontSize="sm" whiteSpace="pre-wrap" fontStyle="italic">
+                    <Text
+                      fontSize="sm"
+                      whiteSpace="pre-wrap"
+                      fontStyle="italic"
+                    >
                       {order.notes}
                     </Text>
                   </Box>
@@ -469,12 +481,7 @@ export default function OrderDetail() {
           _dark={{ bg: 'gray.800' }}
         >
           <HStack spacing={3} mb={4}>
-            <Box
-              bg="purple.500"
-              borderRadius="full"
-              p={3}
-              color="white"
-            >
+            <Box bg="purple.500" borderRadius="full" p={3} color="white">
               <Icon as={FiPackage} boxSize={5} />
             </Box>
             <Heading size="sm">Productos del Pedido</Heading>
@@ -529,7 +536,11 @@ export default function OrderDetail() {
                         <Text fontSize="xs" color="gray.600">
                           Subtotal
                         </Text>
-                        <Text fontWeight="bold" fontSize="md" color="purple.600">
+                        <Text
+                          fontWeight="bold"
+                          fontSize="md"
+                          color="purple.600"
+                        >
                           {formatGs(item.price * item.quantity)}
                         </Text>
                       </VStack>
@@ -542,11 +553,21 @@ export default function OrderDetail() {
             <Divider />
 
             {/* Total */}
-            <HStack justify="space-between" p={4} bg="gray.50" borderRadius="md" _dark={{ bg: 'gray.700' }}>
+            <HStack
+              justify="space-between"
+              p={4}
+              bg="gray.50"
+              borderRadius="md"
+              _dark={{ bg: 'gray.700' }}
+            >
               <Text fontWeight="bold" fontSize={{ base: 'lg', md: 'xl' }}>
                 Total del Pedido
               </Text>
-              <Text fontWeight="bold" fontSize={{ base: 'xl', md: '2xl' }} color="purple.600">
+              <Text
+                fontWeight="bold"
+                fontSize={{ base: 'xl', md: '2xl' }}
+                color="purple.600"
+              >
                 {formatGs(order.subtotal)}
               </Text>
             </HStack>
