@@ -26,6 +26,7 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDashboardCache } from '@/hooks/useDashboardCache'
 import {
   Bar,
@@ -39,10 +40,80 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import {
+  getExpenseDistribution,
+  getFinancialSummary,
+  getFinancialTrend,
+  getMonthlyComparison,
+  getPerformanceIndicators,
+  type DashboardFilters,
+  type ExpenseCategory,
+  type FinancialSummary as FinancialSummaryType,
+  type FinancialTrend,
+  type MonthlyComparison,
+  type PerformanceIndicators as PerformanceIndicatorsType,
+} from '@/services/dashboard'
+import { DashboardFilters as DashboardFiltersComponent } from '@/admin/components/DashboardFilters'
+import { FinancialSummary } from '@/admin/components/FinancialSummary'
+import { FinancialTrendChart } from '@/admin/components/FinancialTrendChart'
+import { MonthlyComparisonChart } from '@/admin/components/MonthlyComparisonChart'
+import { ExpenseDistributionChart } from '@/admin/components/ExpenseDistributionChart'
+import { PerformanceIndicators } from '@/admin/components/PerformanceIndicators'
 
 export default function AdminDashboard() {
   const { stats, salesChart, topProducts, recentOrders, loading, refetch } =
     useDashboardCache()
+
+  // Estados para métricas financieras
+  const [filters, setFilters] = useState<DashboardFilters>({
+    dateRange: 'month',
+  })
+  const [financialSummary, setFinancialSummary] =
+    useState<FinancialSummaryType | null>(null)
+  const [financialTrend, setFinancialTrend] = useState<FinancialTrend[]>([])
+  const [monthlyComparison, setMonthlyComparison] = useState<
+    MonthlyComparison[]
+  >([])
+  const [expenseDistribution, setExpenseDistribution] = useState<
+    ExpenseCategory[]
+  >([])
+  const [performanceIndicators, setPerformanceIndicators] =
+    useState<PerformanceIndicatorsType | null>(null)
+  const [financialLoading, setFinancialLoading] = useState(false)
+
+  // Función para cargar métricas financieras
+  const loadFinancialMetrics = useCallback(async () => {
+    setFinancialLoading(true)
+    try {
+      const [summary, trend, monthly, expenses, performance] =
+        await Promise.all([
+          getFinancialSummary(filters),
+          getFinancialTrend(filters),
+          getMonthlyComparison(new Date().getFullYear()),
+          getExpenseDistribution(filters),
+          getPerformanceIndicators(filters),
+        ])
+
+      setFinancialSummary(summary)
+      setFinancialTrend(trend)
+      setMonthlyComparison(monthly)
+      setExpenseDistribution(expenses)
+      setPerformanceIndicators(performance)
+    } catch (error) {
+      console.error('Error al cargar métricas financieras:', error)
+    } finally {
+      setFinancialLoading(false)
+    }
+  }, [filters])
+
+  // Cargar métricas al montar y cuando cambien los filtros
+  useEffect(() => {
+    loadFinancialMetrics()
+  }, [loadFinancialMetrics])
+
+  const handleFilterChange = (newFilters: DashboardFilters) => {
+    setFilters(newFilters)
+  }
 
   const cardBg = useColorModeValue('white', 'gray.800')
   const chartColor = useColorModeValue('#3182ce', '#63b3ed')
@@ -77,17 +148,23 @@ export default function AdminDashboard() {
     <Box>
       {/* Header with Refresh Button */}
       <Flex justifyContent="space-between" alignItems="center" mb={6}>
-        <Heading size="lg">Dashboard</Heading>
+        <Heading size="lg">Dashboard Financiero</Heading>
         <Button
           leftIcon={<RepeatIcon />}
-          onClick={refetch}
-          isLoading={loading}
+          onClick={() => {
+            refetch()
+            loadFinancialMetrics()
+          }}
+          isLoading={loading || financialLoading}
           colorScheme="blue"
           size="sm"
         >
           Recargar datos
         </Button>
       </Flex>
+
+      {/* Filtros */}
+      <DashboardFiltersComponent onFilterChange={handleFilterChange} />
 
       {/* Stats Cards */}
       <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap={4} mb={6}>
@@ -141,7 +218,30 @@ export default function AdminDashboard() {
         </Stat>
       </SimpleGrid>
 
-      {/* Charts */}
+      {/* Resumen Financiero */}
+      <FinancialSummary data={financialSummary} />
+
+      {/* Gráficos Financieros */}
+      <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={6} mb={6}>
+        <GridItem>
+          <FinancialTrendChart data={financialTrend} />
+        </GridItem>
+        <GridItem>
+          <ExpenseDistributionChart data={expenseDistribution} />
+        </GridItem>
+      </Grid>
+
+      {/* Comparación Mensual */}
+      <Box mb={6}>
+        <MonthlyComparisonChart data={monthlyComparison} />
+      </Box>
+
+      {/* Indicadores de Rendimiento */}
+      <Box mb={6}>
+        <PerformanceIndicators data={performanceIndicators} />
+      </Box>
+
+      {/* Charts Originales */}
       <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={6} mb={6}>
         <GridItem>
           <Card bg={cardBg}>

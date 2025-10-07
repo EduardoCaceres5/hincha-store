@@ -3,7 +3,8 @@
     "allow": [
       "Bash(pnpm add:*)",
       "Bash(cat:*)",
-      "Read(//c/Users/ecaceres/proyectos/personal/hincha-api/**)"
+      "Read(//c/Users/ecaceres/proyectos/personal/hincha-api/**)",
+      "Read(//Users/vue/personal-projects/hincha-api/**)"
     ],
     "deny": [],
     "ask": []
