@@ -1,5 +1,4 @@
 import LeagueBadge from '@/components/LeagueBadge'
-import ProductGrid from '@/components/ProductGrid'
 import { useCart } from '@/hooks/useCart'
 import { getProduct, getRelatedProducts } from '@/services/products'
 import type { Product, ProductVariant } from '@/types/product'
@@ -24,6 +23,8 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  LinkBox,
+  LinkOverlay,
   NumberInput,
   NumberInputField,
   SimpleGrid,
@@ -42,7 +43,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { FiCheck, FiChevronLeft, FiChevronRight, FiShield, FiTruck } from 'react-icons/fi'
 import { ImBlocked } from 'react-icons/im'
-import { useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams } from 'react-router-dom'
 
 type ProductWithVariants = Product & {
   variants?: ProductVariant[]
@@ -227,7 +228,7 @@ export default function ProductDetail() {
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8}>
         {/* Galería - Carousel */}
         <Stack>
-          <Box position="relative">
+          <Box position="relative" bg="white" rounded="2xl">
             <AspectRatio ratio={1}>
               <Image
                 src={images[currentImageIndex]}
@@ -307,21 +308,23 @@ export default function ProductDetail() {
           {images.length > 1 && (
             <HStack spacing={3} overflowX="auto">
               {images.map((src, i) => (
-                <AspectRatio key={i} ratio={1} w="88px" flexShrink={0}>
-                  <Image
-                    src={src}
-                    alt={`vista ${i + 1}`}
-                    objectFit="cover"
-                    rounded="xl"
-                    border="2px solid"
-                    borderColor={
-                      i === currentImageIndex ? 'teal.400' : 'whiteAlpha.300'
-                    }
-                    cursor="pointer"
-                    onClick={() => setCurrentImageIndex(i)}
-                    _hover={{ borderColor: 'teal.300' }}
-                  />
-                </AspectRatio>
+                <Box key={i} bg="white" rounded="xl" flexShrink={0}>
+                  <AspectRatio ratio={1} w="88px">
+                    <Image
+                      src={src}
+                      alt={`vista ${i + 1}`}
+                      objectFit="cover"
+                      rounded="xl"
+                      border="2px solid"
+                      borderColor={
+                        i === currentImageIndex ? 'teal.400' : 'whiteAlpha.300'
+                      }
+                      cursor="pointer"
+                      onClick={() => setCurrentImageIndex(i)}
+                      _hover={{ borderColor: 'teal.300' }}
+                    />
+                  </AspectRatio>
+                </Box>
               ))}
             </HStack>
           )}
@@ -723,7 +726,46 @@ export default function ProductDetail() {
         Productos relacionados
       </Heading>
       {related.length > 0 ? (
-        <ProductGrid products={related} />
+        <SimpleGrid columns={{ base: 3, sm: 5, md: 6, lg: 8 }} spacing={2}>
+          {related.map((p) => (
+            <LinkBox
+              key={p.id}
+              as={Card}
+              overflow="hidden"
+              borderRadius="md"
+              boxShadow="sm"
+              _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
+              transition="all 0.15s ease"
+              size="sm"
+            >
+              <Box position="relative" bg="white">
+                <AspectRatio ratio={1}>
+                  <Image
+                    src={p.ProductImage?.[0]?.imageUrl || p.imageUrl}
+                    alt={p.title}
+                    objectFit="cover"
+                    loading="lazy"
+                  />
+                </AspectRatio>
+                {LEAGUE_BADGES_ENABLED && (p as any).league && (
+                  <LeagueBadge league={(p as any).league} size="xs" />
+                )}
+              </Box>
+              <CardBody p={1}>
+                <Stack spacing={0}>
+                  <LinkOverlay as={RouterLink} to={`/producto/${p.id}`}>
+                    <Text noOfLines={1} fontSize="2xs" fontWeight="semibold">
+                      {p.title}
+                    </Text>
+                  </LinkOverlay>
+                  <Text fontSize="2xs" fontWeight="bold">
+                    {formatGs(p.basePrice)}
+                  </Text>
+                </Stack>
+              </CardBody>
+            </LinkBox>
+          ))}
+        </SimpleGrid>
       ) : (
         <Text color="gray.500">No hay productos relacionados por ahora.</Text>
       )}
