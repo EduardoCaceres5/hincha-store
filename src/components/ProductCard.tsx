@@ -1,8 +1,10 @@
-import type { Product } from "@/types/product";
-import { cldUrl } from "@/utils/cdn";
-import { formatGs } from "@/utils/format";
+import type { Product } from '@/types/product'
+import { cldUrl } from '@/utils/cdn'
+import { formatGs } from '@/utils/format'
+import { getLeagueBadge, translateKit, translateLeague } from '@/utils/leagues'
 import {
   AspectRatio,
+  Box,
   Button,
   Card,
   CardBody,
@@ -14,38 +16,30 @@ import {
   Stack,
   Tag,
   Text,
-} from "@chakra-ui/react";
-import { FiShoppingCart } from "react-icons/fi";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-
-const translateKit = (kit: string) => {
-  const translations: Record<string, string> = {
-    HOME: "Titular",
-    AWAY: "Alternativa",
-    THIRD: "Tercera",
-    RETRO: "Retro",
-  };
-  return translations[kit] || kit;
-};
+} from '@chakra-ui/react'
+import { FiShoppingCart } from 'react-icons/fi'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
 export default function ProductCard({ product }: { product: Product }) {
-  const nav = useNavigate();
-  const { id, title, basePrice, imageUrl, quality, kit, ProductImage } =
-    product;
+  const nav = useNavigate()
+  const { id, title, basePrice, imageUrl, quality, kit, league, ProductImage } =
+    product
+
+  const showLeagueBadges = import.meta.env.VITE_ENABLE_LEAGUE_BADGES === 'true'
 
   // Usar la primera imagen de ProductImage o imageUrl como fallback
   const mainImage =
     ProductImage && ProductImage.length > 0
       ? ProductImage[0].imageUrl
-      : imageUrl;
+      : imageUrl
 
   // Miniatura cuadrada optimizada
   const thumb = cldUrl(mainImage, {
     w: 600,
     h: 600,
-    crop: "fill",
-    gravity: "auto",
-  });
+    crop: 'fill',
+    gravity: 'auto',
+  })
 
   return (
     <LinkBox
@@ -53,18 +47,44 @@ export default function ProductCard({ product }: { product: Product }) {
       overflow="hidden"
       borderRadius="2xl"
       boxShadow="sm"
-      _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
+      _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
       transition="all 0.15s ease"
     >
-      <AspectRatio ratio={1}>
-        <Image
-          src={thumb}
-          alt={title}
-          objectFit="cover"
-          loading="lazy"
-          fallbackSrc="/placeholder-product.svg"
-        />
-      </AspectRatio>
+      <Box position="relative">
+        <AspectRatio ratio={1}>
+          <Image
+            src={thumb}
+            alt={title}
+            objectFit="cover"
+            loading="lazy"
+            fallbackSrc="/placeholder-product.svg"
+          />
+        </AspectRatio>
+
+        {showLeagueBadges && league && getLeagueBadge(league) && (
+          <Box
+            position="absolute"
+            top={2}
+            right={2}
+            bg="white"
+            borderRadius="full"
+            boxShadow="lg"
+            w="50px"
+            h="50px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            overflow="hidden"
+          >
+            <Image
+              src={getLeagueBadge(league)}
+              alt={translateLeague(league)}
+              boxSize="65px"
+              objectFit="contain"
+            />
+          </Box>
+        )}
+      </Box>
 
       <CardBody>
         <Stack spacing={2}>
@@ -87,9 +107,9 @@ export default function ProductCard({ product }: { product: Product }) {
               {quality && (
                 <Tag
                   size="sm"
-                  colorScheme={quality === "PLAYER_VERSION" ? "green" : "blue"}
+                  colorScheme={quality === 'PLAYER_VERSION' ? 'green' : 'blue'}
                 >
-                  {quality === "PLAYER_VERSION" ? "Jugador" : "Fan"}
+                  {quality === 'PLAYER_VERSION' ? 'Jugador' : 'Fan'}
                 </Tag>
               )}
             </HStack>
@@ -109,5 +129,5 @@ export default function ProductCard({ product }: { product: Product }) {
         </Stack>
       </CardBody>
     </LinkBox>
-  );
+  )
 }
