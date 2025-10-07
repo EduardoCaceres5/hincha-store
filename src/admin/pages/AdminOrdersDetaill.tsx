@@ -38,6 +38,7 @@ import {
   FiUser,
 } from 'react-icons/fi'
 import { Link as RouterLink, useParams } from 'react-router-dom'
+import OrderLocationMap from '@/components/OrderLocationMap'
 
 // Helper functions
 function getStatusLabel(status: string): string {
@@ -465,6 +466,22 @@ export default function OrderDetail() {
                     >
                       {order.notes}
                     </Text>
+                  </Box>
+                </>
+              )}
+              {order.lat && order.lng && (
+                <>
+                  <Divider />
+                  <Box>
+                    <Text
+                      fontSize="xs"
+                      fontWeight="medium"
+                      color="gray.600"
+                      mb={2}
+                    >
+                      Ubicación en el Mapa
+                    </Text>
+                    <OrderLocationMap lat={order.lat} lng={order.lng} />
                   </Box>
                 </>
               )}
