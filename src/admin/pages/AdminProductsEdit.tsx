@@ -1,5 +1,6 @@
 import api from '@/services/api'
 import {
+  Badge,
   Box,
   Button,
   Card,
@@ -249,6 +250,45 @@ export default function EditProduct() {
     const urlToRevoke = previews[index]
     if (urlToRevoke.startsWith('blob:')) URL.revokeObjectURL(urlToRevoke)
     setPreviews(previews.filter((_, i) => i !== index))
+  }
+
+  const reorderImages = (fromIndex: number, toIndex: number) => {
+    // Reordenar previews
+    const newPreviews = [...previews]
+    const [movedPreview] = newPreviews.splice(fromIndex, 1)
+    newPreviews.splice(toIndex, 0, movedPreview)
+    setPreviews(newPreviews)
+
+    // Solo reordenar archivos si hay archivos nuevos (Files)
+    const input = fileInputRef.current
+    if (input?.files && input.files.length > 0) {
+      const filesArray = Array.from(input.files)
+      const [movedFile] = filesArray.splice(fromIndex, 1)
+      filesArray.splice(toIndex, 0, movedFile)
+
+      const dt = new DataTransfer()
+      filesArray.forEach((file) => dt.items.add(file))
+      setValue('images', dt.files as unknown as FileList, { shouldValidate: true })
+    }
+  }
+
+  const onDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', index.toString())
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const onDropReorder = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'))
+    if (fromIndex !== toIndex) {
+      reorderImages(fromIndex, toIndex)
+    }
   }
 
   /** ====== Estilos dependientes de tema ====== */
@@ -516,35 +556,66 @@ export default function EditProduct() {
                   </Box>
 
                   {previews.length > 0 && (
-                    <SimpleGrid columns={{ base: 2, md: 2 }} spacing={3} mt={3}>
-                      {previews.map((url, idx) => (
-                        <Box key={idx} position="relative">
-                          <Image
-                            src={url}
-                            alt={`Preview ${idx + 1}`}
-                            borderRadius="xl"
-                            objectFit="cover"
-                            w="100%"
-                            h={{ base: '120px', md: '150px' }}
-                          />
-                          {url.startsWith('blob:') && (
-                            <Button
-                              size="xs"
-                              colorScheme="red"
+                    <>
+                      <Text fontSize="sm" color="gray.500" mt={3}>
+                        {previews.some((p) => p.startsWith('blob:'))
+                          ? 'Arrastrá las imágenes para cambiar el orden'
+                          : 'Imágenes actuales (subí nuevas para reemplazarlas)'}
+                      </Text>
+                      <SimpleGrid columns={{ base: 2, md: 2 }} spacing={3} mt={2}>
+                        {previews.map((url, idx) => {
+                          const isNewImage = url.startsWith('blob:')
+                          return (
+                            <Box
+                              key={idx}
+                              position="relative"
+                              draggable={isNewImage}
+                              onDragStart={isNewImage ? (e) => onDragStart(e, idx) : undefined}
+                              onDragOver={isNewImage ? onDragOver : undefined}
+                              onDrop={isNewImage ? (e) => onDropReorder(e, idx) : undefined}
+                              cursor={isNewImage ? 'grab' : 'default'}
+                              _active={isNewImage ? { cursor: 'grabbing' } : undefined}
+                              transition="transform 0.2s"
+                              _hover={isNewImage ? { transform: 'scale(1.02)' } : undefined}
+                            >
+                            <Image
+                              src={url}
+                              alt={`Preview ${idx + 1}`}
+                              borderRadius="xl"
+                              objectFit="cover"
+                              w="100%"
+                              h={{ base: '120px', md: '150px' }}
+                              pointerEvents="none"
+                            />
+                            <Badge
                               position="absolute"
                               top={2}
-                              right={2}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                removeImage(idx)
-                              }}
+                              left={2}
+                              colorScheme={idx === 0 ? 'teal' : 'gray'}
+                              fontSize="xs"
                             >
-                              ✕
-                            </Button>
-                          )}
-                        </Box>
-                      ))}
-                    </SimpleGrid>
+                              {idx === 0 ? 'Principal' : idx + 1}
+                            </Badge>
+                            {url.startsWith('blob:') && (
+                              <Button
+                                size="xs"
+                                colorScheme="red"
+                                position="absolute"
+                                top={2}
+                                right={2}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  removeImage(idx)
+                                }}
+                              >
+                                ✕
+                              </Button>
+                            )}
+                          </Box>
+                          )
+                        })}
+                      </SimpleGrid>
+                    </>
                   )}
                   <FormErrorMessage fontSize="sm">
                     {errors.images?.message as string}

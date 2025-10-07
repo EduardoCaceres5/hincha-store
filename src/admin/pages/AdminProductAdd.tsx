@@ -1,5 +1,6 @@
 import api from '@/services/api'
 import {
+  Badge,
   Box,
   Button,
   Card,
@@ -226,6 +227,45 @@ export default function PublishProduct() {
     setValue('images', newList as unknown as FileList, { shouldValidate: true })
     URL.revokeObjectURL(previews[index])
     setPreviews(previews.filter((_, i) => i !== index))
+  }
+
+  const reorderImages = (fromIndex: number, toIndex: number) => {
+    const input = fileInputRef.current
+    if (!input?.files) return
+
+    // Reordenar archivos
+    const filesArray = Array.from(input.files)
+    const [movedFile] = filesArray.splice(fromIndex, 1)
+    filesArray.splice(toIndex, 0, movedFile)
+
+    const dt = new DataTransfer()
+    filesArray.forEach((file) => dt.items.add(file))
+    setValue('images', dt.files as unknown as FileList, { shouldValidate: true })
+
+    // Reordenar previews
+    const newPreviews = [...previews]
+    const [movedPreview] = newPreviews.splice(fromIndex, 1)
+    newPreviews.splice(toIndex, 0, movedPreview)
+    setPreviews(newPreviews)
+  }
+
+  const onDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', index.toString())
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const onDropReorder = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'))
+    if (fromIndex !== toIndex) {
+      reorderImages(fromIndex, toIndex)
+    }
   }
 
   return (
@@ -484,33 +524,59 @@ export default function PublishProduct() {
                   </Box>
 
                   {previews.length > 0 && (
-                    <SimpleGrid columns={{ base: 2, md: 2 }} spacing={3} mt={3}>
-                      {previews.map((url, idx) => (
-                        <Box key={idx} position="relative">
-                          <Image
-                            src={url}
-                            alt={`Preview ${idx + 1}`}
-                            borderRadius="xl"
-                            objectFit="cover"
-                            w="100%"
-                            h={{ base: '120px', md: '150px' }}
-                          />
-                          <Button
-                            size="xs"
-                            colorScheme="red"
-                            position="absolute"
-                            top={2}
-                            right={2}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              removeImage(idx)
-                            }}
+                    <>
+                      <Text fontSize="sm" color="gray.500" mt={3}>
+                        Arrastrá las imágenes para cambiar el orden
+                      </Text>
+                      <SimpleGrid columns={{ base: 2, md: 2 }} spacing={3} mt={2}>
+                        {previews.map((url, idx) => (
+                          <Box
+                            key={idx}
+                            position="relative"
+                            draggable
+                            onDragStart={(e) => onDragStart(e, idx)}
+                            onDragOver={onDragOver}
+                            onDrop={(e) => onDropReorder(e, idx)}
+                            cursor="grab"
+                            _active={{ cursor: 'grabbing' }}
+                            transition="transform 0.2s"
+                            _hover={{ transform: 'scale(1.02)' }}
                           >
-                            ✕
-                          </Button>
-                        </Box>
-                      ))}
-                    </SimpleGrid>
+                            <Image
+                              src={url}
+                              alt={`Preview ${idx + 1}`}
+                              borderRadius="xl"
+                              objectFit="cover"
+                              w="100%"
+                              h={{ base: '120px', md: '150px' }}
+                              pointerEvents="none"
+                            />
+                            <Badge
+                              position="absolute"
+                              top={2}
+                              left={2}
+                              colorScheme={idx === 0 ? 'teal' : 'gray'}
+                              fontSize="xs"
+                            >
+                              {idx === 0 ? 'Principal' : idx + 1}
+                            </Badge>
+                            <Button
+                              size="xs"
+                              colorScheme="red"
+                              position="absolute"
+                              top={2}
+                              right={2}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                removeImage(idx)
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </Box>
+                        ))}
+                      </SimpleGrid>
+                    </>
                   )}
                   <FormErrorMessage fontSize="sm">
                     {errors.images?.message as string}
