@@ -118,11 +118,16 @@ export default function EditProduct() {
           description: data.description || '',
         })
         // Si hay imágenes en el producto, las mostramos como preview
-        const allImages = [data.imageUrl]
+        // Preferimos ProductImage ya que tiene todas las imágenes en orden
         if (data.ProductImage && data.ProductImage.length > 0) {
-          allImages.push(...data.ProductImage.map((img: any) => img.imageUrl))
+          const sortedImages = data.ProductImage
+            .sort((a: any, b: any) => a.order - b.order)
+            .map((img: any) => img.imageUrl)
+          setPreviews(sortedImages)
+        } else if (data.imageUrl) {
+          // Fallback: si no hay ProductImage, usar la imagen principal
+          setPreviews([data.imageUrl])
         }
-        setPreviews(allImages.filter(Boolean))
       } catch {
         toast({ title: 'No se pudo cargar el producto', status: 'error' })
       } finally {
