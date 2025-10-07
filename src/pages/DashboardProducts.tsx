@@ -15,8 +15,8 @@ import {
   Box,
   Button,
   Checkbox,
-  Heading,
   HStack,
+  Heading,
   IconButton,
   Image,
   Spinner,
@@ -93,7 +93,7 @@ export default function DashboardProducts() {
   async function load() {
     setLoading(true)
     try {
-      const d = await getMyProducts(page, LIMIT)
+      const d = await getMyProducts({ page, limit: LIMIT })
       setData(d)
       // limpiar selección de ítems que ya no están
       setSelected((prev) => {
