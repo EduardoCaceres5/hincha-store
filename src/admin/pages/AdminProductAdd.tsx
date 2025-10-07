@@ -44,6 +44,9 @@ const schema = z.object({
 
   basePrice: z.coerce.number().int().min(1000, 'Mínimo Gs. 1.000'),
 
+  purchasePrice: z.coerce.number().int().min(0, 'Debe ser ≥ 0').optional(),
+  purchaseUrl: z.string().url('URL inválida').optional(),
+
   kit: z.enum(['HOME', 'AWAY', 'THIRD', 'RETRO']).optional(),
   quality: z.enum(['FAN', 'PLAYER_VERSION'], {
     message: 'Seleccioná la calidad',
@@ -133,6 +136,12 @@ export default function PublishProduct() {
       if (data.seasonLabel) fd.append('seasonLabel', data.seasonLabel)
       if (typeof data.seasonStart === 'number') {
         fd.append('seasonStart', String(data.seasonStart))
+      }
+      if (typeof data.purchasePrice === 'number') {
+        fd.append('purchasePrice', String(data.purchasePrice))
+      }
+      if (data.purchaseUrl) {
+        fd.append('purchaseUrl', data.purchaseUrl)
       }
 
       // Imágenes múltiples
@@ -242,7 +251,9 @@ export default function PublishProduct() {
 
     const dt = new DataTransfer()
     filesArray.forEach((file) => dt.items.add(file))
-    setValue('images', dt.files as unknown as FileList, { shouldValidate: true })
+    setValue('images', dt.files as unknown as FileList, {
+      shouldValidate: true,
+    })
 
     // Reordenar previews
     const newPreviews = [...previews]
@@ -296,7 +307,10 @@ export default function PublishProduct() {
 
         <CardBody>
           <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 6, md: 8 }}>
+            <SimpleGrid
+              columns={{ base: 1, md: 2 }}
+              spacing={{ base: 6, md: 8 }}
+            >
               {/* Columna izquierda: campos */}
               <Stack spacing={4}>
                 <FormControl isInvalid={!!errors.title} isRequired>
@@ -396,8 +410,47 @@ export default function PublishProduct() {
                   </FormControl>
                 </Stack>
 
+                <Stack direction={{ base: 'column', sm: 'row' }} spacing={4}>
+                  <FormControl isInvalid={!!errors.purchasePrice}>
+                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                      Precio de compra
+                    </FormLabel>
+                    <InputGroup size={{ base: 'md', md: 'lg' }}>
+                      <InputLeftElement pointerEvents="none">
+                        <Icon as={FiDollarSign} color="gray.400" />
+                      </InputLeftElement>
+                      <Input
+                        type="number"
+                        min={0}
+                        step="1000"
+                        placeholder="200000"
+                        {...register('purchasePrice', { valueAsNumber: true })}
+                      />
+                    </InputGroup>
+                    <FormErrorMessage fontSize="sm">
+                      {errors.purchasePrice?.message as any}
+                    </FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.purchaseUrl}>
+                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                      URL de compra
+                    </FormLabel>
+                    <Input
+                      placeholder="https://proveedor.com/item/123"
+                      size={{ base: 'md', md: 'lg' }}
+                      {...register('purchaseUrl')}
+                    />
+                    <FormErrorMessage fontSize="sm">
+                      {errors.purchaseUrl?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </Stack>
+
                 <FormControl>
-                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Liga</FormLabel>
+                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                    Liga
+                  </FormLabel>
                   <Select
                     placeholder="Seleccionar"
                     size={{ base: 'md', md: 'lg' }}
@@ -469,7 +522,10 @@ export default function PublishProduct() {
                       >
                         Arrastrá tus imágenes aquí
                       </Text>
-                      <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
+                      <Text
+                        fontSize={{ base: 'xs', md: 'sm' }}
+                        color="gray.500"
+                      >
                         o{' '}
                         <Box as="span" textDecoration="underline">
                           hacé clic para seleccionar
@@ -500,7 +556,11 @@ export default function PublishProduct() {
                       <Text fontSize="sm" color="gray.500" mt={3}>
                         Arrastrá las imágenes para cambiar el orden
                       </Text>
-                      <SimpleGrid columns={{ base: 2, md: 2 }} spacing={3} mt={2}>
+                      <SimpleGrid
+                        columns={{ base: 2, md: 2 }}
+                        spacing={3}
+                        mt={2}
+                      >
                         {previews.map((url, idx) => (
                           <Box
                             key={idx}
@@ -557,7 +617,11 @@ export default function PublishProduct() {
 
                 <Divider />
 
-                <Stack spacing={1} fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
+                <Stack
+                  spacing={1}
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  color="gray.500"
+                >
                   <Text>Recomendaciones:</Text>
                   <Text>• Formato JPG/PNG, 1500×1500, fondo claro.</Text>
                   <Text>• Mostrá el escudo o detalle principal.</Text>
@@ -568,7 +632,11 @@ export default function PublishProduct() {
             {loading && (
               <Box mt={6}>
                 <Progress value={progress} size="sm" borderRadius="md" />
-                <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
+                <Text
+                  mt={2}
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  color="gray.500"
+                >
                   Subiendo… {progress}%
                 </Text>
               </Box>

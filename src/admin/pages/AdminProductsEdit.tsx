@@ -74,6 +74,8 @@ const schema = z.object({
 
   // Usamos z.any + refine para evitar fallas de instanceof cuando el ref de RHF se encadena
   images: z.any().optional(),
+  purchasePrice: z.coerce.number().int().min(0, 'Debe ser ≥ 0').optional(),
+  purchaseUrl: z.string().url('URL inválida').optional(),
 })
 
 type FormInput = z.input<typeof schema>
@@ -113,13 +115,15 @@ export default function EditProduct() {
           seasonLabel: data.seasonLabel || '',
           seasonStart: data.seasonStart || undefined,
           description: data.description || '',
+          purchasePrice: data.purchasePrice || undefined,
+          purchaseUrl: data.purchaseUrl || undefined,
         })
         // Si hay imágenes en el producto, las mostramos como preview
         // Preferimos ProductImage ya que tiene todas las imágenes en orden
         if (data.ProductImage && data.ProductImage.length > 0) {
-          const sortedImages = data.ProductImage
-            .sort((a: any, b: any) => a.order - b.order)
-            .map((img: any) => img.imageUrl)
+          const sortedImages = data.ProductImage.sort(
+            (a: any, b: any) => a.order - b.order,
+          ).map((img: any) => img.imageUrl)
           setPreviews(sortedImages)
         } else if (data.imageUrl) {
           // Fallback: si no hay ProductImage, usar la imagen principal
@@ -160,6 +164,12 @@ export default function EditProduct() {
       if (data.seasonLabel) fd.append('seasonLabel', data.seasonLabel)
       if (typeof data.seasonStart === 'number') {
         fd.append('seasonStart', String(data.seasonStart))
+      }
+      if (typeof data.purchasePrice === 'number') {
+        fd.append('purchasePrice', String(data.purchasePrice))
+      }
+      if (data.purchaseUrl) {
+        fd.append('purchaseUrl', data.purchaseUrl)
       }
 
       // Imágenes múltiples (si se subieron nuevas)
@@ -271,7 +281,9 @@ export default function EditProduct() {
 
       const dt = new DataTransfer()
       filesArray.forEach((file) => dt.items.add(file))
-      setValue('images', dt.files as unknown as FileList, { shouldValidate: true })
+      setValue('images', dt.files as unknown as FileList, {
+        shouldValidate: true,
+      })
     }
   }
 
@@ -329,7 +341,10 @@ export default function EditProduct() {
 
         <CardBody>
           <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 6, md: 8 }}>
+            <SimpleGrid
+              columns={{ base: 1, md: 2 }}
+              spacing={{ base: 6, md: 8 }}
+            >
               {/* Columna izquierda: campos */}
               <Stack spacing={4}>
                 <FormControl isInvalid={!!errors.title} isRequired>
@@ -429,8 +444,47 @@ export default function EditProduct() {
                   </FormControl>
                 </Stack>
 
+                <Stack direction={{ base: 'column', sm: 'row' }} spacing={4}>
+                  <FormControl isInvalid={!!errors.purchasePrice}>
+                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                      Precio de compra
+                    </FormLabel>
+                    <InputGroup size={{ base: 'md', md: 'lg' }}>
+                      <InputLeftElement pointerEvents="none">
+                        <Icon as={FiDollarSign} color="gray.400" />
+                      </InputLeftElement>
+                      <Input
+                        type="number"
+                        min={0}
+                        step="1000"
+                        placeholder="200000"
+                        {...register('purchasePrice', { valueAsNumber: true })}
+                      />
+                    </InputGroup>
+                    <FormErrorMessage fontSize="sm">
+                      {errors.purchasePrice?.message as any}
+                    </FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.purchaseUrl}>
+                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                      URL de compra
+                    </FormLabel>
+                    <Input
+                      placeholder="https://proveedor.com/item/123"
+                      size={{ base: 'md', md: 'lg' }}
+                      {...register('purchaseUrl')}
+                    />
+                    <FormErrorMessage fontSize="sm">
+                      {errors.purchaseUrl?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </Stack>
+
                 <FormControl>
-                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Liga</FormLabel>
+                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                    Liga
+                  </FormLabel>
                   <Select
                     placeholder="Seleccionar"
                     size={{ base: 'md', md: 'lg' }}
@@ -502,7 +556,10 @@ export default function EditProduct() {
                       >
                         Arrastrá tus imágenes aquí
                       </Text>
-                      <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
+                      <Text
+                        fontSize={{ base: 'xs', md: 'sm' }}
+                        color="gray.500"
+                      >
                         o{' '}
                         <Box as="span" textDecoration="underline">
                           hacé clic para seleccionar
@@ -535,7 +592,11 @@ export default function EditProduct() {
                           ? 'Arrastrá las imágenes para cambiar el orden'
                           : 'Imágenes actuales (subí nuevas para reemplazarlas)'}
                       </Text>
-                      <SimpleGrid columns={{ base: 2, md: 2 }} spacing={3} mt={2}>
+                      <SimpleGrid
+                        columns={{ base: 2, md: 2 }}
+                        spacing={3}
+                        mt={2}
+                      >
                         {previews.map((url, idx) => {
                           const isNewImage = url.startsWith('blob:')
                           return (
@@ -543,48 +604,62 @@ export default function EditProduct() {
                               key={idx}
                               position="relative"
                               draggable={isNewImage}
-                              onDragStart={isNewImage ? (e) => onDragStart(e, idx) : undefined}
+                              onDragStart={
+                                isNewImage
+                                  ? (e) => onDragStart(e, idx)
+                                  : undefined
+                              }
                               onDragOver={isNewImage ? onDragOver : undefined}
-                              onDrop={isNewImage ? (e) => onDropReorder(e, idx) : undefined}
+                              onDrop={
+                                isNewImage
+                                  ? (e) => onDropReorder(e, idx)
+                                  : undefined
+                              }
                               cursor={isNewImage ? 'grab' : 'default'}
-                              _active={isNewImage ? { cursor: 'grabbing' } : undefined}
+                              _active={
+                                isNewImage ? { cursor: 'grabbing' } : undefined
+                              }
                               transition="transform 0.2s"
-                              _hover={isNewImage ? { transform: 'scale(1.02)' } : undefined}
+                              _hover={
+                                isNewImage
+                                  ? { transform: 'scale(1.02)' }
+                                  : undefined
+                              }
                             >
-                            <Image
-                              src={url}
-                              alt={`Preview ${idx + 1}`}
-                              borderRadius="xl"
-                              objectFit="cover"
-                              w="100%"
-                              h={{ base: '120px', md: '150px' }}
-                              pointerEvents="none"
-                            />
-                            <Badge
-                              position="absolute"
-                              top={2}
-                              left={2}
-                              colorScheme={idx === 0 ? 'teal' : 'gray'}
-                              fontSize="xs"
-                            >
-                              {idx === 0 ? 'Principal' : idx + 1}
-                            </Badge>
-                            {url.startsWith('blob:') && (
-                              <Button
-                                size="xs"
-                                colorScheme="red"
+                              <Image
+                                src={url}
+                                alt={`Preview ${idx + 1}`}
+                                borderRadius="xl"
+                                objectFit="cover"
+                                w="100%"
+                                h={{ base: '120px', md: '150px' }}
+                                pointerEvents="none"
+                              />
+                              <Badge
                                 position="absolute"
                                 top={2}
-                                right={2}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  removeImage(idx)
-                                }}
+                                left={2}
+                                colorScheme={idx === 0 ? 'teal' : 'gray'}
+                                fontSize="xs"
                               >
-                                ✕
-                              </Button>
-                            )}
-                          </Box>
+                                {idx === 0 ? 'Principal' : idx + 1}
+                              </Badge>
+                              {url.startsWith('blob:') && (
+                                <Button
+                                  size="xs"
+                                  colorScheme="red"
+                                  position="absolute"
+                                  top={2}
+                                  right={2}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    removeImage(idx)
+                                  }}
+                                >
+                                  ✕
+                                </Button>
+                              )}
+                            </Box>
                           )
                         })}
                       </SimpleGrid>
@@ -597,7 +672,11 @@ export default function EditProduct() {
 
                 <Divider />
 
-                <Stack spacing={1} fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
+                <Stack
+                  spacing={1}
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  color="gray.500"
+                >
                   <Text>Recomendaciones:</Text>
                   <Text>• Formato JPG/PNG, 1500×1500, fondo claro.</Text>
                   <Text>• Mostrá el escudo o detalle principal.</Text>
@@ -608,7 +687,11 @@ export default function EditProduct() {
             {saving && (
               <Box mt={6}>
                 <Progress value={progress} size="sm" borderRadius="md" />
-                <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
+                <Text
+                  mt={2}
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  color="gray.500"
+                >
                   Subiendo… {progress}%
                 </Text>
               </Box>

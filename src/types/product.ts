@@ -40,6 +40,8 @@ export interface Product {
 
   // Precios
   basePrice: number
+  purchasePrice?: number | null
+  purchaseUrl?: string | null
   ProductVariant: ProductVariant[]
 
   // Metadatos nuevos

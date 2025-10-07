@@ -8,7 +8,7 @@ export async function getProduct(id: string) {
   return data as {
     id: string
     title: string
-    price: number
+    basePrice: number
     description?: string
     imageUrl: string
     variants: {
@@ -23,7 +23,7 @@ export async function getProduct(id: string) {
 export async function getRelatedProducts(p: RelatedInput, limit = 8) {
   const params: Record<string, unknown> = { limit }
   if (p.kit) params.kit = p.kit
-  if (!p.quality && p.quality) params.quality = p.quality
+  if (p.quality) params.quality = p.quality
 
   const { data } = await api.get<{ items: Product[] }>(`/api/products`, {
     params,
