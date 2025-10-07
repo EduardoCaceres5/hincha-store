@@ -117,9 +117,11 @@ export default function EditProduct() {
           description: data.description || '',
         })
         // Si hay imágenes en el producto, las mostramos como preview
-        if (data.imageUrl) {
-          setPreviews([data.imageUrl])
+        const allImages = [data.imageUrl]
+        if (data.ProductImage && data.ProductImage.length > 0) {
+          allImages.push(...data.ProductImage.map((img: any) => img.imageUrl))
         }
+        setPreviews(allImages.filter(Boolean))
       } catch {
         toast({ title: 'No se pudo cargar el producto', status: 'error' })
       } finally {

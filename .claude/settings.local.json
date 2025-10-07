@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(pnpm add:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//c/Users/ecaceres/proyectos/personal/hincha-api/**)"
     ],
     "deny": [],
     "ask": []
