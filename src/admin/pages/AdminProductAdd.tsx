@@ -29,7 +29,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import type { AxiosProgressEvent } from 'axios'
 import { useEffect, useRef, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
-import { FaShirt } from 'react-icons/fa6'
 import {
   FiAward,
   FiDollarSign,
@@ -45,7 +44,6 @@ const schema = z.object({
 
   basePrice: z.coerce.number().int().min(1000, 'Mínimo Gs. 1.000'),
 
-  size: z.string().optional(), // seguimos creando 1 variante con este nombre
   kit: z.enum(['HOME', 'AWAY', 'THIRD', 'RETRO']).optional(),
   quality: z.enum(['FAN', 'PLAYER_VERSION'], {
     message: 'Seleccioná la calidad',
@@ -146,7 +144,7 @@ export default function PublishProduct() {
       // Variante por defecto (usa basePrice en backend si price=null/undefined)
       const variants = [
         {
-          name: data.size ?? 'Única',
+          name: 'Única',
           stock: 1,
           price: null as unknown as number | null,
         },
@@ -340,64 +338,34 @@ export default function PublishProduct() {
                   </FormErrorMessage>
                 </FormControl>
 
-                <Stack direction={{ base: 'column', sm: 'row' }} spacing={4}>
-                  <FormControl>
-                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
-                      Talle
-                    </FormLabel>
-                    <Box position="relative">
-                      <Icon
-                        as={FaShirt}
-                        color="gray.400"
-                        position="absolute"
-                        left="12px"
-                        top="50%"
-                        transform="translateY(-50%)"
-                        pointerEvents="none"
-                      />
-                      <Select
-                        placeholder="Seleccionar"
-                        pl="40px"
-                        size={{ base: 'md', md: 'lg' }}
-                        {...register('size')}
-                      >
-                        <option value="P">P</option>
-                        <option value="M">M</option>
-                        <option value="G">G</option>
-                        <option value="XG">XG</option>
-                      </Select>
-                    </Box>
-                  </FormControl>
-
-                  <FormControl isInvalid={!!errors.quality} isRequired>
-                    <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
-                      Calidad
-                    </FormLabel>
-                    <Box position="relative">
-                      <Icon
-                        as={FiAward}
-                        color="gray.400"
-                        position="absolute"
-                        left="12px"
-                        top="50%"
-                        transform="translateY(-50%)"
-                        pointerEvents="none"
-                      />
-                      <Select
-                        placeholder="Seleccionar"
-                        pl="40px"
-                        size={{ base: 'md', md: 'lg' }}
-                        {...register('quality')}
-                      >
-                        <option value="FAN">Fan</option>
-                        <option value="PLAYER_VERSION">Versión jugador</option>
-                      </Select>
-                    </Box>
-                    <FormErrorMessage fontSize="sm">
-                      {errors.quality?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                </Stack>
+                <FormControl isInvalid={!!errors.quality} isRequired>
+                  <FormLabel fontSize={{ base: 'sm', md: 'md' }}>
+                    Calidad
+                  </FormLabel>
+                  <Box position="relative">
+                    <Icon
+                      as={FiAward}
+                      color="gray.400"
+                      position="absolute"
+                      left="12px"
+                      top="50%"
+                      transform="translateY(-50%)"
+                      pointerEvents="none"
+                    />
+                    <Select
+                      placeholder="Seleccionar"
+                      pl="40px"
+                      size={{ base: 'md', md: 'lg' }}
+                      {...register('quality')}
+                    >
+                      <option value="FAN">Fan</option>
+                      <option value="PLAYER_VERSION">Versión jugador</option>
+                    </Select>
+                  </Box>
+                  <FormErrorMessage fontSize="sm">
+                    {errors.quality?.message}
+                  </FormErrorMessage>
+                </FormControl>
 
                 <Stack direction={{ base: 'column', sm: 'row' }} spacing={4}>
                   <FormControl>
