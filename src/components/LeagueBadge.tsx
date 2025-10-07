@@ -1,8 +1,9 @@
+import type { League } from '@/types/product'
 import { getLeagueBadge, translateLeague } from '@/utils/leagues'
 import { Box, Image } from '@chakra-ui/react'
 
 interface LeagueBadgeProps {
-  league: string
+  league: League
   size?: 'sm' | 'md' | 'lg'
 }
 
