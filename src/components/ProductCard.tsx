@@ -59,6 +59,7 @@ export default function ProductCard({ product }: { product: Product }) {
             objectFit="cover"
             loading="lazy"
             fallbackSrc="/placeholder-product.svg"
+            bg="white"
           />
         </AspectRatio>
 
