@@ -1,4 +1,5 @@
 import logo from '@/assets/hincha-store-logo.png'
+import RoleBadge from '@/components/RoleBadge'
 import { useAuth } from '@/hooks/useAuth'
 import {
   Box,
@@ -19,8 +20,8 @@ import {
   Spacer,
   Text,
   VStack,
-  useColorMode,
   useColorModeValue as mode,
+  useColorMode,
   useDisclosure,
 } from '@chakra-ui/react'
 import { useEffect } from 'react'
@@ -32,10 +33,16 @@ import {
   FiPackage,
   FiShoppingBag,
   FiSun,
+  FiTrendingUp,
   FiUser,
 } from 'react-icons/fi'
-import { NavLink, Outlet, useLocation, Link as RouterLink, useNavigate } from 'react-router-dom'
-import RoleBadge from '@/components/RoleBadge'
+import {
+  NavLink,
+  Outlet,
+  Link as RouterLink,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
 
 function SidebarLink({
   to,
@@ -77,7 +84,13 @@ function SidebarLink({
     </NavLink>
   )
 }
-function Sidebar({ onSelect, userName }: { onSelect?: () => void; userName?: string }) {
+function Sidebar({
+  onSelect,
+  userName,
+}: {
+  onSelect?: () => void
+  userName?: string
+}) {
   const border = mode('gray.200', 'whiteAlpha.300')
   return (
     <Box
@@ -107,6 +120,13 @@ function Sidebar({ onSelect, userName }: { onSelect?: () => void; userName?: str
       </SidebarLink>
       <SidebarLink to="/admin/pedidos" icon={FiShoppingBag} onClick={onSelect}>
         Pedidos
+      </SidebarLink>
+      <SidebarLink
+        to="/admin/transacciones"
+        icon={FiTrendingUp}
+        onClick={onSelect}
+      >
+        Transacciones
       </SidebarLink>
     </Box>
   )
@@ -237,11 +257,7 @@ export default function AdminLayout() {
                 </HStack>
               </MenuButton>
               <MenuList py={2} minW="220px">
-                <MenuItem
-                  as={RouterLink}
-                  to="/"
-                  icon={<Icon as={FiHome} />}
-                >
+                <MenuItem as={RouterLink} to="/" icon={<Icon as={FiHome} />}>
                   Ir a la tienda
                 </MenuItem>
                 <MenuItem

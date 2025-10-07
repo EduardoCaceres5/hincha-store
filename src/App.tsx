@@ -5,15 +5,16 @@ import AdminOrdersDetaill from '@/admin/pages/AdminOrdersDetaill'
 import PublishProduct from '@/admin/pages/AdminProductAdd'
 import AdminProducts from '@/admin/pages/AdminProducts'
 import EditProduct from '@/admin/pages/AdminProductsEdit'
+import AdminTransactions from '@/admin/pages/AdminTransactions'
 import AdminUsers from '@/admin/pages/AdminUsers'
 import AppFooter from '@/components/AppFooter'
 import RequireRole from '@/components/RequireRole'
+import About from '@/pages/About'
 import Checkout from '@/pages/Checkout'
 import CheckoutSuccess from '@/pages/CheckoutSucess'
 import Login from '@/pages/Login'
 import ProductDetail from '@/pages/ProductDetail'
 import Register from '@/pages/Register'
-import About from '@/pages/About'
 import { Container } from '@chakra-ui/react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="pedido/:id" element={<AdminOrdersDetaill />} />
             <Route path="productos" element={<AdminProducts />} />
             <Route path="productos/agregar" element={<PublishProduct />} />
+            <Route path="transacciones" element={<AdminTransactions />} />
             <Route path="usuarios" element={<AdminUsers />} />
             <Route path="editar/:id" element={<EditProduct />} />
           </Route>
