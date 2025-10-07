@@ -4,10 +4,11 @@ import { Box, Image } from '@chakra-ui/react'
 
 interface LeagueBadgeProps {
   league: League
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 
 const SIZES = {
+  xs: { container: '32px', image: '40px' },
   sm: { container: '50px', image: '65px' },
   md: { container: '64px', image: '80px' },
   lg: { container: '80px', image: '100px' },
