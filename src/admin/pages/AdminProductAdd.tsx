@@ -110,9 +110,13 @@ export default function PublishProduct() {
 
   useEffect(
     () => () => {
-      previews.forEach((url) => URL.revokeObjectURL(url))
+      // Solo revocar al desmontar el componente
+      previews.forEach((url) => {
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+      })
     },
-    [previews],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [], // Solo ejecutar cleanup al desmontar
   )
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
