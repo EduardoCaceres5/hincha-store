@@ -119,6 +119,10 @@ export default function ProductDetail() {
   const switchLabelColor = useColorModeValue('gray.600', 'whiteAlpha.700')
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [id])
+
+  useEffect(() => {
     let cancel = false
     ;(async () => {
       if (!id) return
