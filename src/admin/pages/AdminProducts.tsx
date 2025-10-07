@@ -4,7 +4,7 @@ import {
   getMyProducts,
 } from '@/services/myProducts'
 import type { Product } from '@/types/product'
-import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons' // NEW
+import { AddIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon } from '@chakra-ui/icons' // NEW
 import {
   AlertDialog,
   AlertDialogBody,
@@ -19,7 +19,12 @@ import {
   HStack,
   IconButton,
   Image,
-  Spinner,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  Select,
+  Skeleton,
+  SkeletonText,
   Stack,
   Table,
   Tbody,
@@ -29,6 +34,7 @@ import {
   Thead,
   Tr,
   useToast,
+  VStack,
 } from '@chakra-ui/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -49,6 +55,23 @@ export default function DashboardProducts() {
 
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+
+  // Filtros y búsqueda
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [league, setLeague] = useState('')
+  const [kit, setKit] = useState('')
+  const [quality, setQuality] = useState('')
+  const [sortBy, setSortBy] = useState('')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  // Debounce para búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const selectedIds = useMemo(
@@ -98,7 +121,16 @@ export default function DashboardProducts() {
   async function load() {
     setLoading(true)
     try {
-      const d = await getMyProducts(page, LIMIT)
+      const d = await getMyProducts({
+        page,
+        limit: LIMIT,
+        search: debouncedSearch || undefined,
+        league: league || undefined,
+        kit: kit || undefined,
+        quality: quality || undefined,
+        sortBy: sortBy || undefined,
+        sortOrder,
+      })
       setData(d)
       // limpiar selección de ítems que ya no están
       setSelected((prev) => {
@@ -113,9 +145,15 @@ export default function DashboardProducts() {
     }
   }
 
+  // Resetear a página 1 cuando cambian los filtros
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, league, kit, quality, sortBy, sortOrder])
+
   useEffect(() => {
     load()
-  }, [page])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, debouncedSearch, league, kit, quality, sortBy, sortOrder])
 
   const totalPages = useMemo(
     () => (data ? Math.max(1, Math.ceil(data.total / data.limit)) : 1),
@@ -214,6 +252,100 @@ export default function DashboardProducts() {
         Productos
       </Heading>
 
+      {/* Barra de búsqueda y filtros */}
+      <Stack spacing={3} mb={4}>
+        {/* Búsqueda */}
+        <InputGroup size={{ base: 'sm', md: 'md' }}>
+          <InputLeftElement pointerEvents="none">
+            <SearchIcon color="gray.400" />
+          </InputLeftElement>
+          <Input
+            placeholder="Buscar por título o equipo..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </InputGroup>
+
+        {/* Filtros y ordenamiento */}
+        <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
+          <Select
+            placeholder="Todas las ligas"
+            value={league}
+            onChange={(e) => setLeague(e.target.value)}
+            size={{ base: 'sm', md: 'md' }}
+          >
+            <option value="PREMIER_LEAGUE">Premier League</option>
+            <option value="LA_LIGA">La Liga</option>
+            <option value="LIGUE_1">Ligue 1</option>
+            <option value="SERIE_A">Serie A</option>
+            <option value="BUNDESLIGA">Bundesliga</option>
+            <option value="LIGA_PROFESIONAL">Liga Profesional</option>
+            <option value="INTERNACIONAL">Internacional</option>
+            <option value="LIGA_SAUDI">Liga Saudi</option>
+          </Select>
+
+          <Select
+            placeholder="Todas las equipaciones"
+            value={kit}
+            onChange={(e) => setKit(e.target.value)}
+            size={{ base: 'sm', md: 'md' }}
+          >
+            <option value="HOME">Local</option>
+            <option value="AWAY">Visitante</option>
+            <option value="THIRD">Alternativa</option>
+            <option value="RETRO">Retro</option>
+          </Select>
+
+          <Select
+            placeholder="Todas las calidades"
+            value={quality}
+            onChange={(e) => setQuality(e.target.value)}
+            size={{ base: 'sm', md: 'md' }}
+          >
+            <option value="FAN">Fan</option>
+            <option value="PLAYER_VERSION">Versión Jugador</option>
+          </Select>
+
+          <Select
+            value={`${sortBy}:${sortOrder}`}
+            onChange={(e) => {
+              const [newSortBy, newSortOrder] = e.target.value.split(':')
+              setSortBy(newSortBy)
+              setSortOrder(newSortOrder as 'asc' | 'desc')
+            }}
+            size={{ base: 'sm', md: 'md' }}
+          >
+            <option value=":desc">Más recientes</option>
+            <option value="createdAt:asc">Más antiguos</option>
+            <option value="title:asc">Título (A-Z)</option>
+            <option value="title:desc">Título (Z-A)</option>
+            <option value="basePrice:asc">Precio (menor)</option>
+            <option value="basePrice:desc">Precio (mayor)</option>
+          </Select>
+
+          {/* Botón para limpiar filtros */}
+          {(search || league || kit || quality || sortBy) && (
+            <Button
+              size={{ base: 'sm', md: 'md' }}
+              variant="outline"
+              leftIcon={<CloseIcon boxSize={3} />}
+              onClick={() => {
+                setSearch('')
+                setLeague('')
+                setKit('')
+                setQuality('')
+                setSortBy('')
+                setSortOrder('desc')
+              }}
+              flexShrink={0}
+              whiteSpace="nowrap"
+            >
+              Limpiar
+            </Button>
+          )}
+        </Stack>
+      </Stack>
+
       {/* Barra de acciones */}
       <Stack
         direction={{ base: 'column', md: 'row' }}
@@ -251,15 +383,124 @@ export default function DashboardProducts() {
       </Stack>
 
       {loading ? (
-        <HStack py={8} justify="center">
-          <Spinner />
-        </HStack>
+        <>
+          {/* Skeleton para móvil */}
+          <Box display={{ base: 'block', md: 'none' }}>
+            <Stack spacing={3}>
+              {[1, 2, 3].map((i) => (
+                <Box key={i} borderWidth="1px" borderRadius="md" p={3}>
+                  <HStack align="start" spacing={3}>
+                    <Skeleton boxSize="60px" borderRadius="md" />
+                    <Box flex="1">
+                      <SkeletonText noOfLines={2} spacing="2" />
+                      <Skeleton height="20px" width="80px" mt={2} />
+                    </Box>
+                  </HStack>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+
+          {/* Skeleton para desktop */}
+          <Box display={{ base: 'none', md: 'block' }} overflowX="auto">
+            <Table variant="simple" size="sm">
+              <Thead>
+                <Tr>
+                  <Th w="1%"></Th>
+                  <Th>Imagen</Th>
+                  <Th>Título</Th>
+                  <Th isNumeric>Precio</Th>
+                  <Th>Equipación</Th>
+                  <Th>Tipo</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Tr key={i}>
+                    <Td>
+                      <Skeleton boxSize="16px" />
+                    </Td>
+                    <Td>
+                      <Skeleton boxSize="64px" borderRadius="md" />
+                    </Td>
+                    <Td>
+                      <Skeleton height="16px" width="200px" />
+                    </Td>
+                    <Td>
+                      <Skeleton height="16px" width="80px" />
+                    </Td>
+                    <Td>
+                      <Skeleton height="16px" width="60px" />
+                    </Td>
+                    <Td>
+                      <Skeleton height="16px" width="60px" />
+                    </Td>
+                    <Td>
+                      <HStack>
+                        <Skeleton boxSize="32px" borderRadius="md" />
+                        <Skeleton boxSize="32px" borderRadius="md" />
+                      </HStack>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
+        </>
+      ) : !data?.items.length ? (
+        // Empty state
+        <VStack py={12} spacing={4}>
+          <Text fontSize="6xl" opacity={0.3}>
+            📦
+          </Text>
+          <Heading size="md" color="gray.600">
+            {search || league || kit || quality
+              ? 'No se encontraron productos'
+              : 'No hay productos aún'}
+          </Heading>
+          <Text color="gray.500" textAlign="center" maxW="md">
+            {search || league || kit || quality ? (
+              <>
+                No hay productos que coincidan con los filtros aplicados.
+                <br />
+                Intentá con otros criterios de búsqueda.
+              </>
+            ) : (
+              'Comenzá agregando tu primer producto para verlo en el catálogo.'
+            )}
+          </Text>
+          {search || league || kit || quality ? (
+            <Button
+              leftIcon={<CloseIcon />}
+              onClick={() => {
+                setSearch('')
+                setLeague('')
+                setKit('')
+                setQuality('')
+                setSortBy('')
+                setSortOrder('desc')
+              }}
+            >
+              Limpiar filtros
+            </Button>
+          ) : (
+            <Button
+              as={RouterLink}
+              to="/admin/productos/agregar"
+              colorScheme="teal"
+              leftIcon={<AddIcon />}
+            >
+              Agregar primer producto
+            </Button>
+          )}
+        </VStack>
       ) : (
         <>
           {/* Vista móvil: Cards */}
           <Box display={{ base: 'block', md: 'none' }}>
             <Stack spacing={3}>
-              {data?.items.map((p) => {
+              {data.items.map((p) => {
                 const checked = !!selected[p.id]
                 return (
                   <Box

@@ -1,13 +1,24 @@
 import api from '@/services/api'
 import { type Product } from '@/hooks/useProducts'
 
-export async function getMyProducts(page = 1, limit = 12) {
+export interface GetMyProductsParams {
+  page?: number
+  limit?: number
+  search?: string
+  league?: string
+  kit?: string
+  quality?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+export async function getMyProducts(params: GetMyProductsParams = {}) {
   const { data } = await api.get<{
     items: Product[]
     page: number
     limit: number
     total: number
-  }>(`/api/my/products`, { params: { page, limit } })
+  }>(`/api/my/products`, { params })
   return data
 }
 export async function deleteProduct(id: string) {
