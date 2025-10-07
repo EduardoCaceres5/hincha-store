@@ -1,7 +1,8 @@
+import LeagueBadge from '@/components/LeagueBadge'
 import type { Product } from '@/types/product'
 import { cldUrl } from '@/utils/cdn'
 import { formatGs } from '@/utils/format'
-import { getLeagueBadge, translateKit, translateLeague } from '@/utils/leagues'
+import { translateKit } from '@/utils/leagues'
 import {
   AspectRatio,
   Box,
@@ -61,29 +62,7 @@ export default function ProductCard({ product }: { product: Product }) {
           />
         </AspectRatio>
 
-        {showLeagueBadges && league && getLeagueBadge(league) && (
-          <Box
-            position="absolute"
-            top={2}
-            right={2}
-            bg="white"
-            borderRadius="full"
-            boxShadow="lg"
-            w="50px"
-            h="50px"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            overflow="hidden"
-          >
-            <Image
-              src={getLeagueBadge(league)}
-              alt={translateLeague(league)}
-              boxSize="65px"
-              objectFit="contain"
-            />
-          </Box>
-        )}
+        {showLeagueBadges && league && <LeagueBadge league={league} size="sm" />}
       </Box>
 
       <CardBody>

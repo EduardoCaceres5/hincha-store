@@ -1,3 +1,4 @@
+import LeagueBadge from '@/components/LeagueBadge'
 import ProductGrid from '@/components/ProductGrid'
 import { useCart } from '@/hooks/useCart'
 import { getProduct, getRelatedProducts } from '@/services/products'
@@ -58,6 +59,7 @@ const CUSTOMIZATION_FEE = 0
 const SIZES = ['P', 'M', 'G', 'XG'] as const
 
 const CUSTOMIZATION_ENABLED = import.meta.env.VITE_ENABLE_PRODUCT_CUSTOMIZATION === 'true'
+const LEAGUE_BADGES_ENABLED = import.meta.env.VITE_ENABLE_LEAGUE_BADGES === 'true'
 
 const translateKit = (kit: string) => {
   const translations: Record<string, string> = {
@@ -232,6 +234,10 @@ export default function ProductDetail() {
                 borderColor={imageBorder}
               />
             </AspectRatio>
+
+            {LEAGUE_BADGES_ENABLED && (product as any).league && (
+              <LeagueBadge league={(product as any).league} size="md" />
+            )}
 
             {images.length > 1 && (
               <>
