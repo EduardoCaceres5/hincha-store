@@ -24,7 +24,6 @@ export default function Catalog() {
   const initialFilters: CatalogFilters = useMemo(
     () => ({
       search: sp.get('search') || undefined,
-      size: sp.get('size') || undefined,
       condition: sp.get('condition') || undefined,
       sort: (sp.get('sort') as CatalogFilters['sort']) || 'createdAt:desc',
     }),
@@ -38,7 +37,6 @@ export default function Catalog() {
   useEffect(() => {
     const q = new URLSearchParams()
     if (filters.search) q.set('search', filters.search)
-    if (filters.size) q.set('size', filters.size)
     if (filters.condition) q.set('condition', filters.condition)
     if (filters.sort) q.set('sort', filters.sort)
     q.set('page', String(page))
@@ -96,10 +94,6 @@ export default function Catalog() {
     setPage(1)
     setFilters((f) => ({ ...f, search: v || undefined }))
   }
-  function onSizeChange(v: string) {
-    setPage(1)
-    setFilters((f) => ({ ...f, size: v || undefined }))
-  }
   function onCondChange(v: string) {
     setPage(1)
     setFilters((f) => ({ ...f, condition: v || undefined }))
@@ -131,17 +125,6 @@ export default function Catalog() {
           placeholder="Buscar..."
           onChange={(e) => onSearchChange(e.target.value)}
         />
-        <Select
-          placeholder="Talle"
-          defaultValue={filters.size}
-          onChange={(e) => onSizeChange(e.target.value)}
-          maxW="36"
-        >
-          <option value="S">S</option>
-          <option value="M">M</option>
-          <option value="L">L</option>
-          <option value="XL">XL</option>
-        </Select>
         <Select
           placeholder="Calidad"
           defaultValue={filters.condition}
