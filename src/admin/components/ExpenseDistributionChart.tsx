@@ -32,7 +32,15 @@ export function ExpenseDistributionChart({
     percentage: item.percentage,
   }))
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: {
+    active?: boolean
+    payload?: Array<{
+      name: string
+      value: number
+      fill: string
+      payload: { percentage: number }
+    }>
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div
@@ -72,12 +80,15 @@ export function ExpenseDistributionChart({
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percentage }) => `${name} (${percentage.toFixed(0)}%)`}
+                label={(props: any) => {
+                  const { name, percentage } = props
+                  return `${name} (${Number(percentage).toFixed(0)}%)`
+                }}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
               >
-                {chartData.map((entry, index) => (
+                {chartData.map((_entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
@@ -87,8 +98,8 @@ export function ExpenseDistributionChart({
               <Tooltip content={<CustomTooltip />} />
               <Legend
                 wrapperStyle={{ fontSize: 12 }}
-                formatter={(value, entry: any) =>
-                  `${value} - ${formatCurrency(entry.payload.value)}`
+                formatter={(value: any, entry: any) =>
+                  `${value} - ${formatCurrency(entry?.payload?.value || 0)}`
                 }
               />
             </PieChart>
