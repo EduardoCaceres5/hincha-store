@@ -57,7 +57,6 @@ export default function ProductCard({ product }: { product: Product }) {
     h: 50,
     crop: 'fill',
     gravity: 'auto',
-    e: 'blur:1000',
   })
 
   const isLowStock = stock !== undefined && stock > 0 && stock <= 5
