@@ -108,11 +108,11 @@ export default function Home() {
       <HeroSection />
 
       {/* Categorías mejoradas */}
-      <Box bg={bgColor} py={8}>
+      <Box bg={bgColor} py={{ base: 10, md: 16 }}>
         <Container maxW="container.xl">
-          <VStack spacing={4} align="start">
-            <Heading size="md">Explorar por categoría</Heading>
-            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} w="full">
+          <VStack spacing={6} align="start">
+            <Heading size="lg" letterSpacing="-0.02em">Explorar por categoría</Heading>
+            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={{ base: 4, md: 6 }} w="full">
               {categories.map((c) => (
                 <Box
                   key={c.name}
@@ -146,7 +146,7 @@ export default function Home() {
       </Box>
 
       {/* Nuevos ingresos */}
-      <Container maxW="container.xl" py={12}>
+      <Container maxW="container.xl" py={{ base: 12, md: 20 }}>
         <SectionHeader
           title="Nuevos ingresos"
           subtitle="Las últimas camisetas agregadas a la tienda"
@@ -165,7 +165,7 @@ export default function Home() {
       </Container>
 
       {/* Tendencias */}
-      <Box bg={bgColor} py={12}>
+      <Box bg={bgColor} py={{ base: 12, md: 20 }}>
         <Container maxW="container.xl">
           <SectionHeader
             title="Tendencias"
@@ -206,7 +206,7 @@ export default function Home() {
       </Box>
 
       {/* CTA vendedor */}
-      <Container maxW="container.xl" py={12}>
+      <Container maxW="container.xl" py={{ base: 12, md: 20 }}>
         <HomePromoBanner />
       </Container>
     </Box>

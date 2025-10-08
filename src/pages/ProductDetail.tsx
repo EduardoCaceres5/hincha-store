@@ -228,7 +228,13 @@ export default function ProductDetail() {
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8}>
         {/* Galería - Carousel */}
         <Stack>
-          <Box position="relative" bg="white" rounded="2xl">
+          <Box
+            position="relative"
+            bg="white"
+            rounded="2xl"
+            overflow="hidden"
+            boxShadow="lg"
+          >
             <AspectRatio ratio={1}>
               <Image
                 src={images[currentImageIndex]}
@@ -237,6 +243,12 @@ export default function ProductDetail() {
                 rounded="2xl"
                 border="1px solid"
                 borderColor={imageBorder}
+                loading="lazy"
+                style={{
+                  backgroundImage: `url(${images[currentImageIndex].replace(/w_\d+/, 'w_50').replace(/h_\d+/, 'h_50').replace(/c_\w+/, 'c_fill').concat(',e_blur:1000')})`,
+                  backgroundSize: 'cover',
+                }}
+                transition="opacity 0.3s ease"
               />
             </AspectRatio>
 
@@ -306,22 +318,47 @@ export default function ProductDetail() {
           </Box>
 
           {images.length > 1 && (
-            <HStack spacing={3} overflowX="auto">
+            <HStack
+              spacing={3}
+              overflowX="auto"
+              pb={2}
+              css={{
+                '&::-webkit-scrollbar': {
+                  height: '8px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: 'transparent',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: useColorModeValue('#CBD5E0', '#4A5568'),
+                  borderRadius: '4px',
+                },
+              }}
+            >
               {images.map((src, i) => (
-                <Box key={i} bg="white" rounded="xl" flexShrink={0}>
+                <Box
+                  key={i}
+                  bg="white"
+                  rounded="xl"
+                  flexShrink={0}
+                  boxShadow={i === currentImageIndex ? 'lg' : 'sm'}
+                  transform={i === currentImageIndex ? 'scale(1.05)' : 'scale(1)'}
+                  transition="all 0.2s"
+                >
                   <AspectRatio ratio={1} w="88px">
                     <Image
                       src={src}
                       alt={`vista ${i + 1}`}
                       objectFit="cover"
                       rounded="xl"
-                      border="2px solid"
+                      border="3px solid"
                       borderColor={
-                        i === currentImageIndex ? 'teal.400' : 'whiteAlpha.300'
+                        i === currentImageIndex ? 'brand.500' : 'transparent'
                       }
                       cursor="pointer"
                       onClick={() => setCurrentImageIndex(i)}
-                      _hover={{ borderColor: 'teal.300' }}
+                      _hover={{ borderColor: 'brand.400' }}
+                      loading="lazy"
                     />
                   </AspectRatio>
                 </Box>

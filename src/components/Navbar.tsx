@@ -75,8 +75,11 @@ export default function Navbar() {
       bg={bg}
       borderBottom="1px"
       borderColor={border}
+      backdropFilter="blur(10px)"
+      bgColor={useColorModeValue('rgba(255,255,255,0.95)', 'rgba(26,32,44,0.95)')}
+      boxShadow="sm"
     >
-      <Flex h={{ base: 16, md: 20 }} align="center" px={{ base: 4, md: 6 }}>
+      <Flex h={{ base: 16, md: 24 }} align="center" px={{ base: 4, md: 8 }}>
         {/* Mobile menu button */}
         <Show below="md">
           <MobileMenu />
@@ -87,10 +90,11 @@ export default function Navbar() {
           as={RouterLink}
           to="/"
           spacing={3}
-          _hover={{ textDecoration: 'none' }}
+          _hover={{ textDecoration: 'none', transform: 'scale(1.02)' }}
+          transition="transform 0.2s"
           flexShrink={0}
         >
-          <Box w={{ base: 44, md: 52 }} h={{ base: 12, md: 14 }}>
+          <Box w={{ base: 40, md: 56 }} h={{ base: 10, md: 16 }}>
             <Image
               src={logo}
               alt="Hincha Store"
