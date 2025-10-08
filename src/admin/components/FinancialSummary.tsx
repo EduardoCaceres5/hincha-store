@@ -1,8 +1,8 @@
+import type { FinancialSummary as FinancialSummaryType } from '@/services/dashboard'
 import {
   Box,
   Card,
   CardBody,
-  CardHeader,
   Icon,
   SimpleGrid,
   Stat,
@@ -15,7 +15,6 @@ import {
 } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import { FiDollarSign, FiTrendingDown, FiTrendingUp } from 'react-icons/fi'
-import type { FinancialSummary as FinancialSummaryType } from '@/services/dashboard'
 
 const MotionCard = motion(Card)
 
@@ -25,8 +24,6 @@ interface FinancialSummaryProps {
 
 export function FinancialSummary({ data }: FinancialSummaryProps) {
   const cardBg = useColorModeValue('white', 'gray.800')
-  const profitColor = useColorModeValue('green.500', 'green.300')
-  const lossColor = useColorModeValue('red.500', 'red.300')
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('es-PY', {

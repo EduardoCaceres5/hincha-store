@@ -1,3 +1,4 @@
+import type { PerformanceIndicators as PerformanceIndicatorsType } from '@/services/dashboard'
 import {
   Badge,
   Box,
@@ -21,7 +22,6 @@ import {
 } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import { FiAward, FiTrendingUp } from 'react-icons/fi'
-import type { PerformanceIndicators as PerformanceIndicatorsType } from '@/services/dashboard'
 
 const MotionCard = motion(Card)
 const MotionListItem = motion(ListItem)
@@ -217,7 +217,7 @@ export function PerformanceIndicators({ data }: PerformanceIndicatorsProps) {
                 <Text fontSize="md" fontWeight="bold" mb={4}>
                   Categorías de Gastos
                 </Text>
-                {data.expenseCategories?.slice(0, 5).map((category, index) => (
+                {data.expenseCategories?.slice(0, 5).map((category) => (
                   <Box key={category.category} mb={4}>
                     <Flex justify="space-between" mb={2}>
                       <Text fontSize="sm" fontWeight="medium">

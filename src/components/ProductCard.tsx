@@ -10,7 +10,6 @@ import {
   Button,
   Card,
   CardBody,
-  Divider,
   HStack,
   Image,
   LinkBox,
@@ -29,13 +28,13 @@ const MotionImage = motion(Image)
 
 export default function ProductCard({ product }: { product: Product }) {
   const nav = useNavigate()
-  const { id, title, basePrice, imageUrl, quality, kit, league, ProductImage, stock } =
+  const { id, title, basePrice, imageUrl, quality, kit, league, ProductImage } =
     product
 
+  const stock = 0
   const showLeagueBadges = import.meta.env.VITE_ENABLE_LEAGUE_BADGES === 'true'
 
   const cardBg = useColorModeValue('white', 'gray.800')
-  const priceBg = useColorModeValue('brand.50', 'brand.900')
   const priceColor = useColorModeValue('brand.700', 'brand.200')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
 
@@ -104,7 +103,9 @@ export default function ProductCard({ product }: { product: Product }) {
           />
         </AspectRatio>
 
-        {showLeagueBadges && league && <LeagueBadge league={league} size="sm" />}
+        {showLeagueBadges && league && (
+          <LeagueBadge league={league} size="sm" />
+        )}
 
         {isOutOfStock && (
           <Badge
@@ -151,7 +152,12 @@ export default function ProductCard({ product }: { product: Product }) {
 
           <HStack spacing={1} flexWrap="wrap">
             {kit && (
-              <Tag size="sm" colorScheme="purple" borderRadius="full" fontSize="xs">
+              <Tag
+                size="sm"
+                colorScheme="purple"
+                borderRadius="full"
+                fontSize="xs"
+              >
                 {translateKit(kit)}
               </Tag>
             )}
