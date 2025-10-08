@@ -31,7 +31,6 @@ export default function ProductCard({ product }: { product: Product }) {
   const { id, title, basePrice, imageUrl, quality, kit, league, ProductImage } =
     product
 
-  const stock = 10
   const showLeagueBadges = import.meta.env.VITE_ENABLE_LEAGUE_BADGES === 'true'
 
   const cardBg = useColorModeValue('white', 'gray.800')
@@ -59,8 +58,8 @@ export default function ProductCard({ product }: { product: Product }) {
     gravity: 'auto',
   })
 
-  const isLowStock = stock !== undefined && stock > 0 && stock <= 5
-  const isOutOfStock = stock !== undefined && stock === 0
+  const isLowStock = false
+  const isOutOfStock = false
 
   return (
     <LinkBox
