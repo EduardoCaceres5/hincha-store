@@ -129,7 +129,7 @@ export default function ProductCard({ product }: { product: Product }) {
             px={3}
             py={1}
           >
-            ¡Últimas {stock} unidades!
+            ¡Últimas unidades!
           </Badge>
         )}
       </MotionBox>
