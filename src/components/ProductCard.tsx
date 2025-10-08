@@ -31,7 +31,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const { id, title, basePrice, imageUrl, quality, kit, league, ProductImage } =
     product
 
-  const stock = 0
+  const stock = 10
   const showLeagueBadges = import.meta.env.VITE_ENABLE_LEAGUE_BADGES === 'true'
 
   const cardBg = useColorModeValue('white', 'gray.800')
