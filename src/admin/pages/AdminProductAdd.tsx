@@ -44,7 +44,11 @@ const schema = z.object({
 
   basePrice: z.coerce.number().int().min(1000, 'Mínimo Gs. 1.000'),
 
-  purchasePrice: z.coerce.number().int().min(0, 'Debe ser ≥ 0').optional(),
+  purchasePrice: z.coerce
+    .number()
+    .min(0, 'Debe ser ≥ 0')
+    .transform((val) => Math.round(val * 100) / 100)
+    .optional(),
   purchaseUrl: z.string().url('URL inválida').optional(),
 
   kit: z.enum(['HOME', 'AWAY', 'THIRD', 'RETRO']).optional(),
@@ -422,7 +426,7 @@ export default function PublishProduct() {
                       <Input
                         type="number"
                         min={0}
-                        step="1000"
+                        step="0.01"
                         placeholder="200000"
                         {...register('purchasePrice', { valueAsNumber: true })}
                       />

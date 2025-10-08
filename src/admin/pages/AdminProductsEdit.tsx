@@ -74,7 +74,11 @@ const schema = z.object({
 
   // Usamos z.any + refine para evitar fallas de instanceof cuando el ref de RHF se encadena
   images: z.any().optional(),
-  purchasePrice: z.coerce.number().int().min(0, 'Debe ser ≥ 0').optional(),
+  purchasePrice: z.coerce
+    .number()
+    .min(0, 'Debe ser ≥ 0')
+    .transform((val) => Math.round(val * 100) / 100)
+    .optional(),
   purchaseUrl: z.string().url('URL inválida').optional(),
 })
 
@@ -456,7 +460,7 @@ export default function EditProduct() {
                       <Input
                         type="number"
                         min={0}
-                        step="1000"
+                        step="0.01"
                         placeholder="200000"
                         {...register('purchasePrice', { valueAsNumber: true })}
                       />
