@@ -4,10 +4,7 @@ import {
   getMyProducts,
 } from '@/services/myProducts'
 import type { Product } from '@/types/product'
-import {
-  publishMissingProducts,
-  type PublishMissingResponse,
-} from '@/services/instagram'
+import { publishMissingProducts } from '@/services/instagram'
 import { AddIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon, ExternalLinkIcon } from '@chakra-ui/icons' // NEW
 import {
   AlertDialog,
