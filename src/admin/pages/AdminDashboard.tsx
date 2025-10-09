@@ -25,17 +25,7 @@ import {
   Thead,
   Tr,
   useColorModeValue,
-  useToast,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  CloseButton,
-  VStack,
-  HStack,
-  Icon,
 } from '@chakra-ui/react'
-import { FaInstagram } from 'react-icons/fa'
 import { useCallback, useEffect, useState } from 'react'
 import { useDashboardCache } from '@/hooks/useDashboardCache'
 import {
@@ -69,10 +59,6 @@ import { FinancialTrendChart } from '@/admin/components/FinancialTrendChart'
 import { MonthlyComparisonChart } from '@/admin/components/MonthlyComparisonChart'
 import { ExpenseDistributionChart } from '@/admin/components/ExpenseDistributionChart'
 import { PerformanceIndicators } from '@/admin/components/PerformanceIndicators'
-import {
-  publishMissingProducts,
-  type PublishMissingResponse,
-} from '@/services/instagram'
 
 export default function AdminDashboard() {
   const { stats, salesChart, topProducts, recentOrders, loading, refetch } =
@@ -94,12 +80,6 @@ export default function AdminDashboard() {
   const [performanceIndicators, setPerformanceIndicators] =
     useState<PerformanceIndicatorsType | null>(null)
   const [financialLoading, setFinancialLoading] = useState(false)
-
-  // Estados para Instagram
-  const [instagramLoading, setInstagramLoading] = useState(false)
-  const [instagramResult, setInstagramResult] =
-    useState<PublishMissingResponse | null>(null)
-  const toast = useToast()
 
   // Función para cargar métricas financieras
   const loadFinancialMetrics = useCallback(async () => {
@@ -133,58 +113,6 @@ export default function AdminDashboard() {
 
   const handleFilterChange = (newFilters: DashboardFilters) => {
     setFilters(newFilters)
-  }
-
-  // Función para publicar productos faltantes en Instagram
-  const handlePublishMissing = async () => {
-    setInstagramLoading(true)
-    setInstagramResult(null)
-
-    try {
-      const result = await publishMissingProducts()
-      setInstagramResult(result)
-
-      if (result.summary.total === 0) {
-        toast({
-          title: 'Todo al día',
-          description: 'Todos los productos ya están publicados en Instagram',
-          status: 'info',
-          duration: 5000,
-          isClosable: true,
-        })
-      } else if (result.summary.success > 0) {
-        toast({
-          title: '¡Publicación exitosa!',
-          description: `${result.summary.success} producto(s) publicado(s) en Instagram`,
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        })
-      }
-
-      if (result.summary.errors > 0) {
-        toast({
-          title: 'Algunos errores',
-          description: `${result.summary.errors} producto(s) tuvieron errores`,
-          status: 'warning',
-          duration: 5000,
-          isClosable: true,
-        })
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'No se pudo publicar en Instagram',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      })
-    } finally {
-      setInstagramLoading(false)
-    }
   }
 
   const cardBg = useColorModeValue('white', 'gray.800')
@@ -221,82 +149,19 @@ export default function AdminDashboard() {
       {/* Header with Refresh Button */}
       <Flex justifyContent="space-between" alignItems="center" mb={6} flexWrap="wrap" gap={3}>
         <Heading size="lg">Dashboard Financiero</Heading>
-        <HStack spacing={2}>
-          <Button
-            leftIcon={<Icon as={FaInstagram} />}
-            onClick={handlePublishMissing}
-            isLoading={instagramLoading}
-            colorScheme="purple"
-            size="sm"
-          >
-            Publicar faltantes
-          </Button>
-          <Button
-            leftIcon={<RepeatIcon />}
-            onClick={() => {
-              refetch()
-              loadFinancialMetrics()
-            }}
-            isLoading={loading || financialLoading}
-            colorScheme="blue"
-            size="sm"
-          >
-            Recargar datos
-          </Button>
-        </HStack>
-      </Flex>
-
-      {/* Instagram Result Alert */}
-      {instagramResult && instagramResult.summary.total > 0 && (
-        <Alert
-          status={
-            instagramResult.summary.errors === 0
-              ? 'success'
-              : instagramResult.summary.success > 0
-              ? 'warning'
-              : 'error'
-          }
-          variant="subtle"
-          mb={6}
-          borderRadius="md"
+        <Button
+          leftIcon={<RepeatIcon />}
+          onClick={() => {
+            refetch()
+            loadFinancialMetrics()
+          }}
+          isLoading={loading || financialLoading}
+          colorScheme="blue"
+          size="sm"
         >
-          <AlertIcon />
-          <Box flex="1">
-            <AlertTitle>
-              {instagramResult.message}
-            </AlertTitle>
-            <AlertDescription display="block">
-              <VStack align="start" spacing={1} mt={2}>
-                <Text fontSize="sm">
-                  ✅ Exitosos: {instagramResult.summary.success} | ❌ Errores:{' '}
-                  {instagramResult.summary.errors} | ⚠️ Saltados:{' '}
-                  {instagramResult.summary.skipped}
-                </Text>
-                {instagramResult.results.filter((r) => r.status === 'error')
-                  .length > 0 && (
-                  <Box fontSize="xs" color="red.600" mt={2}>
-                    <Text fontWeight="bold">Errores:</Text>
-                    {instagramResult.results
-                      .filter((r) => r.status === 'error')
-                      .map((r, i) => (
-                        <Text key={i}>
-                          • {r.title}: {r.error}
-                        </Text>
-                      ))}
-                  </Box>
-                )}
-              </VStack>
-            </AlertDescription>
-          </Box>
-          <CloseButton
-            alignSelf="flex-start"
-            position="relative"
-            right={-1}
-            top={-1}
-            onClick={() => setInstagramResult(null)}
-          />
-        </Alert>
-      )}
+          Recargar datos
+        </Button>
+      </Flex>
 
       {/* Filtros */}
       <DashboardFiltersComponent onFilterChange={handleFilterChange} />
