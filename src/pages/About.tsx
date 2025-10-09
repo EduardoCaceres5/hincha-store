@@ -1,19 +1,34 @@
 import {
   Box,
   Container,
+  Divider,
   Heading,
-  Text,
+  Icon,
   SimpleGrid,
   Stack,
-  Icon,
+  Text,
   VStack,
   useColorModeValue as mode,
-  Divider,
 } from '@chakra-ui/react'
-import { FiTruck, FiStar, FiCheck, FiHeart, FiShield, FiPackage } from 'react-icons/fi'
 import { useEffect } from 'react'
+import {
+  FiCheck,
+  FiHeart,
+  FiPackage,
+  FiShield,
+  FiStar,
+  FiTruck,
+} from 'react-icons/fi'
 
-function FeatureCard({ icon, title, description }: { icon: any; title: string; description: string }) {
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: any
+  title: string
+  description: string
+}) {
   const cardBg = mode('white', 'gray.800')
   const borderColor = mode('gray.200', 'gray.700')
 
@@ -26,7 +41,9 @@ function FeatureCard({ icon, title, description }: { icon: any; title: string; d
       borderColor={borderColor}
     >
       <Icon as={icon} boxSize={8} color="teal.500" mb={3} />
-      <Heading size="sm" mb={2}>{title}</Heading>
+      <Heading size="sm" mb={2}>
+        {title}
+      </Heading>
       <Text fontSize="sm" color={mode('gray.600', 'gray.400')}>
         {description}
       </Text>
@@ -34,10 +51,18 @@ function FeatureCard({ icon, title, description }: { icon: any; title: string; d
   )
 }
 
-function ValueItem({ title, description }: { title: string; description: string }) {
+function ValueItem({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
   return (
     <Box>
-      <Heading size="sm" mb={1}>{title}</Heading>
+      <Heading size="sm" mb={1}>
+        {title}
+      </Heading>
       <Text fontSize="sm" color={mode('gray.600', 'gray.400')}>
         {description}
       </Text>
@@ -59,7 +84,7 @@ export default function About() {
         py={{ base: 8, md: 12 }}
         bgGradient={mode(
           'linear(to-r, teal.500, teal.600)',
-          'linear(to-r, teal.600, teal.700)'
+          'linear(to-r, teal.600, teal.700)',
         )}
         color="white"
         borderRadius="xl"
@@ -72,8 +97,8 @@ export default function About() {
             </Heading>
             <Text fontSize={{ base: 'md', md: 'lg' }} maxW="2xl" opacity={0.95}>
               Somos una marca dedicada a los verdaderos fanáticos del fútbol.
-              Creamos camisetas y equipos deportivos con diseños exclusivos y
-              la mejor calidad para que lleves tus colores con orgullo.
+              Tenemos camisetas y equipos deportivos con diseños exclusivos y la
+              mejor calidad para que lleves tus colores con orgullo.
             </Text>
           </VStack>
         </Container>
@@ -84,10 +109,11 @@ export default function About() {
         <VStack spacing={6} align="start">
           <Heading size="lg">Nuestra Misión</Heading>
           <Text fontSize="md" color={mode('gray.700', 'gray.300')}>
-            En Hincha Store, creemos que cada camiseta cuenta una historia. Nuestra misión es
-            ofrecer productos de la más alta calidad que representen la pasión y el orgullo de
-            ser hincha. Trabajamos con materiales premium y diseños exclusivos para que puedas
-            expresar tu amor por el fútbol de la mejor manera.
+            En Hincha Store, creemos que cada camiseta cuenta una historia.
+            Nuestra misión es ofrecer productos de la más alta calidad que
+            representen la pasión y el orgullo de ser hincha. Trabajamos con
+            materiales premium y diseños exclusivos para que puedas expresar tu
+            amor por el fútbol de la mejor manera.
           </Text>
         </VStack>
       </Container>
@@ -135,7 +161,9 @@ export default function About() {
 
       {/* Nuestros Valores */}
       <Container maxW="container.lg" mb={12}>
-        <Heading size="lg" mb={8}>Nuestros Valores</Heading>
+        <Heading size="lg" mb={8}>
+          Nuestros Valores
+        </Heading>
         <Stack spacing={6}>
           <ValueItem
             title="Calidad ante todo"
@@ -182,8 +210,13 @@ export default function About() {
                 1
               </Box>
               <Heading size="sm">Explorá el catálogo</Heading>
-              <Text fontSize="sm" textAlign="center" color={mode('gray.600', 'gray.400')}>
-                Navegá por nuestra colección de camisetas y encontrá la que representa tu pasión.
+              <Text
+                fontSize="sm"
+                textAlign="center"
+                color={mode('gray.600', 'gray.400')}
+              >
+                Navegá por nuestra colección de camisetas y encontrá la que
+                representa tu pasión.
               </Text>
             </VStack>
 
@@ -203,8 +236,13 @@ export default function About() {
                 2
               </Box>
               <Heading size="sm">Hacé tu pedido</Heading>
-              <Text fontSize="sm" textAlign="center" color={mode('gray.600', 'gray.400')}>
-                Seleccioná tu talle, agregá al carrito y completá tu compra de forma segura.
+              <Text
+                fontSize="sm"
+                textAlign="center"
+                color={mode('gray.600', 'gray.400')}
+              >
+                Seleccioná tu talle, agregá al carrito y completá tu compra de
+                forma segura.
               </Text>
             </VStack>
 
@@ -224,7 +262,11 @@ export default function About() {
                 3
               </Box>
               <Heading size="sm">Recibilo en tu casa</Heading>
-              <Text fontSize="sm" textAlign="center" color={mode('gray.600', 'gray.400')}>
+              <Text
+                fontSize="sm"
+                textAlign="center"
+                color={mode('gray.600', 'gray.400')}
+              >
                 Tu pedido llega rápido y seguro. ¡Listo para lucir tus colores!
               </Text>
             </VStack>

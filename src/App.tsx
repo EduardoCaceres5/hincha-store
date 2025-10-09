@@ -9,6 +9,7 @@ import AdminTransactions from '@/admin/pages/AdminTransactions'
 import AdminUsers from '@/admin/pages/AdminUsers'
 import AppFooter from '@/components/AppFooter'
 import RequireRole from '@/components/RequireRole'
+import WhatsAppButton from '@/components/WhatsAppButton'
 import About from '@/pages/About'
 import Checkout from '@/pages/Checkout'
 import CheckoutSuccess from '@/pages/CheckoutSucess'
@@ -68,6 +69,7 @@ export default function App() {
         </Routes>
       )}
       {!isAdminRoute && <AppFooter />}
+      {!isAdminRoute && <WhatsAppButton />}
     </>
   )
 }
