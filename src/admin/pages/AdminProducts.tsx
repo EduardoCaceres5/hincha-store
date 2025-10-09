@@ -4,7 +4,11 @@ import {
   getMyProducts,
 } from '@/services/myProducts'
 import type { Product } from '@/types/product'
-import { AddIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon } from '@chakra-ui/icons' // NEW
+import {
+  publishMissingProducts,
+  type PublishMissingResponse,
+} from '@/services/instagram'
+import { AddIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon, ExternalLinkIcon } from '@chakra-ui/icons' // NEW
 import {
   AlertDialog,
   AlertDialogBody,
@@ -12,16 +16,20 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
+  Badge,
   Box,
   Button,
   Checkbox,
+  Flex,
   Heading,
   HStack,
+  Icon,
   IconButton,
   Image,
   Input,
   InputGroup,
   InputLeftElement,
+  Link,
   Select,
   Skeleton,
   SkeletonText,
@@ -32,10 +40,12 @@ import {
   Text,
   Th,
   Thead,
+  Tooltip,
   Tr,
   useToast,
   VStack,
 } from '@chakra-ui/react'
+import { FaInstagram } from 'react-icons/fa'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Link as RouterLink,
@@ -93,6 +103,9 @@ export default function DashboardProducts() {
 
   const [confirmBulkOpen, setConfirmBulkOpen] = useState(false)
   const [bulkLoading, setBulkLoading] = useState(false)
+
+  // Estados para Instagram
+  const [instagramLoading, setInstagramLoading] = useState(false)
 
   const toast = useToast()
   const nav = useNavigate()
@@ -182,6 +195,13 @@ export default function DashboardProducts() {
     setSelected((prev) => ({ ...prev, [id]: checked }))
   }
 
+  // Función auxiliar para obtener URL de Instagram
+  const getInstagramUrl = (postId: string) => {
+    // Usar el endpoint de la API que redirige al permalink correcto
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+    return `${apiBaseUrl}/api/instagram/permalink/${postId}`
+  }
+
   async function onDeleteOne() {
     if (!deletingOne) return
     try {
@@ -246,11 +266,74 @@ export default function DashboardProducts() {
     }
   }
 
+  // Función para publicar productos faltantes en Instagram
+  async function handlePublishMissing() {
+    setInstagramLoading(true)
+
+    try {
+      const result = await publishMissingProducts()
+
+      if (result.summary.total === 0) {
+        toast({
+          title: 'Todo al día',
+          description: 'Todos los productos ya están publicados en Instagram',
+          status: 'info',
+          duration: 5000,
+          isClosable: true,
+        })
+      } else if (result.summary.success > 0) {
+        toast({
+          title: '¡Publicación exitosa!',
+          description: `${result.summary.success} producto(s) publicado(s) en Instagram`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        })
+        // Recargar la lista para mostrar los nuevos estados
+        load()
+      }
+
+      if (result.summary.errors > 0) {
+        toast({
+          title: 'Algunos errores',
+          description: `${result.summary.errors} producto(s) tuvieron errores`,
+          status: 'warning',
+          duration: 5000,
+          isClosable: true,
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo publicar en Instagram',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    } finally {
+      setInstagramLoading(false)
+    }
+  }
+
   return (
     <Box>
-      <Heading size="lg" mb={4}>
-        Productos
-      </Heading>
+      <Flex justify="space-between" align="center" mb={4} flexWrap="wrap" gap={3}>
+        <Heading size="lg">
+          Productos
+        </Heading>
+        <Button
+          leftIcon={<Icon as={FaInstagram} />}
+          onClick={handlePublishMissing}
+          isLoading={instagramLoading}
+          colorScheme="purple"
+          size="sm"
+        >
+          Publicar faltantes en IG
+        </Button>
+      </Flex>
 
       {/* Barra de búsqueda y filtros */}
       <Stack spacing={3} mb={4}>
@@ -412,6 +495,7 @@ export default function DashboardProducts() {
                   <Th isNumeric>Precio</Th>
                   <Th>Equipación</Th>
                   <Th>Tipo</Th>
+                  <Th>Instagram</Th>
                   <Th></Th>
                 </Tr>
               </Thead>
@@ -429,6 +513,9 @@ export default function DashboardProducts() {
                     </Td>
                     <Td>
                       <Skeleton height="16px" width="80px" />
+                    </Td>
+                    <Td>
+                      <Skeleton height="16px" width="60px" />
                     </Td>
                     <Td>
                       <Skeleton height="16px" width="60px" />
@@ -534,6 +621,18 @@ export default function DashboardProducts() {
                           <Text>•</Text>
                           <Text>{p.quality || '-'}</Text>
                         </HStack>
+                        {p.instagramPostId && (
+                          <Link
+                            href={getInstagramUrl(p.instagramPostId)}
+                            isExternal
+                            mt={1}
+                          >
+                            <Badge colorScheme="purple" fontSize="xs">
+                              <Icon as={FaInstagram} mr={1} />
+                              Ver en IG
+                            </Badge>
+                          </Link>
+                        )}
                       </Box>
                       <HStack>
                         <IconButton
@@ -577,6 +676,7 @@ export default function DashboardProducts() {
                   <Th isNumeric>Precio</Th>
                   <Th>Equipación</Th>
                   <Th>Tipo</Th>
+                  <Th>Instagram</Th>
                   <Th></Th>
                 </Tr>
               </Thead>
@@ -604,6 +704,26 @@ export default function DashboardProducts() {
                       <Td isNumeric>{p.basePrice.toLocaleString('es-PY')}</Td>
                       <Td>{p.kit || '-'}</Td>
                       <Td>{p.quality || '-'}</Td>
+                      <Td>
+                        {p.instagramPostId ? (
+                          <Tooltip label="Ver publicación en Instagram" placement="top">
+                            <Link
+                              href={getInstagramUrl(p.instagramPostId)}
+                              isExternal
+                            >
+                              <Badge colorScheme="purple" fontSize="xs" cursor="pointer">
+                                <Icon as={FaInstagram} mr={1} />
+                                Publicado
+                                <ExternalLinkIcon ml={1} boxSize={2.5} />
+                              </Badge>
+                            </Link>
+                          </Tooltip>
+                        ) : (
+                          <Badge colorScheme="gray" fontSize="xs">
+                            No publicado
+                          </Badge>
+                        )}
+                      </Td>
                       <Td>
                         <HStack>
                           <IconButton

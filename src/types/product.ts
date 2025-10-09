@@ -56,6 +56,9 @@ export interface Product {
   imagePublicId?: string | null
   ProductImage?: ProductImage[] // múltiples imágenes
 
+  // Instagram
+  instagramPostId?: string | null
+
   // Auditoría
   ownerId: string
   createdAt: string // ISO string (conviene tipar como string si llega vía API)
