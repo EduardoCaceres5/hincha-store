@@ -28,7 +28,17 @@ import {
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react'
-import { FiMoon, FiShoppingCart, FiSun, FiUser, FiPackage, FiGrid, FiBox, FiLogOut } from 'react-icons/fi'
+import { FaInstagram } from 'react-icons/fa'
+import {
+  FiBox,
+  FiGrid,
+  FiLogOut,
+  FiMoon,
+  FiPackage,
+  FiShoppingCart,
+  FiSun,
+  FiUser,
+} from 'react-icons/fi'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import MobileMenu from './Navbarmobile'
 
@@ -76,7 +86,10 @@ export default function Navbar() {
       borderBottom="1px"
       borderColor={border}
       backdropFilter="blur(10px)"
-      bgColor={useColorModeValue('rgba(255,255,255,0.95)', 'rgba(26,32,44,0.95)')}
+      bgColor={useColorModeValue(
+        'rgba(255,255,255,0.95)',
+        'rgba(26,32,44,0.95)',
+      )}
       boxShadow="sm"
     >
       <Flex h={{ base: 16, md: 24 }} align="center" px={{ base: 4, md: 8 }}>
@@ -122,6 +135,25 @@ export default function Navbar() {
 
         {/* Acciones derechas */}
         <HStack spacing={2} align="center">
+          <IconButton
+            as="a"
+            href="https://www.instagram.com/hinchastore_fut"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            variant="ghost"
+            icon={<FaInstagram />}
+            h={controlH}
+            minH={controlH}
+            w={controlH}
+            borderRadius="lg"
+            _hover={{
+              color: '#E1306C',
+              transform: 'scale(1.1)',
+            }}
+            transition="all 0.2s"
+          />
+
           <IconButton
             aria-label="Tema"
             variant="ghost"
@@ -209,7 +241,11 @@ export default function Navbar() {
               <MenuList py={2} minW="220px">
                 {me?.role === 'user' && (
                   <>
-                    <MenuItem as={RouterLink} to="/mis-ordenes" icon={<Icon as={FiPackage} />}>
+                    <MenuItem
+                      as={RouterLink}
+                      to="/mis-ordenes"
+                      icon={<Icon as={FiPackage} />}
+                    >
                       Mis pedidos
                     </MenuItem>
                   </>
@@ -217,21 +253,39 @@ export default function Navbar() {
 
                 {me?.role === 'admin' && (
                   <>
-                    <MenuItem as={RouterLink} to="/admin" icon={<Icon as={FiGrid} />}>
+                    <MenuItem
+                      as={RouterLink}
+                      to="/admin"
+                      icon={<Icon as={FiGrid} />}
+                    >
                       Dashboard
                     </MenuItem>
-                    <MenuItem as={RouterLink} to="/admin/productos" icon={<Icon as={FiBox} />}>
+                    <MenuItem
+                      as={RouterLink}
+                      to="/admin/productos"
+                      icon={<Icon as={FiBox} />}
+                    >
                       Productos
                     </MenuItem>
-                    <MenuItem as={RouterLink} to="/admin/Pedidos" icon={<Icon as={FiPackage} />}>
+                    <MenuItem
+                      as={RouterLink}
+                      to="/admin/Pedidos"
+                      icon={<Icon as={FiPackage} />}
+                    >
                       Pedidos
                     </MenuItem>
                   </>
                 )}
 
-                {(me?.role === 'user' || me?.role === 'admin') && <MenuDivider />}
+                {(me?.role === 'user' || me?.role === 'admin') && (
+                  <MenuDivider />
+                )}
 
-                <MenuItem onClick={logout} icon={<Icon as={FiLogOut} />} color="red.500">
+                <MenuItem
+                  onClick={logout}
+                  icon={<Icon as={FiLogOut} />}
+                  color="red.500"
+                >
                   Salir
                 </MenuItem>
               </MenuList>

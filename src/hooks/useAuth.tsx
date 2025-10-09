@@ -21,8 +21,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const t =
       localStorage.getItem('accessToken') ??
       sessionStorage.getItem('accessToken')
-    if (t) setTokenState(t)
-    setLoading(false)
+    setTokenState(t)
+    // No ponemos loading=false aquí, esperamos a verificar /api/me
+    if (!t) setLoading(false)
   }, [])
 
   // cuando hay token, cargar /api/me
@@ -35,7 +36,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       try {
         const { data } = await api.get('/api/me')
-        if (!cancel) setMe(data)
+        if (!cancel) {
+          setMe(data)
+          setLoading(false)
+        }
       } catch (e: any) {
         // Solo borrar token si realmente es 401
         const status = e?.response?.status
@@ -49,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Error transitorio -> NO borres el token
             console.warn('useAuth: /api/me falló, pero no es 401:', status)
           }
+          setLoading(false)
         }
       }
     })()
