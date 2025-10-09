@@ -1,5 +1,8 @@
 import api from '@/services/api'
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Badge,
   Box,
   Button,
@@ -36,6 +39,7 @@ import {
   FiTag,
   FiUploadCloud,
 } from 'react-icons/fi'
+import { FaInstagram } from 'react-icons/fa'
 import { z } from 'zod'
 
 /** ====== Schema (actualizado con nuevos campos) ====== */
@@ -176,9 +180,10 @@ export default function PublishProduct() {
 
       toast({
         title: 'Producto publicado',
-        description: 'Tu producto ya está visible en el catálogo.',
+        description:
+          'Tu producto ya está visible en el catálogo y se publicará automáticamente en Instagram.',
         status: 'success',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       })
     } catch (e: any) {
@@ -290,6 +295,13 @@ export default function PublishProduct() {
       <Heading size={{ base: 'md', md: 'lg' }} mb={4}>
         Publicar producto
       </Heading>
+
+      <Alert status="info" mb={4} borderRadius="lg">
+        <AlertIcon as={FaInstagram} />
+        <AlertDescription fontSize={{ base: 'sm', md: 'md' }}>
+          Los productos se publican automáticamente en Instagram al ser creados
+        </AlertDescription>
+      </Alert>
 
       <Card
         bg={cardBg}
