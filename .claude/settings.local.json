@@ -6,7 +6,8 @@
       "Read(//c/Users/ecaceres/proyectos/personal/hincha-api/**)",
       "Read(//Users/vue/personal-projects/hincha-api/**)",
       "Bash(pnpm run:*)",
-      "Read(//Users/vue/personal-projects/**)"
+      "Read(//Users/vue/personal-projects/**)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

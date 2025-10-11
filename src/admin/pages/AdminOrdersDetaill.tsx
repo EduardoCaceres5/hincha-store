@@ -1,15 +1,22 @@
-import { getOrder, type OrderDetail } from '@/services/orders'
+import {
+  getOrder,
+  updateOrderStatus,
+  type OrderDetail,
+} from '@/services/orders'
 import { formatGs } from '@/utils/format'
 import {
   Badge,
   Box,
   Button,
   Divider,
+  FormControl,
+  FormLabel,
   Grid,
   Heading,
   HStack,
   Icon,
   Image,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -17,6 +24,8 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  NumberInput,
+  NumberInputField,
   Select,
   Skeleton,
   Stack,
@@ -29,6 +38,7 @@ import { useEffect, useState } from 'react'
 import {
   FiCheckCircle,
   FiClock,
+  FiDollarSign,
   FiDownload,
   FiEdit,
   FiMapPin,
@@ -96,7 +106,14 @@ export default function OrderDetail() {
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [newStatus, setNewStatus] = useState('')
+  const [depositAmount, setDepositAmount] = useState('')
+  const [isUpdating, setIsUpdating] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isDepositOpen,
+    onOpen: onDepositOpen,
+    onClose: onDepositClose,
+  } = useDisclosure()
   const toast = useToast()
 
   useEffect(() => {
@@ -125,18 +142,70 @@ export default function OrderDetail() {
     }
   }, [id, toast])
 
-  const handleStatusChange = () => {
-    // TODO: Implementar API call para cambiar estado
-    if (order) {
-      setOrder({ ...order, status: newStatus })
+  const handleStatusChange = async () => {
+    if (!order || !id) return
+
+    setIsUpdating(true)
+    try {
+      const updated = await updateOrderStatus(id, newStatus)
+      setOrder(updated)
       toast({
         title: 'Estado actualizado',
         description: `El pedido ahora está en estado: ${getStatusLabel(newStatus)}`,
         status: 'success',
         isClosable: true,
       })
+      onClose()
+    } catch (error) {
+      console.error('Error updating status:', error)
+      toast({
+        title: 'Error al actualizar',
+        description: 'No se pudo actualizar el estado del pedido',
+        status: 'error',
+        isClosable: true,
+      })
+    } finally {
+      setIsUpdating(false)
     }
-    onClose()
+  }
+
+  const handleDepositSubmit = async () => {
+    if (!order || !id || !depositAmount) return
+
+    const amount = parseFloat(depositAmount)
+    if (isNaN(amount) || amount <= 0 || amount > order.totalPrice) {
+      toast({
+        title: 'Monto inválido',
+        description: 'Ingresa un monto válido entre 0 y el total del pedido',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    setIsUpdating(true)
+    try {
+      const updated = await updateOrderStatus(id, order.status, amount)
+      setOrder(updated)
+      toast({
+        title: 'Seña registrada',
+        description: `Se registró una seña de ${formatGs(amount)}`,
+        status: 'success',
+        isClosable: true,
+      })
+      setDepositAmount('')
+      onDepositClose()
+    } catch (error) {
+      console.error('Error registering deposit:', error)
+      toast({
+        title: 'Error al registrar seña',
+        description: 'No se pudo registrar la seña',
+        status: 'error',
+        isClosable: true,
+      })
+    } finally {
+      setIsUpdating(false)
+    }
   }
 
   const handleExport = () => {
@@ -195,6 +264,17 @@ export default function OrderDetail() {
 
           {/* Acciones rápidas desktop */}
           <HStack spacing={2} display={{ base: 'none', md: 'flex' }}>
+            {!order.depositTransactionId && (
+              <Button
+                leftIcon={<Icon as={FiDollarSign} />}
+                onClick={onDepositOpen}
+                colorScheme="orange"
+                variant="outline"
+                size="sm"
+              >
+                Registrar Seña
+              </Button>
+            )}
             <Button
               leftIcon={<Icon as={FiEdit} />}
               onClick={onOpen}
@@ -217,7 +297,10 @@ export default function OrderDetail() {
         </HStack>
 
         {/* Cards de información clave */}
-        <Grid templateColumns={{ base: '1fr', sm: 'repeat(3, 1fr)' }} gap={4}>
+        <Grid
+          templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }}
+          gap={4}
+        >
           <Box
             borderWidth="1px"
             borderRadius="lg"
@@ -229,8 +312,53 @@ export default function OrderDetail() {
               Total del Pedido
             </Text>
             <Text fontSize="2xl" fontWeight="bold" color="blue.700">
-              {formatGs(order.subtotal)}
+              {formatGs(order.totalPrice)}
             </Text>
+          </Box>
+          <Box
+            borderWidth="1px"
+            borderRadius="lg"
+            p={4}
+            bg={
+              order.depositAmount && order.depositPaidAt
+                ? 'yellow.50'
+                : order.balancePaidAt
+                ? 'green.50'
+                : 'gray.50'
+            }
+            borderColor={
+              order.depositAmount && order.depositPaidAt
+                ? 'yellow.200'
+                : order.balancePaidAt
+                ? 'green.200'
+                : 'gray.200'
+            }
+          >
+            <Text fontSize="xs" color="gray.600" fontWeight="medium" mb={1}>
+              Estado de Pago
+            </Text>
+            <Text
+              fontSize="lg"
+              fontWeight="bold"
+              color={
+                order.balancePaidAt
+                  ? 'green.700'
+                  : order.depositAmount && order.depositPaidAt
+                  ? 'yellow.700'
+                  : 'gray.700'
+              }
+            >
+              {order.balancePaidAt
+                ? 'Pagado'
+                : order.depositAmount && order.depositPaidAt
+                ? 'Señado'
+                : 'Pendiente'}
+            </Text>
+            {order.depositAmount && order.depositPaidAt && !order.balancePaidAt && (
+              <Text fontSize="xs" color="orange.600" fontWeight="medium">
+                Saldo: {formatGs(order.totalPrice - order.depositAmount)}
+              </Text>
+            )}
           </Box>
           <Box
             borderWidth="1px"
@@ -585,9 +713,47 @@ export default function OrderDetail() {
                 fontSize={{ base: 'xl', md: '2xl' }}
                 color="purple.600"
               >
-                {formatGs(order.subtotal)}
+                {formatGs(order.totalPrice)}
               </Text>
             </HStack>
+
+            {/* Información de seña si existe */}
+            {order.depositAmount && order.depositPaidAt && (
+              <VStack
+                align="stretch"
+                spacing={2}
+                p={4}
+                bg="yellow.50"
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor="yellow.200"
+              >
+                <HStack justify="space-between">
+                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
+                    Seña Pagada:
+                  </Text>
+                  <Text fontSize="md" fontWeight="bold" color="yellow.700">
+                    {formatGs(order.depositAmount)}
+                  </Text>
+                </HStack>
+                <HStack justify="space-between">
+                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
+                    Saldo Pendiente:
+                  </Text>
+                  <Text fontSize="md" fontWeight="bold" color="orange.600">
+                    {formatGs(order.totalPrice - order.depositAmount)}
+                  </Text>
+                </HStack>
+                <Text fontSize="xs" color="gray.600">
+                  Fecha de seña:{' '}
+                  {new Date(order.depositPaidAt).toLocaleDateString('es-PY', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </Text>
+              </VStack>
+            )}
           </Stack>
         </Box>
       </Grid>
@@ -606,6 +772,16 @@ export default function OrderDetail() {
         _dark={{ bg: 'gray.800' }}
       >
         <Stack spacing={2}>
+          {!order.depositTransactionId && (
+            <Button
+              leftIcon={<Icon as={FiDollarSign} />}
+              onClick={onDepositOpen}
+              colorScheme="orange"
+              width="full"
+            >
+              Registrar Seña
+            </Button>
+          )}
           <Button
             leftIcon={<Icon as={FiEdit} />}
             onClick={onOpen}
@@ -700,8 +876,101 @@ export default function OrderDetail() {
               colorScheme="blue"
               onClick={handleStatusChange}
               isDisabled={newStatus === order.status}
+              isLoading={isUpdating}
             >
               Actualizar Estado
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal para registrar seña */}
+      <Modal isOpen={isDepositOpen} onClose={onDepositClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Registrar Seña</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack align="stretch" spacing={4}>
+              <Text fontSize="sm" color="gray.600">
+                Pedido #{order.id.slice(0, 8)}
+              </Text>
+              <Box
+                p={3}
+                bg="blue.50"
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor="blue.200"
+              >
+                <HStack justify="space-between">
+                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
+                    Total del pedido:
+                  </Text>
+                  <Text fontSize="lg" fontWeight="bold" color="blue.700">
+                    {formatGs(order.totalPrice)}
+                  </Text>
+                </HStack>
+              </Box>
+              <FormControl isRequired>
+                <FormLabel fontSize="sm" fontWeight="medium">
+                  Monto de la seña (Gs)
+                </FormLabel>
+                <NumberInput
+                  min={0}
+                  max={order.totalPrice}
+                  value={depositAmount}
+                  onChange={(value) => setDepositAmount(value)}
+                >
+                  <NumberInputField
+                    placeholder="Ej: 50000"
+                    fontSize="md"
+                  />
+                </NumberInput>
+                <Text fontSize="xs" color="gray.600" mt={1}>
+                  Ingresa el monto de la seña que el cliente pagó
+                </Text>
+              </FormControl>
+              {depositAmount && !isNaN(parseFloat(depositAmount)) && (
+                <Box
+                  p={3}
+                  bg="yellow.50"
+                  borderRadius="md"
+                  borderWidth="1px"
+                  borderColor="yellow.200"
+                >
+                  <VStack align="stretch" spacing={1}>
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.700">
+                        Seña:
+                      </Text>
+                      <Text fontSize="md" fontWeight="semibold" color="yellow.700">
+                        {formatGs(parseFloat(depositAmount))}
+                      </Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.700">
+                        Saldo restante:
+                      </Text>
+                      <Text fontSize="md" fontWeight="semibold" color="orange.600">
+                        {formatGs(order.totalPrice - parseFloat(depositAmount))}
+                      </Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+              )}
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onDepositClose}>
+              Cancelar
+            </Button>
+            <Button
+              colorScheme="orange"
+              onClick={handleDepositSubmit}
+              isDisabled={!depositAmount || parseFloat(depositAmount) <= 0}
+              isLoading={isUpdating}
+            >
+              Registrar Seña
             </Button>
           </ModalFooter>
         </ModalContent>

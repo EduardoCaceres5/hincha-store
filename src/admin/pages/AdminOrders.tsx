@@ -71,6 +71,26 @@ function getAmountColor(amount: number): string {
   return 'gray.700' // Montos normales
 }
 
+// Helper para obtener el estado de pago
+function getPaymentStatus(order: OrderListItem): {
+  label: string
+  color: string
+  description?: string
+} {
+  if (order.status === 'paid' || order.balancePaidAt) {
+    return { label: 'Pagado', color: 'green' }
+  }
+  if (order.depositAmount && order.depositPaidAt) {
+    const balance = order.totalPrice - order.depositAmount
+    return {
+      label: 'Señado',
+      color: 'yellow',
+      description: `Saldo: ${formatGs(balance)}`,
+    }
+  }
+  return { label: 'Pendiente', color: 'gray' }
+}
+
 export default function Orders() {
   const [data, setData] = useState<{
     items: OrderListItem[]
@@ -424,6 +444,7 @@ export default function Orders() {
                   <Th>Orden</Th>
                   <Th>Fecha</Th>
                   <Th>Estado</Th>
+                  <Th>Pago</Th>
                   <Th isNumeric>Items</Th>
                   <Th isNumeric>Total</Th>
                   <Th></Th>
@@ -440,6 +461,9 @@ export default function Orders() {
                     </Td>
                     <Td>
                       <Skeleton height="16px" width="80px" />
+                    </Td>
+                    <Td>
+                      <Skeleton height="16px" width="60px" />
                     </Td>
                     <Td>
                       <Skeleton height="16px" width="40px" />
@@ -534,11 +558,32 @@ export default function Orders() {
                       <Text
                         fontSize="sm"
                         fontWeight="bold"
-                        color={getAmountColor(o.subtotal)}
+                        color={getAmountColor(o.totalPrice)}
                       >
-                        {formatGs(o.subtotal)}
+                        {formatGs(o.totalPrice)}
                       </Text>
                     </HStack>
+                    {(() => {
+                      const paymentStatus = getPaymentStatus(o)
+                      return (
+                        <HStack justify="space-between" align="center">
+                          <Text fontSize="xs" color="gray.600">
+                            Pago:
+                          </Text>
+                          <Badge colorScheme={paymentStatus.color} fontSize="xs">
+                            {paymentStatus.label}
+                          </Badge>
+                        </HStack>
+                      )
+                    })()}
+                    {(() => {
+                      const paymentStatus = getPaymentStatus(o)
+                      return paymentStatus.description ? (
+                        <Text fontSize="xs" color="orange.600" fontWeight="medium">
+                          {paymentStatus.description}
+                        </Text>
+                      ) : null
+                    })()}
                     <Button
                       as={RouterLink}
                       to={`/admin/pedido/${o.id}`}
@@ -565,6 +610,7 @@ export default function Orders() {
                   <Th>Cliente</Th>
                   <Th>Fecha</Th>
                   <Th>Estado</Th>
+                  <Th>Pago</Th>
                   <Th isNumeric>Items</Th>
                   <Th isNumeric>Total</Th>
                   <Th></Th>
@@ -603,10 +649,27 @@ export default function Orders() {
                         {getStatusLabel(o.status)}
                       </Badge>
                     </Td>
+                    <Td>
+                      {(() => {
+                        const paymentStatus = getPaymentStatus(o)
+                        return (
+                          <VStack align="start" spacing={0}>
+                            <Badge colorScheme={paymentStatus.color} fontSize="xs">
+                              {paymentStatus.label}
+                            </Badge>
+                            {paymentStatus.description && (
+                              <Text fontSize="2xs" color="orange.600" fontWeight="medium">
+                                {paymentStatus.description}
+                              </Text>
+                            )}
+                          </VStack>
+                        )
+                      })()}
+                    </Td>
                     <Td isNumeric>{o._count.items}</Td>
                     <Td isNumeric>
-                      <Text fontWeight="semibold" color={getAmountColor(o.subtotal)}>
-                        {formatGs(o.subtotal)}
+                      <Text fontWeight="semibold" color={getAmountColor(o.totalPrice)}>
+                        {formatGs(o.totalPrice)}
                       </Text>
                     </Td>
                     <Td>
