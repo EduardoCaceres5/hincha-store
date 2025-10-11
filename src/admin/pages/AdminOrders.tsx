@@ -33,27 +33,27 @@ const LIMIT = 10
 // Helper para traducir estados
 function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
-    pending: 'Pendiente',
-    confirmed: 'Confirmado',
-    preparing: 'Preparando',
-    ready: 'Listo',
-    delivered: 'Entregado',
-    cancelled: 'Cancelado',
+    PENDING: 'Pendiente',
+    CONFIRMED: 'Confirmado',
+    PREPARING: 'Preparando',
+    READY: 'Listo',
+    DELIVERED: 'Entregado',
+    CANCELLED: 'Cancelado',
   }
-  return labels[status.toLowerCase()] || status
+  return labels[status.toUpperCase()] || status
 }
 
 // Helper para obtener color por estado
 function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    pending: 'yellow',
-    confirmed: 'blue',
-    preparing: 'purple',
-    ready: 'green',
-    delivered: 'teal',
-    cancelled: 'red',
+    PENDING: 'yellow',
+    CONFIRMED: 'blue',
+    PREPARING: 'purple',
+    READY: 'green',
+    DELIVERED: 'teal',
+    CANCELLED: 'red',
   }
-  return colors[status.toLowerCase()] || 'gray'
+  return colors[status.toUpperCase()] || 'gray'
 }
 
 // Helper para verificar si es un pedido reciente (últimas 24h)
@@ -77,9 +77,11 @@ function getPaymentStatus(order: OrderListItem): {
   color: string
   description?: string
 } {
-  if (order.status === 'paid' || order.balancePaidAt) {
+  // Si se pagó el saldo completo
+  if (order.balancePaidAt) {
     return { label: 'Pagado', color: 'green' }
   }
+  // Si hay seña pagada pero aún no se pagó el saldo
   if (order.depositAmount && order.depositPaidAt) {
     const balance = order.totalPrice - order.depositAmount
     return {
@@ -88,6 +90,7 @@ function getPaymentStatus(order: OrderListItem): {
       description: `Saldo: ${formatGs(balance)}`,
     }
   }
+  // Sin seña ni pago
   return { label: 'Pendiente', color: 'gray' }
 }
 
@@ -210,12 +213,12 @@ export default function Orders() {
   const stats = useMemo(() => {
     if (!data?.items) return null
 
-    const pending = data.items.filter(o => o.status === 'pending').length
-    const confirmed = data.items.filter(o => o.status === 'confirmed').length
-    const preparing = data.items.filter(o => o.status === 'preparing').length
-    const ready = data.items.filter(o => o.status === 'ready').length
-    const delivered = data.items.filter(o => o.status === 'delivered').length
-    const cancelled = data.items.filter(o => o.status === 'cancelled').length
+    const pending = data.items.filter(o => o.status === 'PENDING').length
+    const confirmed = data.items.filter(o => o.status === 'CONFIRMED').length
+    const preparing = data.items.filter(o => o.status === 'PREPARING').length
+    const ready = data.items.filter(o => o.status === 'READY').length
+    const delivered = data.items.filter(o => o.status === 'DELIVERED').length
+    const cancelled = data.items.filter(o => o.status === 'CANCELLED').length
 
     return { pending, confirmed, preparing, ready, delivered, cancelled }
   }, [data?.items])
@@ -358,12 +361,12 @@ export default function Orders() {
             onChange={(e) => setStatusFilter(e.target.value)}
             size={{ base: 'sm', md: 'md' }}
           >
-            <option value="pending">Pendiente</option>
-            <option value="confirmed">Confirmado</option>
-            <option value="preparing">Preparando</option>
-            <option value="ready">Listo</option>
-            <option value="delivered">Entregado</option>
-            <option value="cancelled">Cancelado</option>
+            <option value="PENDING">Pendiente</option>
+            <option value="CONFIRMED">Confirmado</option>
+            <option value="PREPARING">Preparando</option>
+            <option value="READY">Listo</option>
+            <option value="DELIVERED">Entregado</option>
+            <option value="CANCELLED">Cancelado</option>
           </Select>
 
           <Select

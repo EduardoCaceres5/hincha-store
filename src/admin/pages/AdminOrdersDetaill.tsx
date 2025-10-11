@@ -3,13 +3,16 @@ import {
   updateOrderStatus,
   type OrderDetail,
 } from '@/services/orders'
+import { uploadImageViaBackend } from '@/services/upload'
 import { formatGs } from '@/utils/format'
 import {
   Badge,
   Box,
   Button,
+  CloseButton,
   Divider,
   FormControl,
+  FormHelperText,
   FormLabel,
   Grid,
   Heading,
@@ -53,46 +56,46 @@ import OrderLocationMap from '@/components/OrderLocationMap'
 // Helper functions
 function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
-    pending: 'Pendiente',
-    confirmed: 'Confirmado',
-    preparing: 'Preparando',
-    ready: 'Listo',
-    delivered: 'Entregado',
-    cancelled: 'Cancelado',
+    PENDING: 'Pendiente',
+    CONFIRMED: 'Confirmado',
+    PREPARING: 'Preparando',
+    READY: 'Listo',
+    DELIVERED: 'Entregado',
+    CANCELLED: 'Cancelado',
   }
-  return labels[status.toLowerCase()] || status
+  return labels[status.toUpperCase()] || status
 }
 
 function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    pending: 'yellow',
-    confirmed: 'blue',
-    preparing: 'purple',
-    ready: 'green',
-    delivered: 'teal',
-    cancelled: 'red',
+    PENDING: 'yellow',
+    CONFIRMED: 'blue',
+    PREPARING: 'purple',
+    READY: 'green',
+    DELIVERED: 'teal',
+    CANCELLED: 'red',
   }
-  return colors[status.toLowerCase()] || 'gray'
+  return colors[status.toUpperCase()] || 'gray'
 }
 
 // Timeline data
 function getTimelineSteps(currentStatus: string) {
   const allSteps = [
-    { status: 'pending', label: 'Pendiente', icon: FiClock },
-    { status: 'confirmed', label: 'Confirmado', icon: FiCheckCircle },
-    { status: 'preparing', label: 'Preparando', icon: FiPackage },
-    { status: 'ready', label: 'Listo', icon: FiPackage },
-    { status: 'delivered', label: 'Entregado', icon: FiTruck },
+    { status: 'PENDING', label: 'Pendiente', icon: FiClock },
+    { status: 'CONFIRMED', label: 'Confirmado', icon: FiCheckCircle },
+    { status: 'PREPARING', label: 'Preparando', icon: FiPackage },
+    { status: 'READY', label: 'Listo', icon: FiPackage },
+    { status: 'DELIVERED', label: 'Entregado', icon: FiTruck },
   ]
 
   const statusOrder = [
-    'pending',
-    'confirmed',
-    'preparing',
-    'ready',
-    'delivered',
+    'PENDING',
+    'CONFIRMED',
+    'PREPARING',
+    'READY',
+    'DELIVERED',
   ]
-  const currentIndex = statusOrder.indexOf(currentStatus.toLowerCase())
+  const currentIndex = statusOrder.indexOf(currentStatus.toUpperCase())
 
   return allSteps.map((step, idx) => ({
     ...step,
@@ -107,6 +110,8 @@ export default function OrderDetail() {
   const [loading, setLoading] = useState(true)
   const [newStatus, setNewStatus] = useState('')
   const [depositAmount, setDepositAmount] = useState('')
+  const [depositImage, setDepositImage] = useState<File | null>(null)
+  const [depositImagePreview, setDepositImagePreview] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const {
@@ -169,6 +174,42 @@ export default function OrderDetail() {
     }
   }
 
+  const handleDepositImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Archivo inválido',
+        description: 'Por favor selecciona una imagen',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    // Validar tamaño (máx 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'Archivo muy grande',
+        description: 'La imagen no debe superar 5MB',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    setDepositImage(file)
+
+    // Crear preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setDepositImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleDepositSubmit = async () => {
     if (!order || !id || !depositAmount) return
 
@@ -185,7 +226,30 @@ export default function OrderDetail() {
 
     setIsUpdating(true)
     try {
-      const updated = await updateOrderStatus(id, order.status, amount)
+      let depositImages: { imageUrl: string; imagePublicId?: string }[] | undefined
+
+      // Subir imagen si existe
+      if (depositImage) {
+        try {
+          const uploaded = await uploadImageViaBackend(depositImage)
+          depositImages = [
+            {
+              imageUrl: uploaded.secure_url,
+              imagePublicId: uploaded.public_id,
+            },
+          ]
+        } catch (error) {
+          console.error('Error uploading image:', error)
+          toast({
+            title: 'Error al subir imagen',
+            description: 'No se pudo subir la imagen, pero se registrará la seña',
+            status: 'warning',
+            isClosable: true,
+          })
+        }
+      }
+
+      const updated = await updateOrderStatus(id, order.status, amount, depositImages)
       setOrder(updated)
       toast({
         title: 'Seña registrada',
@@ -194,6 +258,8 @@ export default function OrderDetail() {
         isClosable: true,
       })
       setDepositAmount('')
+      setDepositImage(null)
+      setDepositImagePreview(null)
       onDepositClose()
     } catch (error) {
       console.error('Error registering deposit:', error)
@@ -396,7 +462,7 @@ export default function OrderDetail() {
       </Stack>
 
       {/* Timeline de estados - Solo visible si no está cancelado */}
-      {order.status !== 'cancelled' && (
+      {order.status !== 'CANCELLED' && (
         <Box
           mb={6}
           p={6}
@@ -858,12 +924,12 @@ export default function OrderDetail() {
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                 >
-                  <option value="pending">Pendiente</option>
-                  <option value="confirmed">Confirmado</option>
-                  <option value="preparing">Preparando</option>
-                  <option value="ready">Listo</option>
-                  <option value="delivered">Entregado</option>
-                  <option value="cancelled">Cancelado</option>
+                  <option value="PENDING">Pendiente</option>
+                  <option value="CONFIRMED">Confirmado</option>
+                  <option value="PREPARING">Preparando</option>
+                  <option value="READY">Listo</option>
+                  <option value="DELIVERED">Entregado</option>
+                  <option value="CANCELLED">Cancelado</option>
                 </Select>
               </Box>
             </VStack>
@@ -929,6 +995,60 @@ export default function OrderDetail() {
                 <Text fontSize="xs" color="gray.600" mt={1}>
                   Ingresa el monto de la seña que el cliente pagó
                 </Text>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel fontSize="sm" fontWeight="medium">
+                  Comprobante de pago (opcional)
+                </FormLabel>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleDepositImageChange}
+                  display="none"
+                  id="deposit-image-input"
+                />
+                <label htmlFor="deposit-image-input">
+                  <Button
+                    as="span"
+                    cursor="pointer"
+                    size="sm"
+                    variant="outline"
+                    colorScheme="blue"
+                    width="full"
+                  >
+                    {depositImage ? 'Cambiar imagen' : 'Subir comprobante'}
+                  </Button>
+                </label>
+                <FormHelperText fontSize="xs">
+                  Opcional: Sube una imagen del comprobante de pago (máx 5MB)
+                </FormHelperText>
+
+                {depositImagePreview && (
+                  <Box mt={3} position="relative">
+                    <Image
+                      src={depositImagePreview}
+                      alt="Preview"
+                      maxH="200px"
+                      objectFit="contain"
+                      borderRadius="md"
+                      borderWidth="1px"
+                      borderColor="gray.200"
+                    />
+                    <CloseButton
+                      position="absolute"
+                      top={2}
+                      right={2}
+                      size="sm"
+                      colorScheme="red"
+                      bg="white"
+                      onClick={() => {
+                        setDepositImage(null)
+                        setDepositImagePreview(null)
+                      }}
+                    />
+                  </Box>
+                )}
               </FormControl>
               {depositAmount && !isNaN(parseFloat(depositAmount)) && (
                 <Box

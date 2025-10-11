@@ -19,7 +19,7 @@ export type OrderListItem = {
   name: string
   phone: string
   subtotal: number
-  totalPrice: number
+  totalPrice: number | null
   depositAmount?: number | null
   depositPaidAt?: string | null
   balancePaidAt?: string | null
@@ -46,7 +46,7 @@ export type OrderDetail = {
   lat?: number | null
   lng?: number | null
   subtotal: number
-  totalPrice: number
+  totalPrice: number | null
   depositAmount?: number | null
   depositPaidAt?: string | null
   depositTransactionId?: string | null
@@ -70,11 +70,18 @@ export async function getOrder(id: string) {
 export async function updateOrderStatus(
   id: string,
   status: string,
-  depositAmount?: number
+  depositAmount?: number,
+  depositImages?: { imageUrl: string; imagePublicId?: string }[]
 ) {
-  const payload: { status?: string; depositAmount?: number } = {}
-  if (status) payload.status = status
+  const payload: {
+    status?: string
+    depositAmount?: number
+    depositImages?: { imageUrl: string; imagePublicId?: string }[]
+  } = {}
+  // Convertir status a MAYÚSCULAS para el backend
+  if (status) payload.status = status.toUpperCase()
   if (depositAmount !== undefined) payload.depositAmount = depositAmount
+  if (depositImages) payload.depositImages = depositImages
 
   const { data } = await api.patch<OrderDetail>(
     `/api/admin/orders/${id}`,
