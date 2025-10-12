@@ -35,7 +35,7 @@ export default function Login() {
   const toast = useToast()
   const nav = useNavigate()
   const location = useLocation() as any
-  const { setToken, token, me } = useAuth() // 👈 LEEMOS token y me
+  const { setToken, token, me } = useAuth()
 
   const {
     register,
@@ -47,7 +47,7 @@ export default function Login() {
     defaultValues: { remember: true },
   })
 
-  // 👇 Si ya está logueado y es admin, salir del login hacia /admin
+  // Si ya está logueado y es admin, salir del login hacia /admin
   useEffect(() => {
     if (token && me?.role === 'admin') {
       nav('/admin', { replace: true })

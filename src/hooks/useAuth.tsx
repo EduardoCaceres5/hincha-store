@@ -1,5 +1,7 @@
 import api from '@/services/api'
+import { useToast } from '@chakra-ui/react'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 type AuthCtx = {
   token: string | null
@@ -15,6 +17,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setTokenState] = useState<string | null>(null)
   const [me, setMe] = useState<AuthCtx['me']>(null)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+  const toast = useToast()
 
   // al montar: leer token desde storage
   useEffect(() => {
@@ -25,6 +29,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // No ponemos loading=false aquí, esperamos a verificar /api/me
     if (!t) setLoading(false)
   }, [])
+
+  // Escuchar evento de sesión caducada (401)
+  useEffect(() => {
+    const handleSessionExpired = (event: Event) => {
+      const customEvent = event as CustomEvent
+      const message =
+        customEvent.detail?.message || 'Tu sesión ha expirado'
+
+      // Mostrar toast
+      toast({
+        title: 'Sesión caducada',
+        description: message,
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+        position: 'top',
+      })
+
+      // Limpiar estado
+      setTokenState(null)
+      setMe(null)
+
+      // Redirigir al login
+      navigate('/login', {
+        replace: true,
+        state: { sessionExpired: true },
+      })
+    }
+
+    window.addEventListener('auth:session-expired', handleSessionExpired)
+    return () => {
+      window.removeEventListener('auth:session-expired', handleSessionExpired)
+    }
+  }, [navigate, toast])
+
+  // Escuchar evento de sin permisos (403)
+  useEffect(() => {
+    const handleForbidden = (event: Event) => {
+      const customEvent = event as CustomEvent
+      const message =
+        customEvent.detail?.message ||
+        'No tienes permisos para realizar esta acción'
+
+      // Mostrar toast de error
+      toast({
+        title: 'Acceso denegado',
+        description: message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+        position: 'top',
+      })
+    }
+
+    window.addEventListener('auth:forbidden', handleForbidden)
+    return () => {
+      window.removeEventListener('auth:forbidden', handleForbidden)
+    }
+  }, [toast])
 
   // cuando hay token, cargar /api/me
   useEffect(() => {
@@ -73,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   function logout() {
     setToken(null)
+    navigate('/login', { replace: true })
   }
 
   const value = useMemo(
