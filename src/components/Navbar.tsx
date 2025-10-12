@@ -101,7 +101,7 @@ export default function Navbar() {
         {/* Logo */}
         <HStack
           as={RouterLink}
-          to="/"
+          to={me?.role === 'admin' ? '/admin' : '/'}
           spacing={3}
           _hover={{ textDecoration: 'none', transform: 'scale(1.02)' }}
           transition="transform 0.2s"
