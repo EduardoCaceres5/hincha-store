@@ -1,4 +1,4 @@
-import type { KitType, League, Quality } from "@/types/product";
+import type { KitType, League, ProductQuality } from "@/types/product";
 
 interface LeagueConfig {
   name: string;
@@ -47,7 +47,7 @@ export const KIT_TRANSLATIONS: Record<KitType, string> = {
   RETRO: "Retro",
 };
 
-export const QUALITY_TRANSLATIONS: Record<Quality, string> = {
+export const QUALITY_TRANSLATIONS: Record<ProductQuality, string> = {
   FAN: "Fan",
   PLAYER_VERSION: "Jugador",
 };
@@ -64,6 +64,6 @@ export const translateKit = (kit: KitType): string => {
   return KIT_TRANSLATIONS[kit] || kit;
 };
 
-export const translateQuality = (quality: Quality): string => {
+export const translateQuality = (quality: ProductQuality): string => {
   return QUALITY_TRANSLATIONS[quality] || quality;
 };
