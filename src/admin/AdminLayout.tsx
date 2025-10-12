@@ -4,9 +4,6 @@ import { useAuth } from '@/hooks/useAuth'
 import {
   Box,
   Button,
-  Drawer,
-  DrawerContent,
-  DrawerOverlay,
   Flex,
   HStack,
   Icon,
@@ -22,13 +19,11 @@ import {
   VStack,
   useColorModeValue as mode,
   useColorMode,
-  useDisclosure,
+  Hide,
 } from '@chakra-ui/react'
-import { useEffect } from 'react'
 import {
   FiHome,
   FiLogOut,
-  FiMenu,
   FiMoon,
   FiPackage,
   FiShoppingBag,
@@ -40,7 +35,6 @@ import {
   NavLink,
   Outlet,
   Link as RouterLink,
-  useLocation,
   useNavigate,
 } from 'react-router-dom'
 
@@ -80,6 +74,44 @@ function SidebarLink({
           <Icon as={icon} />
           <Text fontWeight="medium">{children}</Text>
         </HStack>
+      )}
+    </NavLink>
+  )
+}
+
+function BottomNavLink({
+  to,
+  icon,
+  label,
+  exact = false,
+}: {
+  to: string
+  icon: any
+  label: string
+  exact?: boolean
+}) {
+  const activeColor = mode('blue.600', 'blue.300')
+  const inactiveColor = mode('gray.500', 'gray.400')
+  const activeBg = mode('blue.50', 'whiteAlpha.200')
+
+  return (
+    <NavLink to={to} end={exact} style={{ textDecoration: 'none', flex: 1 }}>
+      {({ isActive }) => (
+        <VStack
+          spacing={1}
+          py={2}
+          px={2}
+          borderRadius="md"
+          bg={isActive ? activeBg : undefined}
+          color={isActive ? activeColor : inactiveColor}
+          _active={{ transform: 'scale(0.95)' }}
+          transition="all 0.2s"
+        >
+          <Icon as={icon} boxSize={5} />
+          <Text fontSize="xs" fontWeight={isActive ? 'semibold' : 'medium'}>
+            {label}
+          </Text>
+        </VStack>
       )}
     </NavLink>
   )
@@ -133,11 +165,9 @@ function Sidebar({
 }
 
 export default function AdminLayout() {
-  const { isOpen, onOpen, onClose } = useDisclosure()
   const bg = mode('gray.50', 'gray.900')
   const border = mode('gray.200', 'whiteAlpha.300')
   const headerBg = mode('white', 'gray.900')
-  const location = useLocation()
   const navigate = useNavigate()
   const { me, logout } = useAuth()
   const { colorMode, toggleColorMode } = useColorMode()
@@ -146,12 +176,6 @@ export default function AdminLayout() {
     logout()
     navigate('/')
   }
-
-  // Cierra el drawer automáticamente al cambiar de ruta (mobile)
-  useEffect(() => {
-    if (isOpen) onClose()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname])
 
   return (
     <Flex minH="100vh" bg={bg} flexDirection="column">
@@ -165,17 +189,6 @@ export default function AdminLayout() {
         borderColor={border}
       >
         <Flex h={{ base: 16, md: 20 }} align="center" px={{ base: 4, md: 6 }}>
-          {/* Mobile menu button */}
-          <Show below="md">
-            <IconButton
-              aria-label="Abrir menú"
-              variant="ghost"
-              icon={<FiMenu />}
-              onClick={onOpen}
-              mr={2}
-            />
-          </Show>
-
           {/* Logo */}
           <HStack
             as={RouterLink}
@@ -288,21 +301,40 @@ export default function AdminLayout() {
           <Sidebar userName={me?.name || me?.email} />
         </Box>
 
-        {/* Drawer mobile */}
-        <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
-          <DrawerOverlay />
-          <DrawerContent>
-            <Sidebar onSelect={onClose} userName={me?.name || me?.email} />
-          </DrawerContent>
-        </Drawer>
-
         {/* Main */}
         <Box flex="1" display="flex" flexDirection="column">
-          <Box as="main" p={{ base: 4, md: 6 }} flex="1">
+          <Box
+            as="main"
+            p={{ base: 4, md: 6 }}
+            flex="1"
+            pb={{ base: 24, md: 6 }}
+          >
             <Outlet />
           </Box>
         </Box>
       </Flex>
+
+      {/* Bottom Navigation Bar - Solo móvil */}
+      <Hide above="md">
+        <Box
+          position="fixed"
+          bottom={0}
+          left={0}
+          right={0}
+          zIndex={20}
+          bg={headerBg}
+          borderTop="1px"
+          borderColor={border}
+          boxShadow="0 -2px 10px rgba(0,0,0,0.1)"
+        >
+          <HStack spacing={0} px={2} py={1} justifyContent="space-around">
+            <BottomNavLink to="/admin" icon={FiHome} label="Inicio" exact />
+            <BottomNavLink to="/admin/productos" icon={FiPackage} label="Productos" />
+            <BottomNavLink to="/admin/pedidos" icon={FiShoppingBag} label="Pedidos" />
+            <BottomNavLink to="/admin/transacciones" icon={FiTrendingUp} label="Finanzas" />
+          </HStack>
+        </Box>
+      </Hide>
     </Flex>
   )
 }

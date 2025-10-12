@@ -6,7 +6,7 @@ import {
 import type { Product } from '@/types/product'
 import { publishMissingProducts } from '@/services/instagram'
 import { translateKit, translateQuality } from '@/utils/leagues'
-import { AddIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon, ExternalLinkIcon } from '@chakra-ui/icons' // NEW
+import { AddIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon, ExternalLinkIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import {
   AlertDialog,
   AlertDialogBody,
@@ -18,6 +18,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Collapse,
   Flex,
   Heading,
   HStack,
@@ -40,6 +41,7 @@ import {
   Thead,
   Tooltip,
   Tr,
+  useDisclosure,
   useToast,
   VStack,
 } from '@chakra-ui/react'
@@ -63,6 +65,11 @@ export default function DashboardProducts() {
 
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+
+  // Disclosure para collapse de filtros en móvil
+  const { isOpen: isFiltersOpen, onToggle: onToggleFilters } = useDisclosure({
+    defaultIsOpen: false,
+  })
 
   // Filtros y búsqueda
   const [search, setSearch] = useState('')
@@ -333,10 +340,10 @@ export default function DashboardProducts() {
         </Button>
       </Flex>
 
-      {/* Barra de búsqueda y filtros */}
-      <Stack spacing={3} mb={4}>
-        {/* Búsqueda */}
-        <InputGroup size={{ base: 'sm', md: 'md' }}>
+      {/* Barra de búsqueda y filtros con collapse en móvil */}
+      <Box mb={4}>
+        {/* Búsqueda siempre visible */}
+        <InputGroup size={{ base: 'sm', md: 'md' }} mb={3}>
           <InputLeftElement pointerEvents="none">
             <SearchIcon color="gray.400" />
           </InputLeftElement>
@@ -347,85 +354,181 @@ export default function DashboardProducts() {
           />
         </InputGroup>
 
-        {/* Filtros y ordenamiento */}
-        <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
-          <Select
-            placeholder="Todas las ligas"
-            value={league}
-            onChange={(e) => setLeague(e.target.value)}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            <option value="PREMIER_LEAGUE">Premier League</option>
-            <option value="LA_LIGA">La Liga</option>
-            <option value="LIGUE_1">Ligue 1</option>
-            <option value="SERIE_A">Serie A</option>
-            <option value="BUNDESLIGA">Bundesliga</option>
-            <option value="LIGA_PROFESIONAL">Liga Profesional</option>
-            <option value="INTERNACIONAL">Internacional</option>
-            <option value="LIGA_SAUDI">Liga Saudi</option>
-          </Select>
+        {/* Botón para toggle filtros en móvil */}
+        <Button
+          display={{ base: 'flex', md: 'none' }}
+          onClick={onToggleFilters}
+          width="full"
+          variant="outline"
+          rightIcon={isFiltersOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          mb={isFiltersOpen ? 3 : 0}
+          size="sm"
+        >
+          {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+        </Button>
 
-          <Select
-            placeholder="Todas las equipaciones"
-            value={kit}
-            onChange={(e) => setKit(e.target.value)}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            <option value="HOME">Local</option>
-            <option value="AWAY">Visitante</option>
-            <option value="THIRD">Alternativa</option>
-            <option value="RETRO">Retro</option>
-          </Select>
-
-          <Select
-            placeholder="Todas las calidades"
-            value={quality}
-            onChange={(e) => setQuality(e.target.value)}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            <option value="FAN">Fan</option>
-            <option value="PLAYER_VERSION">Versión Jugador</option>
-          </Select>
-
-          <Select
-            value={`${sortBy}:${sortOrder}`}
-            onChange={(e) => {
-              const [newSortBy, newSortOrder] = e.target.value.split(':')
-              setSortBy(newSortBy)
-              setSortOrder(newSortOrder as 'asc' | 'desc')
-            }}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            <option value=":desc">Más recientes</option>
-            <option value="createdAt:asc">Más antiguos</option>
-            <option value="title:asc">Título (A-Z)</option>
-            <option value="title:desc">Título (Z-A)</option>
-            <option value="basePrice:asc">Precio (menor)</option>
-            <option value="basePrice:desc">Precio (mayor)</option>
-          </Select>
-
-          {/* Botón para limpiar filtros */}
-          {(search || league || kit || quality || sortBy) && (
-            <Button
+        {/* Filtros visibles en desktop, collapse en móvil */}
+        <Box display={{ base: 'none', md: 'block' }}>
+          <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
+            <Select
+              placeholder="Todas las ligas"
+              value={league}
+              onChange={(e) => setLeague(e.target.value)}
               size={{ base: 'sm', md: 'md' }}
-              variant="outline"
-              leftIcon={<CloseIcon boxSize={3} />}
-              onClick={() => {
-                setSearch('')
-                setLeague('')
-                setKit('')
-                setQuality('')
-                setSortBy('')
-                setSortOrder('desc')
-              }}
-              flexShrink={0}
-              whiteSpace="nowrap"
             >
-              Limpiar
-            </Button>
-          )}
-        </Stack>
-      </Stack>
+              <option value="PREMIER_LEAGUE">Premier League</option>
+              <option value="LA_LIGA">La Liga</option>
+              <option value="LIGUE_1">Ligue 1</option>
+              <option value="SERIE_A">Serie A</option>
+              <option value="BUNDESLIGA">Bundesliga</option>
+              <option value="LIGA_PROFESIONAL">Liga Profesional</option>
+              <option value="INTERNACIONAL">Internacional</option>
+              <option value="LIGA_SAUDI">Liga Saudi</option>
+            </Select>
+
+            <Select
+              placeholder="Todas las equipaciones"
+              value={kit}
+              onChange={(e) => setKit(e.target.value)}
+              size={{ base: 'sm', md: 'md' }}
+            >
+              <option value="HOME">Local</option>
+              <option value="AWAY">Visitante</option>
+              <option value="THIRD">Alternativa</option>
+              <option value="RETRO">Retro</option>
+            </Select>
+
+            <Select
+              placeholder="Todas las calidades"
+              value={quality}
+              onChange={(e) => setQuality(e.target.value)}
+              size={{ base: 'sm', md: 'md' }}
+            >
+              <option value="FAN">Fan</option>
+              <option value="PLAYER_VERSION">Versión Jugador</option>
+            </Select>
+
+            <Select
+              value={`${sortBy}:${sortOrder}`}
+              onChange={(e) => {
+                const [newSortBy, newSortOrder] = e.target.value.split(':')
+                setSortBy(newSortBy)
+                setSortOrder(newSortOrder as 'asc' | 'desc')
+              }}
+              size={{ base: 'sm', md: 'md' }}
+            >
+              <option value=":desc">Más recientes</option>
+              <option value="createdAt:asc">Más antiguos</option>
+              <option value="title:asc">Título (A-Z)</option>
+              <option value="title:desc">Título (Z-A)</option>
+              <option value="basePrice:asc">Precio (menor)</option>
+              <option value="basePrice:desc">Precio (mayor)</option>
+            </Select>
+
+            {/* Botón para limpiar filtros */}
+            {(search || league || kit || quality || sortBy) && (
+              <Button
+                size={{ base: 'sm', md: 'md' }}
+                variant="outline"
+                leftIcon={<CloseIcon boxSize={3} />}
+                onClick={() => {
+                  setSearch('')
+                  setLeague('')
+                  setKit('')
+                  setQuality('')
+                  setSortBy('')
+                  setSortOrder('desc')
+                }}
+                flexShrink={0}
+                whiteSpace="nowrap"
+              >
+                Limpiar
+              </Button>
+            )}
+          </Stack>
+        </Box>
+
+        <Collapse in={isFiltersOpen} animateOpacity>
+          <Box display={{ base: 'block', md: 'none' }}>
+            <Stack spacing={3}>
+              <Select
+                placeholder="Todas las ligas"
+                value={league}
+                onChange={(e) => setLeague(e.target.value)}
+                size="sm"
+              >
+                <option value="PREMIER_LEAGUE">Premier League</option>
+                <option value="LA_LIGA">La Liga</option>
+                <option value="LIGUE_1">Ligue 1</option>
+                <option value="SERIE_A">Serie A</option>
+                <option value="BUNDESLIGA">Bundesliga</option>
+                <option value="LIGA_PROFESIONAL">Liga Profesional</option>
+                <option value="INTERNACIONAL">Internacional</option>
+                <option value="LIGA_SAUDI">Liga Saudi</option>
+              </Select>
+
+              <Select
+                placeholder="Todas las equipaciones"
+                value={kit}
+                onChange={(e) => setKit(e.target.value)}
+                size="sm"
+              >
+                <option value="HOME">Local</option>
+                <option value="AWAY">Visitante</option>
+                <option value="THIRD">Alternativa</option>
+                <option value="RETRO">Retro</option>
+              </Select>
+
+              <Select
+                placeholder="Todas las calidades"
+                value={quality}
+                onChange={(e) => setQuality(e.target.value)}
+                size="sm"
+              >
+                <option value="FAN">Fan</option>
+                <option value="PLAYER_VERSION">Versión Jugador</option>
+              </Select>
+
+              <Select
+                value={`${sortBy}:${sortOrder}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortOrder] = e.target.value.split(':')
+                  setSortBy(newSortBy)
+                  setSortOrder(newSortOrder as 'asc' | 'desc')
+                }}
+                size="sm"
+              >
+                <option value=":desc">Más recientes</option>
+                <option value="createdAt:asc">Más antiguos</option>
+                <option value="title:asc">Título (A-Z)</option>
+                <option value="title:desc">Título (Z-A)</option>
+                <option value="basePrice:asc">Precio (menor)</option>
+                <option value="basePrice:desc">Precio (mayor)</option>
+              </Select>
+
+              {/* Botón para limpiar filtros */}
+              {(search || league || kit || quality || sortBy) && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  leftIcon={<CloseIcon boxSize={3} />}
+                  onClick={() => {
+                    setSearch('')
+                    setLeague('')
+                    setKit('')
+                    setQuality('')
+                    setSortBy('')
+                    setSortOrder('desc')
+                  }}
+                  width="full"
+                >
+                  Limpiar filtros
+                </Button>
+              )}
+            </Stack>
+          </Box>
+        </Collapse>
+      </Box>
 
       {/* Barra de acciones */}
       <Stack

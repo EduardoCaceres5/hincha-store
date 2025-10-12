@@ -1,10 +1,11 @@
 import { getMyOrders, type OrderListItem } from '@/services/orders'
 import { formatGs } from '@/utils/format'
-import { CloseIcon, SearchIcon, ViewIcon } from '@chakra-ui/icons'
+import { CloseIcon, SearchIcon, ViewIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import {
   Badge,
   Box,
   Button,
+  Collapse,
   Grid,
   Heading,
   HStack,
@@ -22,6 +23,7 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
   useToast,
   VStack,
 } from '@chakra-ui/react'
@@ -103,6 +105,11 @@ export default function Orders() {
   } | null>(null)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+
+  // Disclosure para collapse de filtros en móvil
+  const { isOpen: isFiltersOpen, onToggle: onToggleFilters } = useDisclosure({
+    defaultIsOpen: false,
+  })
 
   // Filtros y búsqueda
   const [search, setSearch] = useState('')
@@ -339,10 +346,10 @@ export default function Orders() {
         </Grid>
       )}
 
-      {/* Barra de búsqueda y filtros */}
-      <Stack spacing={3} mb={4}>
-        {/* Búsqueda */}
-        <InputGroup size={{ base: 'sm', md: 'md' }}>
+      {/* Barra de búsqueda y filtros con collapse en móvil */}
+      <Box mb={4}>
+        {/* Búsqueda siempre visible */}
+        <InputGroup size={{ base: 'sm', md: 'md' }} mb={3}>
           <InputLeftElement pointerEvents="none">
             <SearchIcon color="gray.400" />
           </InputLeftElement>
@@ -353,67 +360,137 @@ export default function Orders() {
           />
         </InputGroup>
 
-        {/* Filtros y ordenamiento */}
-        <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
-          <Select
-            placeholder="Todos los estados"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            <option value="PENDING">Pendiente</option>
-            <option value="CONFIRMED">Confirmado</option>
-            <option value="PREPARING">Preparando</option>
-            <option value="READY">Listo</option>
-            <option value="DELIVERED">Entregado</option>
-            <option value="CANCELLED">Cancelado</option>
-          </Select>
+        {/* Botón para toggle filtros en móvil */}
+        <Button
+          display={{ base: 'flex', md: 'none' }}
+          onClick={onToggleFilters}
+          width="full"
+          variant="outline"
+          rightIcon={isFiltersOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          mb={isFiltersOpen ? 3 : 0}
+          size="sm"
+        >
+          {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+        </Button>
 
-          <Select
-            value={`${sortBy}:${sortOrder}`}
-            onChange={(e) => {
-              const [newSortBy, newSortOrder] = e.target.value.split(':')
-              setSortBy(newSortBy)
-              setSortOrder(newSortOrder as 'asc' | 'desc')
-            }}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            <option value=":desc">Más recientes</option>
-            <option value="createdAt:asc">Más antiguos</option>
-            <option value="subtotal:desc">Mayor monto</option>
-            <option value="subtotal:asc">Menor monto</option>
-            <option value="items:desc">Más items</option>
-            <option value="items:asc">Menos items</option>
-          </Select>
-
-          {/* Botón para limpiar filtros */}
-          {(search || statusFilter || sortBy) && (
-            <Button
+        {/* Filtros visibles en desktop, collapse en móvil */}
+        <Box display={{ base: 'none', md: 'block' }}>
+          <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
+            <Select
+              placeholder="Todos los estados"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
               size={{ base: 'sm', md: 'md' }}
-              variant="outline"
-              leftIcon={<CloseIcon boxSize={3} />}
-              onClick={() => {
-                setSearch('')
-                setStatusFilter('')
-                setSortBy('')
-                setSortOrder('desc')
-              }}
-              flexShrink={0}
-              whiteSpace="nowrap"
             >
-              Limpiar
-            </Button>
-          )}
-        </Stack>
+              <option value="PENDING">Pendiente</option>
+              <option value="CONFIRMED">Confirmado</option>
+              <option value="PREPARING">Preparando</option>
+              <option value="READY">Listo</option>
+              <option value="DELIVERED">Entregado</option>
+              <option value="CANCELLED">Cancelado</option>
+            </Select>
+
+            <Select
+              value={`${sortBy}:${sortOrder}`}
+              onChange={(e) => {
+                const [newSortBy, newSortOrder] = e.target.value.split(':')
+                setSortBy(newSortBy)
+                setSortOrder(newSortOrder as 'asc' | 'desc')
+              }}
+              size={{ base: 'sm', md: 'md' }}
+            >
+              <option value=":desc">Más recientes</option>
+              <option value="createdAt:asc">Más antiguos</option>
+              <option value="subtotal:desc">Mayor monto</option>
+              <option value="subtotal:asc">Menor monto</option>
+              <option value="items:desc">Más items</option>
+              <option value="items:asc">Menos items</option>
+            </Select>
+
+            {/* Botón para limpiar filtros */}
+            {(search || statusFilter || sortBy) && (
+              <Button
+                size={{ base: 'sm', md: 'md' }}
+                variant="outline"
+                leftIcon={<CloseIcon boxSize={3} />}
+                onClick={() => {
+                  setSearch('')
+                  setStatusFilter('')
+                  setSortBy('')
+                  setSortOrder('desc')
+                }}
+                flexShrink={0}
+                whiteSpace="nowrap"
+              >
+                Limpiar
+              </Button>
+            )}
+          </Stack>
+        </Box>
+
+        <Collapse in={isFiltersOpen} animateOpacity>
+          <Box display={{ base: 'block', md: 'none' }}>
+            <Stack spacing={3}>
+              <Select
+                placeholder="Todos los estados"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                size="sm"
+              >
+                <option value="PENDING">Pendiente</option>
+                <option value="CONFIRMED">Confirmado</option>
+                <option value="PREPARING">Preparando</option>
+                <option value="READY">Listo</option>
+                <option value="DELIVERED">Entregado</option>
+                <option value="CANCELLED">Cancelado</option>
+              </Select>
+
+              <Select
+                value={`${sortBy}:${sortOrder}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortOrder] = e.target.value.split(':')
+                  setSortBy(newSortBy)
+                  setSortOrder(newSortOrder as 'asc' | 'desc')
+                }}
+                size="sm"
+              >
+                <option value=":desc">Más recientes</option>
+                <option value="createdAt:asc">Más antiguos</option>
+                <option value="subtotal:desc">Mayor monto</option>
+                <option value="subtotal:asc">Menor monto</option>
+                <option value="items:desc">Más items</option>
+                <option value="items:asc">Menos items</option>
+              </Select>
+
+              {/* Botón para limpiar filtros */}
+              {(search || statusFilter || sortBy) && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  leftIcon={<CloseIcon boxSize={3} />}
+                  onClick={() => {
+                    setSearch('')
+                    setStatusFilter('')
+                    setSortBy('')
+                    setSortOrder('desc')
+                  }}
+                  width="full"
+                >
+                  Limpiar filtros
+                </Button>
+              )}
+            </Stack>
+          </Box>
+        </Collapse>
 
         {/* Contador de resultados */}
         {(search || statusFilter || sortBy) && data && (
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize="sm" color="gray.600" mt={3}>
             Mostrando {filteredAndSortedItems.length} de {data.items.length}{' '}
             pedidos en esta página
           </Text>
         )}
-      </Stack>
+      </Box>
 
       {loading ? (
         <>

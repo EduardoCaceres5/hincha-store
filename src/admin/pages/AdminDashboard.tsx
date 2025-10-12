@@ -1,4 +1,4 @@
-import { RepeatIcon } from '@chakra-ui/icons'
+import { RepeatIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import {
   Badge,
   Box,
@@ -6,10 +6,12 @@ import {
   Card,
   CardBody,
   CardHeader,
+  Collapse,
   Flex,
   Grid,
   GridItem,
   Heading,
+  IconButton,
   SimpleGrid,
   Spinner,
   Stat,
@@ -25,6 +27,7 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  useDisclosure,
 } from '@chakra-ui/react'
 import { useCallback, useEffect, useState } from 'react'
 import { useDashboardCache } from '@/hooks/useDashboardCache'
@@ -63,6 +66,11 @@ import { PerformanceIndicators } from '@/admin/components/PerformanceIndicators'
 export default function AdminDashboard() {
   const { stats, salesChart, topProducts, recentOrders, loading, refetch } =
     useDashboardCache()
+
+  // Disclosure para collapse de filtros en móvil
+  const { isOpen: isFiltersOpen, onToggle: onToggleFilters } = useDisclosure({
+    defaultIsOpen: false,
+  })
 
   // Estados para métricas financieras
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -171,8 +179,31 @@ export default function AdminDashboard() {
         </Button>
       </Flex>
 
-      {/* Filtros */}
-      <DashboardFiltersComponent onFilterChange={handleFilterChange} />
+      {/* Filtros con collapse en móvil */}
+      <Box mb={6}>
+        {/* Botón para toggle en móvil */}
+        <Button
+          display={{ base: 'flex', md: 'none' }}
+          onClick={onToggleFilters}
+          width="full"
+          variant="outline"
+          rightIcon={isFiltersOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          mb={isFiltersOpen ? 3 : 0}
+          size="sm"
+        >
+          {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+        </Button>
+
+        {/* Filtros visibles en desktop, collapse en móvil */}
+        <Box display={{ base: 'none', md: 'block' }}>
+          <DashboardFiltersComponent onFilterChange={handleFilterChange} />
+        </Box>
+        <Collapse in={isFiltersOpen} animateOpacity>
+          <Box display={{ base: 'block', md: 'none' }}>
+            <DashboardFiltersComponent onFilterChange={handleFilterChange} />
+          </Box>
+        </Collapse>
+      </Box>
 
       {/* Stats Cards */}
       <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap={4} mb={6}>

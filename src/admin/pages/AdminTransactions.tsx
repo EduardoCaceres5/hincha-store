@@ -7,7 +7,7 @@ import {
   updateTransaction,
   type Transaction,
 } from '@/services/transactions'
-import { AddIcon, CloseIcon, DeleteIcon, SearchIcon, AttachmentIcon, ViewIcon, EditIcon } from '@chakra-ui/icons'
+import { AddIcon, CloseIcon, DeleteIcon, SearchIcon, AttachmentIcon, ViewIcon, EditIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import {
   AlertDialog,
   AlertDialogBody,
@@ -18,6 +18,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Collapse,
   Divider,
   FormControl,
   FormLabel,
@@ -44,6 +45,7 @@ import {
   Thead,
   Tr,
   VStack,
+  useDisclosure,
   useToast,
   Image,
   Badge,
@@ -65,6 +67,11 @@ export default function AdminTransactions() {
 
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+
+  // Disclosure para collapse de filtros en móvil
+  const { isOpen: isFiltersOpen, onToggle: onToggleFilters } = useDisclosure({
+    defaultIsOpen: false,
+  })
 
   // filtros
   const [type, setType] = useState<'INCOME' | 'EXPENSE' | ''>('')
@@ -349,9 +356,10 @@ export default function AdminTransactions() {
         </Stack>
       </Stack>
 
-      {/* filtros */}
-      <Stack spacing={3} mb={4}>
-        <InputGroup size={{ base: 'sm', md: 'md' }}>
+      {/* Filtros con collapse en móvil */}
+      <Box mb={4}>
+        {/* Búsqueda siempre visible */}
+        <InputGroup size={{ base: 'sm', md: 'md' }} mb={3}>
           <InputLeftElement pointerEvents="none">
             <SearchIcon color="gray.400" />
           </InputLeftElement>
@@ -361,66 +369,153 @@ export default function AdminTransactions() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </InputGroup>
-        <SimpleGrid columns={{ base: 1, md: 4 }} spacing={3}>
-          <Select
-            placeholder="Tipo"
-            value={type}
-            onChange={(e) => setType(e.target.value as any)}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            <option value="INCOME">Ingreso</option>
-            <option value="EXPENSE">Egreso</option>
-          </Select>
-          <Input
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            size={{ base: 'sm', md: 'md' }}
-          />
-          <Input
-            type="date"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            size={{ base: 'sm', md: 'md' }}
-          />
-          <Select
-            value={`${sortBy}:${sortOrder}`}
-            onChange={(e) => {
-              const [sb, so] = e.target.value.split(':') as any
-              setSortBy(sb)
-              setSortOrder(so)
-            }}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            <option value=":desc">Fecha (recientes)</option>
-            <option value="occurredAt:asc">Fecha (antiguos)</option>
-            <option value="amount:desc">Monto (mayor)</option>
-            <option value="amount:asc">Monto (menor)</option>
-          </Select>
-        </SimpleGrid>
-        {(type ||
-          search ||
-          from ||
-          to ||
-          sortBy !== 'occurredAt' ||
-          sortOrder !== 'desc') && (
-          <Button
-            size={{ base: 'sm', md: 'md' }}
-            variant="outline"
-            leftIcon={<CloseIcon boxSize={3} />}
-            onClick={() => {
-              setType('')
-              setSearch('')
-              setFrom('')
-              setTo('')
-              setSortBy('occurredAt')
-              setSortOrder('desc')
-            }}
-          >
-            Limpiar
-          </Button>
-        )}
-      </Stack>
+
+        {/* Botón para toggle filtros en móvil */}
+        <Button
+          display={{ base: 'flex', md: 'none' }}
+          onClick={onToggleFilters}
+          width="full"
+          variant="outline"
+          rightIcon={isFiltersOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          mb={isFiltersOpen ? 3 : 0}
+          size="sm"
+        >
+          {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+        </Button>
+
+        {/* Filtros visibles en desktop */}
+        <Box display={{ base: 'none', md: 'block' }}>
+          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={3} mb={3}>
+            <Select
+              placeholder="Tipo"
+              value={type}
+              onChange={(e) => setType(e.target.value as any)}
+              size="md"
+            >
+              <option value="INCOME">Ingreso</option>
+              <option value="EXPENSE">Egreso</option>
+            </Select>
+            <Input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              size="md"
+              placeholder="Desde"
+            />
+            <Input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              size="md"
+              placeholder="Hasta"
+            />
+            <Select
+              value={`${sortBy}:${sortOrder}`}
+              onChange={(e) => {
+                const [sb, so] = e.target.value.split(':') as any
+                setSortBy(sb)
+                setSortOrder(so)
+              }}
+              size="md"
+            >
+              <option value=":desc">Fecha (recientes)</option>
+              <option value="occurredAt:asc">Fecha (antiguos)</option>
+              <option value="amount:desc">Monto (mayor)</option>
+              <option value="amount:asc">Monto (menor)</option>
+            </Select>
+          </SimpleGrid>
+          {(type ||
+            search ||
+            from ||
+            to ||
+            sortBy !== 'occurredAt' ||
+            sortOrder !== 'desc') && (
+            <Button
+              size="md"
+              variant="outline"
+              leftIcon={<CloseIcon boxSize={3} />}
+              onClick={() => {
+                setType('')
+                setSearch('')
+                setFrom('')
+                setTo('')
+                setSortBy('occurredAt')
+                setSortOrder('desc')
+              }}
+            >
+              Limpiar filtros
+            </Button>
+          )}
+        </Box>
+
+        {/* Collapse en móvil */}
+        <Collapse in={isFiltersOpen} animateOpacity>
+          <Box display={{ base: 'block', md: 'none' }}>
+            <Stack spacing={3}>
+              <Select
+                placeholder="Tipo"
+                value={type}
+                onChange={(e) => setType(e.target.value as any)}
+                size="sm"
+              >
+                <option value="INCOME">Ingreso</option>
+                <option value="EXPENSE">Egreso</option>
+              </Select>
+              <Input
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                size="sm"
+                placeholder="Desde"
+              />
+              <Input
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                size="sm"
+                placeholder="Hasta"
+              />
+              <Select
+                value={`${sortBy}:${sortOrder}`}
+                onChange={(e) => {
+                  const [sb, so] = e.target.value.split(':') as any
+                  setSortBy(sb)
+                  setSortOrder(so)
+                }}
+                size="sm"
+              >
+                <option value=":desc">Fecha (recientes)</option>
+                <option value="occurredAt:asc">Fecha (antiguos)</option>
+                <option value="amount:desc">Monto (mayor)</option>
+                <option value="amount:asc">Monto (menor)</option>
+              </Select>
+              {(type ||
+                search ||
+                from ||
+                to ||
+                sortBy !== 'occurredAt' ||
+                sortOrder !== 'desc') && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  leftIcon={<CloseIcon boxSize={3} />}
+                  onClick={() => {
+                    setType('')
+                    setSearch('')
+                    setFrom('')
+                    setTo('')
+                    setSortBy('occurredAt')
+                    setSortOrder('desc')
+                  }}
+                  width="full"
+                >
+                  Limpiar filtros
+                </Button>
+              )}
+            </Stack>
+          </Box>
+        </Collapse>
+      </Box>
 
       {/* tabla */}
       <Box overflowX="auto">
