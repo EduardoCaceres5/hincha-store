@@ -92,7 +92,7 @@ export default function Navbar() {
       )}
       boxShadow="sm"
     >
-      <Flex h={{ base: 16, md: 24 }} align="center" px={{ base: 4, md: 8 }}>
+      <Flex h={{ base: 16, md: 24 }} align="center" px={{ base: 2, sm: 4, md: 8 }} gap={{ base: 1, sm: 2 }}>
         {/* Mobile menu button */}
         <Show below="md">
           <MobileMenu />
@@ -105,9 +105,16 @@ export default function Navbar() {
           spacing={3}
           _hover={{ textDecoration: 'none', transform: 'scale(1.02)' }}
           transition="transform 0.2s"
-          flexShrink={0}
+          flexShrink={1}
+          minW={0}
+          overflow="hidden"
         >
-          <Box w={{ base: 40, md: 56 }} h={{ base: 10, md: 16 }}>
+          <Box
+            w={{ base: 32, sm: 40, md: 56 }}
+            h={{ base: 8, sm: 10, md: 16 }}
+            flexShrink={1}
+            minW={0}
+          >
             <Image
               src={logo}
               alt="Hincha Store"
@@ -134,25 +141,27 @@ export default function Navbar() {
         <Spacer />
 
         {/* Acciones derechas */}
-        <HStack spacing={2} align="center">
-          <IconButton
-            as="a"
-            href="https://www.instagram.com/hinchastore_fut"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-            variant="ghost"
-            icon={<FaInstagram />}
-            h={controlH}
-            minH={controlH}
-            w={controlH}
-            borderRadius="lg"
-            _hover={{
-              color: '#E1306C',
-              transform: 'scale(1.1)',
-            }}
-            transition="all 0.2s"
-          />
+        <HStack spacing={{ base: 0.5, sm: 1, md: 2 }} align="center" flexShrink={0}>
+          <Show above="sm">
+            <IconButton
+              as="a"
+              href="https://www.instagram.com/hinchastore_fut"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              variant="ghost"
+              icon={<FaInstagram />}
+              h={controlH}
+              minH={controlH}
+              w={controlH}
+              borderRadius="lg"
+              _hover={{
+                color: '#E1306C',
+                transform: 'scale(1.1)',
+              }}
+              transition="all 0.2s"
+            />
+          </Show>
 
           <IconButton
             aria-label="Tema"
@@ -162,11 +171,12 @@ export default function Navbar() {
             h={controlH}
             minH={controlH}
             w={controlH}
+            minW={controlH}
             borderRadius="lg"
           />
 
           {/* Checkout */}
-          <Box position="relative">
+          <Box position="relative" flexShrink={0}>
             <IconButton
               aria-label="Carrito"
               variant="ghost"
@@ -175,6 +185,7 @@ export default function Navbar() {
               h={controlH}
               minH={controlH}
               w={controlH}
+              minW={controlH}
               borderRadius="lg"
             />
             {count > 0 && (
@@ -183,8 +194,8 @@ export default function Navbar() {
                 top="0"
                 right="0"
                 borderRadius="full"
-                px={2}
-                fontSize="0.7rem"
+                px={{ base: 1.5, sm: 2 }}
+                fontSize={{ base: '0.6rem', sm: '0.7rem' }}
                 colorScheme="teal"
                 transform="translate(35%, -35%)"
               >
@@ -202,7 +213,7 @@ export default function Navbar() {
                 h={controlH}
                 minH={controlH}
                 borderRadius="lg"
-                px={{ base: 2, md: 3 }}
+                px={{ base: 1, sm: 1.5, md: 3 }}
                 bg={useColorModeValue('gray.100', 'gray.700')}
                 _hover={{
                   bg: useColorModeValue('gray.200', 'gray.600'),
@@ -210,15 +221,19 @@ export default function Navbar() {
                 _active={{
                   bg: useColorModeValue('gray.200', 'gray.600'),
                 }}
+                minW={0}
+                maxW={{ base: 'auto', md: 'none' }}
+                flexShrink={0}
               >
-                <HStack spacing={2}>
+                <HStack spacing={{ base: 0.5, sm: 1, md: 2 }} overflow="hidden">
                   <Icon
                     as={FiUser}
-                    boxSize={{ base: 4, md: 5 }}
+                    boxSize={{ base: 3.5, sm: 4, md: 5 }}
                     color={useColorModeValue('gray.600', 'gray.400')}
+                    flexShrink={0}
                   />
                   <Show above="md">
-                    <VStack spacing={0} align="flex-start">
+                    <VStack spacing={0} align="flex-start" overflow="hidden">
                       <Text
                         fontSize="sm"
                         fontWeight="medium"
@@ -234,7 +249,9 @@ export default function Navbar() {
                     </VStack>
                   </Show>
                   <Show below="md">
-                    <RoleBadge role={me?.role as any} size="xs" />
+                    <Box flexShrink={0}>
+                      <RoleBadge role={me?.role as any} size="xs" />
+                    </Box>
                   </Show>
                 </HStack>
               </MenuButton>

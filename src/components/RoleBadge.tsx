@@ -12,13 +12,32 @@ export default function RoleBadge({
   const label = role === 'admin' ? 'ADMIN' : 'VENDEDOR'
 
   const fontSize = {
-    xs: '0.55rem',
+    xs: '0.5rem',
     sm: '0.6rem',
     md: '0.65rem'
   }[size]
 
+  const ml = {
+    xs: 0.5,
+    sm: 1.5,
+    md: 2
+  }[size]
+
+  const px = {
+    xs: 1.5,
+    sm: 2,
+    md: 2
+  }[size]
+
   return (
-    <Badge ml={2} colorScheme={scheme} fontSize={fontSize} borderRadius="md">
+    <Badge
+      ml={ml}
+      px={px}
+      colorScheme={scheme}
+      fontSize={fontSize}
+      borderRadius="md"
+      whiteSpace="nowrap"
+    >
       {label}
     </Badge>
   )
