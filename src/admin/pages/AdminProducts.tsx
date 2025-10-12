@@ -5,6 +5,7 @@ import {
 } from '@/services/myProducts'
 import type { Product } from '@/types/product'
 import { publishMissingProducts } from '@/services/instagram'
+import { translateKit, translateQuality } from '@/utils/leagues'
 import { AddIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon, ExternalLinkIcon } from '@chakra-ui/icons' // NEW
 import {
   AlertDialog,
@@ -605,6 +606,7 @@ export default function DashboardProducts() {
                         boxSize="60px"
                         objectFit="cover"
                         borderRadius="md"
+                        bg="white"
                       />
                       <Box flex="1">
                         <Text fontWeight="semibold" fontSize="sm" noOfLines={2}>
@@ -614,9 +616,9 @@ export default function DashboardProducts() {
                           {p.basePrice.toLocaleString('es-PY')}
                         </Text>
                         <HStack fontSize="xs" color="gray.600" mt={1}>
-                          <Text>{p.kit || '-'}</Text>
+                          <Text>{p.kit ? translateKit(p.kit) : '-'}</Text>
                           <Text>•</Text>
-                          <Text>{p.quality || '-'}</Text>
+                          <Text>{p.quality ? translateQuality(p.quality) : '-'}</Text>
                         </HStack>
                         {p.instagramPostId && (
                           <Link
@@ -695,12 +697,13 @@ export default function DashboardProducts() {
                           boxSize="64px"
                           objectFit="cover"
                           borderRadius="md"
+                          bg="white"
                         />
                       </Td>
                       <Td>{p.title}</Td>
                       <Td isNumeric>{p.basePrice.toLocaleString('es-PY')}</Td>
-                      <Td>{p.kit || '-'}</Td>
-                      <Td>{p.quality || '-'}</Td>
+                      <Td>{p.kit ? translateKit(p.kit) : '-'}</Td>
+                      <Td>{p.quality ? translateQuality(p.quality) : '-'}</Td>
                       <Td>
                         {p.instagramPostId ? (
                           <Tooltip label="Ver publicación en Instagram" placement="top">
