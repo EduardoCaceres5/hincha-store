@@ -7,7 +7,7 @@ import {
   updateTransaction,
   type Transaction,
 } from '@/services/transactions'
-import { AddIcon, CloseIcon, DeleteIcon, SearchIcon, AttachmentIcon, ViewIcon } from '@chakra-ui/icons'
+import { AddIcon, CloseIcon, DeleteIcon, SearchIcon, AttachmentIcon, ViewIcon, EditIcon } from '@chakra-ui/icons'
 import {
   AlertDialog,
   AlertDialogBody,
@@ -301,21 +301,21 @@ export default function AdminTransactions() {
 
   return (
     <Box>
-      <HStack justify="space-between" mb={4} align="start">
+      <Stack spacing={3} mb={4} direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'start' }}>
         <VStack align="start" spacing={0}>
           <Text fontSize="lg" fontWeight="semibold">
             Transacciones
           </Text>
           {data && (
-            <HStack color="gray.600" fontSize="sm">
+            <Stack direction={{ base: 'column', sm: 'row' }} color="gray.600" fontSize={{ base: 'xs', md: 'sm' }} spacing={{ base: 1, sm: 2 }}>
               <Text>
                 Ingresos: {(data.incomeTotal ?? 0).toLocaleString('es-PY')}
               </Text>
-              <Text>•</Text>
+              <Text display={{ base: 'none', sm: 'block' }}>•</Text>
               <Text>
                 Egresos: {(data.expenseTotal ?? 0).toLocaleString('es-PY')}
               </Text>
-              <Text>•</Text>
+              <Text display={{ base: 'none', sm: 'block' }}>•</Text>
               <Text>
                 Balance:{' '}
                 {(
@@ -323,15 +323,16 @@ export default function AdminTransactions() {
                   (data.incomeTotal || 0) - (data.expenseTotal || 0)
                 ).toLocaleString('es-PY')}
               </Text>
-            </HStack>
+            </Stack>
           )}
         </VStack>
-        <HStack>
+        <Stack direction={{ base: 'column', sm: 'row' }} spacing={2}>
           <Button
             leftIcon={<AddIcon />}
             colorScheme="teal"
             size={{ base: 'sm', md: 'md' }}
             onClick={() => openCreateModal('INCOME')}
+            w={{ base: '100%', sm: 'auto' }}
           >
             Nuevo ingreso
           </Button>
@@ -341,11 +342,12 @@ export default function AdminTransactions() {
             variant="outline"
             size={{ base: 'sm', md: 'md' }}
             onClick={() => openCreateModal('EXPENSE')}
+            w={{ base: '100%', sm: 'auto' }}
           >
             Nuevo egreso
           </Button>
-        </HStack>
-      </HStack>
+        </Stack>
+      </Stack>
 
       {/* filtros */}
       <Stack spacing={3} mb={4}>
@@ -432,12 +434,12 @@ export default function AdminTransactions() {
                   onChange={toggleAll}
                 />
               </Th>
-              <Th>Comprobantes</Th>
+              <Th display={{ base: 'none', md: 'table-cell' }}>Comprobantes</Th>
               <Th>Fecha</Th>
-              <Th>Tipo</Th>
+              <Th display={{ base: 'none', sm: 'table-cell' }}>Tipo</Th>
               <Th isNumeric>Monto</Th>
-              <Th>Descripción</Th>
-              <Th>Categoría</Th>
+              <Th display={{ base: 'none', lg: 'table-cell' }}>Descripción</Th>
+              <Th display={{ base: 'none', lg: 'table-cell' }}>Categoría</Th>
               <Th></Th>
             </Tr>
           </Thead>
@@ -466,7 +468,7 @@ export default function AdminTransactions() {
                         onChange={(e) => toggleOne(t.id, e.target.checked)}
                       />
                     </Td>
-                    <Td>
+                    <Td display={{ base: 'none', md: 'table-cell' }}>
                       {imageUrls.length > 0 ? (
                         <HStack spacing={1}>
                           <Image
@@ -494,10 +496,19 @@ export default function AdminTransactions() {
                         </Text>
                       )}
                     </Td>
-                    <Td>
-                      {new Date(t.occurredAt).toLocaleDateString('es-PY')}
+                    <Td fontSize={{ base: 'xs', md: 'sm' }}>
+                      <VStack align="start" spacing={0}>
+                        <Text>{new Date(t.occurredAt).toLocaleDateString('es-PY')}</Text>
+                        <Badge
+                          colorScheme={t.type === 'INCOME' ? 'green' : 'red'}
+                          fontSize="xs"
+                          display={{ base: 'inline-flex', sm: 'none' }}
+                        >
+                          {t.type === 'INCOME' ? 'Ing' : 'Egr'}
+                        </Badge>
+                      </VStack>
                     </Td>
-                    <Td>
+                    <Td display={{ base: 'none', sm: 'table-cell' }}>
                       <Badge
                         colorScheme={t.type === 'INCOME' ? 'green' : 'red'}
                         fontSize="xs"
@@ -509,22 +520,23 @@ export default function AdminTransactions() {
                       isNumeric
                       color={t.type === 'INCOME' ? 'green.600' : 'red.600'}
                       fontWeight="semibold"
+                      fontSize={{ base: 'xs', md: 'sm' }}
                     >
                       {t.amount.toLocaleString('es-PY')}
                     </Td>
-                    <Td maxW="200px" isTruncated>
+                    <Td maxW="200px" isTruncated display={{ base: 'none', lg: 'table-cell' }}>
                       {t.description || '-'}
                     </Td>
-                    <Td>{t.category || '-'}</Td>
+                    <Td display={{ base: 'none', lg: 'table-cell' }}>{t.category || '-'}</Td>
                     <Td>
-                      <HStack spacing={2}>
-                        <Button
+                      <Stack direction={{ base: 'column', sm: 'row' }} spacing={1}>
+                        <IconButton
+                          aria-label="Editar"
+                          icon={<EditIcon />}
                           size="sm"
                           variant="outline"
                           onClick={() => openEditModal(t)}
-                        >
-                          Editar
-                        </Button>
+                        />
                         <IconButton
                           aria-label="Eliminar"
                           icon={<DeleteIcon />}
@@ -535,7 +547,7 @@ export default function AdminTransactions() {
                             setConfirmOneOpen(true)
                           }}
                         />
-                      </HStack>
+                      </Stack>
                     </Td>
                   </Tr>
                 )
@@ -546,8 +558,8 @@ export default function AdminTransactions() {
       </Box>
 
       {/* acciones inferiores */}
-      <HStack mt={4} justify="space-between">
-        <Text color="gray.600">
+      <Stack mt={4} direction={{ base: 'column', sm: 'row' }} justify="space-between" spacing={3}>
+        <Text color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>
           {selectedIds.length
             ? `${selectedIds.length} seleccionadas`
             : 'Seleccioná transacciones para eliminar'}
@@ -558,42 +570,46 @@ export default function AdminTransactions() {
           onClick={() => setConfirmBulkOpen(true)}
           isDisabled={!selectedIds.length}
           size={{ base: 'sm', md: 'md' }}
+          w={{ base: '100%', sm: 'auto' }}
         >
           Eliminar seleccionadas
         </Button>
-      </HStack>
+      </Stack>
 
       {/* paginación */}
       {data?.total ? (
-        <HStack mt={4} justify="center" spacing={2}>
-          <Button size="sm" onClick={() => setPage(1)} isDisabled={page === 1}>
-            « Primero
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            isDisabled={page === 1}
-          >
-            ‹ Anterior
-          </Button>
-          <Text>
-            Pagina {page} / {totalPages}
-          </Text>
-          <Button
-            size="sm"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isDisabled={page >= totalPages}
-          >
-            Siguiente ›
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => setPage(totalPages)}
-            isDisabled={page >= totalPages}
-          >
-            Última »
-          </Button>
-        </HStack>
+        <Stack mt={4} direction={{ base: 'column', sm: 'row' }} justify="center" align="center" spacing={2}>
+          <HStack spacing={2}>
+            <Button size="sm" onClick={() => setPage(1)} isDisabled={page === 1} display={{ base: 'none', md: 'inline-flex' }}>
+              « Primero
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              isDisabled={page === 1}
+            >
+              ‹
+            </Button>
+            <Text fontSize={{ base: 'sm', md: 'md' }} minW="100px" textAlign="center">
+              Pág. {page} / {totalPages}
+            </Text>
+            <Button
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isDisabled={page >= totalPages}
+            >
+              ›
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setPage(totalPages)}
+              isDisabled={page >= totalPages}
+              display={{ base: 'none', md: 'inline-flex' }}
+            >
+              Última »
+            </Button>
+          </HStack>
+        </Stack>
       ) : null}
 
       {/* confirm uno */}
@@ -661,9 +677,9 @@ export default function AdminTransactions() {
       </AlertDialog>
 
       {/* Modal create/edit */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} isCentered>
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} isCentered size={{ base: 'full', sm: 'md' }}>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent mx={{ base: 0, sm: 4 }}>
           <ModalHeader>
             {editing ? 'Editar transacción' : 'Nueva transacción'}
           </ModalHeader>
