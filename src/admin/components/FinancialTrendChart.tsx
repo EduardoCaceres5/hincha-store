@@ -37,7 +37,7 @@ export function FinancialTrendChart({ data }: FinancialTrendChartProps) {
   return (
     <Card bg={cardBg}>
       <CardHeader>
-        <Text fontSize="lg" fontWeight="semibold">
+        <Text fontSize={{ base: "md", md: "lg" }} fontWeight="semibold">
           Evolución de Ingresos y Egresos
         </Text>
       </CardHeader>
@@ -46,13 +46,13 @@ export function FinancialTrendChart({ data }: FinancialTrendChartProps) {
           <ResponsiveContainer width="100%" height={350}>
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+              <YAxis tick={{ fontSize: 10 }} width={60} />
               <Tooltip
                 formatter={(value: number) => formatCurrency(value)}
-                contentStyle={{ fontSize: 12 }}
+                contentStyle={{ fontSize: 11 }}
               />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
               <Line
                 type="monotone"
                 dataKey="revenue"

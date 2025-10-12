@@ -67,7 +67,7 @@ export function ExpenseDistributionChart({
   return (
     <Card bg={cardBg}>
       <CardHeader>
-        <Text fontSize="lg" fontWeight="semibold">
+        <Text fontSize={{ base: "md", md: "lg" }} fontWeight="semibold">
           Distribución de Egresos por Categoría
         </Text>
       </CardHeader>
@@ -84,7 +84,7 @@ export function ExpenseDistributionChart({
                   const { name, percentage } = props
                   return `${name} (${Number(percentage).toFixed(0)}%)`
                 }}
-                outerRadius={100}
+                outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
@@ -97,10 +97,12 @@ export function ExpenseDistributionChart({
               </Pie>
               <Tooltip content={<CustomTooltip />} />
               <Legend
-                wrapperStyle={{ fontSize: 12 }}
+                wrapperStyle={{ fontSize: 11 }}
                 formatter={(value: any, entry: any) =>
                   `${value} - ${formatCurrency(entry?.payload?.value || 0)}`
                 }
+                layout="horizontal"
+                verticalAlign="bottom"
               />
             </PieChart>
           </ResponsiveContainer>

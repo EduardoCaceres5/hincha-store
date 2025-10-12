@@ -147,8 +147,15 @@ export default function AdminDashboard() {
   return (
     <Box>
       {/* Header with Refresh Button */}
-      <Flex justifyContent="space-between" alignItems="center" mb={6} flexWrap="wrap" gap={3}>
-        <Heading size="lg">Dashboard Financiero</Heading>
+      <Flex
+        justifyContent="space-between"
+        alignItems={{ base: "flex-start", sm: "center" }}
+        mb={6}
+        flexWrap="wrap"
+        gap={3}
+        direction={{ base: "column", sm: "row" }}
+      >
+        <Heading size={{ base: "md", md: "lg" }}>Dashboard Financiero</Heading>
         <Button
           leftIcon={<RepeatIcon />}
           onClick={() => {
@@ -158,6 +165,7 @@ export default function AdminDashboard() {
           isLoading={loading || financialLoading}
           colorScheme="blue"
           size="sm"
+          width={{ base: "full", sm: "auto" }}
         >
           Recargar datos
         </Button>
@@ -242,7 +250,7 @@ export default function AdminDashboard() {
       </Box>
 
       {/* Charts Originales */}
-      <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={6} mb={6}>
+      <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={{ base: 4, md: 6 }} mb={6}>
         <GridItem>
           <Card bg={cardBg}>
             <CardHeader>
@@ -257,14 +265,17 @@ export default function AdminDashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      interval="preserveStartEnd"
+                      tick={{ fontSize: 10 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
                     />
-                    <YAxis tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 10 }} width={60} />
                     <Tooltip
                       formatter={(value: number) => formatCurrency(value)}
+                      contentStyle={{ fontSize: 11 }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Line
                       type="monotone"
                       dataKey="sales"
@@ -295,12 +306,12 @@ export default function AdminDashboard() {
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={topProducts} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tick={{ fontSize: 12 }} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
                     <YAxis
                       dataKey="title"
                       type="category"
-                      width={80}
-                      tick={{ fontSize: 10 }}
+                      width={70}
+                      tick={{ fontSize: 9 }}
                     />
                     <Tooltip
                       formatter={(value: number) => formatCurrency(value)}
@@ -325,49 +336,59 @@ export default function AdminDashboard() {
             Pedidos recientes
           </Text>
         </CardHeader>
-        <CardBody>
-          <Box overflowX="auto">
-            <Table size="sm">
+        <CardBody px={{ base: 2, md: 6 }}>
+          <Box overflowX="auto" sx={{
+            '&::-webkit-scrollbar': {
+              height: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'gray.100',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'gray.400',
+              borderRadius: '4px',
+            },
+          }}>
+            <Table size="sm" variant="simple">
               <Thead>
                 <Tr>
-                  <Th fontSize={{ base: 'xs', md: 'sm' }}>Pedido</Th>
-                  <Th fontSize={{ base: 'xs', md: 'sm' }}>Cliente</Th>
-                  <Th fontSize={{ base: 'xs', md: 'sm' }}>Estado</Th>
-                  <Th fontSize={{ base: 'xs', md: 'sm' }}>Fecha</Th>
-                  <Th isNumeric fontSize={{ base: 'xs', md: 'sm' }}>
-                    Total
-                  </Th>
+                  <Th fontSize="xs" whiteSpace="nowrap">Pedido</Th>
+                  <Th fontSize="xs" whiteSpace="nowrap" display={{ base: 'none', sm: 'table-cell' }}>Cliente</Th>
+                  <Th fontSize="xs" whiteSpace="nowrap">Estado</Th>
+                  <Th fontSize="xs" whiteSpace="nowrap" display={{ base: 'none', md: 'table-cell' }}>Fecha</Th>
+                  <Th isNumeric fontSize="xs" whiteSpace="nowrap">Total</Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {Array.isArray(recentOrders) && recentOrders.length > 0 ? (
                   recentOrders.map((order) => (
                     <Tr key={order.id}>
-                      <Td fontWeight="medium" fontSize={{ base: 'xs', md: 'sm' }}>
+                      <Td fontWeight="medium" fontSize="xs" whiteSpace="nowrap">
                         {order.orderNumber}
                       </Td>
-                      <Td fontSize={{ base: 'xs', md: 'sm' }}>
+                      <Td fontSize="xs" whiteSpace="nowrap" display={{ base: 'none', sm: 'table-cell' }}>
                         {order.customerName}
                       </Td>
-                      <Td>
+                      <Td whiteSpace="nowrap">
                         <Badge
                           colorScheme={getStatusColor(order.status)}
-                          fontSize={{ base: 'xs', md: 'sm' }}
+                          fontSize="xx-small"
                         >
                           {order.status}
                         </Badge>
                       </Td>
-                      <Td fontSize={{ base: 'xs', md: 'sm' }}>
+                      <Td fontSize="xs" whiteSpace="nowrap" display={{ base: 'none', md: 'table-cell' }}>
                         {new Date(order.createdAt).toLocaleDateString('es-PY')}
                       </Td>
-                      <Td isNumeric fontSize={{ base: 'xs', md: 'sm' }}>
+                      <Td isNumeric fontSize="xs" whiteSpace="nowrap">
                         {formatCurrency(order.total)}
                       </Td>
                     </Tr>
                   ))
                 ) : (
                   <Tr>
-                    <Td colSpan={5} textAlign="center" color="gray.500">
+                    <Td colSpan={5} textAlign="center" color="gray.500" fontSize="xs">
                       No hay pedidos recientes
                     </Td>
                   </Tr>

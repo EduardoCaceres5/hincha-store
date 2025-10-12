@@ -77,10 +77,10 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
 
   return (
     <Box mb={6}>
-      <Text fontSize="2xl" fontWeight="bold" mb={4}>
+      <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" mb={4}>
         Resumen Financiero
       </Text>
-      <SimpleGrid columns={{ base: 1, md: 3 }} gap={6}>
+      <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap={{ base: 4, md: 6 }}>
         {statCards.map((stat, index) => (
           <MotionCard
             key={stat.label}
@@ -104,23 +104,23 @@ export function FinancialSummary({ data }: FinancialSummaryProps) {
                   top={-2}
                   right={-2}
                   opacity={0.2}
-                  fontSize="6xl"
+                  fontSize={{ base: "4xl", md: "6xl" }}
                 >
                   <Icon as={stat.icon} />
                 </Box>
                 <Stat>
                   <StatLabel
-                    fontSize="sm"
+                    fontSize={{ base: "xs", md: "sm" }}
                     fontWeight="medium"
                     opacity={0.9}
                     mb={2}
                   >
                     {stat.label}
                   </StatLabel>
-                  <StatNumber fontSize="3xl" fontWeight="bold" mb={2}>
+                  <StatNumber fontSize={{ base: "xl", sm: "2xl", md: "3xl" }} fontWeight="bold" mb={2}>
                     {stat.value}
                   </StatNumber>
-                  <StatHelpText fontSize="sm" color="whiteAlpha.900" m={0}>
+                  <StatHelpText fontSize={{ base: "xs", md: "sm" }} color="whiteAlpha.900" m={0}>
                     <StatArrow
                       type={stat.change >= 0 ? 'increase' : 'decrease'}
                     />
