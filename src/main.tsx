@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import theme from './chakra/theme'
+import { registerSW } from 'virtual:pwa-register'
 
 const rootEl = document.getElementById('root')
 if (!rootEl) {
@@ -19,6 +20,18 @@ const routerExtraProps = {
     v7_relativeSplatPath: true,
   },
 } as any
+
+// Registrar Service Worker para PWA
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm('Nueva versión disponible. ¿Recargar?')) {
+      updateSW(true)
+    }
+  },
+  onOfflineReady() {
+    console.log('App lista para funcionar offline')
+  },
+})
 
 ReactDOM.createRoot(rootEl).render(
   <ChakraProvider theme={theme}>
