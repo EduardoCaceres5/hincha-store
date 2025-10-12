@@ -12,6 +12,7 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
+        globIgnores: ['**/node_modules/**/*', 'sw.js', 'workbox-*.js'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/api\.*/i,
@@ -63,6 +64,7 @@ export default defineConfig({
       devOptions: {
         enabled: true, // Habilitar en desarrollo para probar
         type: 'module',
+        suppressWarnings: true, // Suprimir warnings en desarrollo
       },
     }),
   ],
