@@ -211,7 +211,7 @@ export default function OrderDetail() {
   }
 
   const handleDepositSubmit = async () => {
-    if (!order || !id || !depositAmount) return
+    if (!order || !id || !depositAmount || !order.totalPrice) return
 
     const amount = parseFloat(depositAmount)
     if (isNaN(amount) || amount <= 0 || amount > order.totalPrice) {
@@ -420,7 +420,7 @@ export default function OrderDetail() {
                 ? 'Señado'
                 : 'Pendiente'}
             </Text>
-            {order.depositAmount && order.depositPaidAt && !order.balancePaidAt && (
+            {order.depositAmount && order.depositPaidAt && !order.balancePaidAt && order.totalPrice && (
               <Text fontSize="xs" color="orange.600" fontWeight="medium">
                 Saldo: {formatGs(order.totalPrice - order.depositAmount)}
               </Text>
@@ -784,7 +784,7 @@ export default function OrderDetail() {
             </HStack>
 
             {/* Información de seña si existe */}
-            {order.depositAmount && order.depositPaidAt && (
+            {order.depositAmount && order.depositPaidAt && order.totalPrice && (
               <VStack
                 align="stretch"
                 spacing={2}
@@ -983,7 +983,7 @@ export default function OrderDetail() {
                 </FormLabel>
                 <NumberInput
                   min={0}
-                  max={order.totalPrice}
+                  max={order.totalPrice ?? undefined}
                   value={depositAmount}
                   onChange={(value) => setDepositAmount(value)}
                 >
@@ -1050,7 +1050,7 @@ export default function OrderDetail() {
                   </Box>
                 )}
               </FormControl>
-              {depositAmount && !isNaN(parseFloat(depositAmount)) && (
+              {depositAmount && !isNaN(parseFloat(depositAmount)) && order.totalPrice && (
                 <Box
                   p={3}
                   bg="yellow.50"

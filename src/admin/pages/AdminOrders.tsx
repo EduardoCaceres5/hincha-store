@@ -82,7 +82,7 @@ function getPaymentStatus(order: OrderListItem): {
     return { label: 'Pagado', color: 'green' }
   }
   // Si hay seña pagada pero aún no se pagó el saldo
-  if (order.depositAmount && order.depositPaidAt) {
+  if (order.depositAmount && order.depositPaidAt && order.totalPrice) {
     const balance = order.totalPrice - order.depositAmount
     return {
       label: 'Señado',
@@ -561,7 +561,7 @@ export default function Orders() {
                       <Text
                         fontSize="sm"
                         fontWeight="bold"
-                        color={getAmountColor(o.totalPrice)}
+                        color={getAmountColor(o.totalPrice ?? 0)}
                       >
                         {formatGs(o.totalPrice)}
                       </Text>
@@ -671,7 +671,7 @@ export default function Orders() {
                     </Td>
                     <Td isNumeric>{o._count.items}</Td>
                     <Td isNumeric>
-                      <Text fontWeight="semibold" color={getAmountColor(o.totalPrice)}>
+                      <Text fontWeight="semibold" color={getAmountColor(o.totalPrice ?? 0)}>
                         {formatGs(o.totalPrice)}
                       </Text>
                     </Td>
